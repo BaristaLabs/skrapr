@@ -27,7 +27,8 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         {
             if (String.IsNullOrWhiteSpace(endpointAddress))
                 throw new ArgumentNullException(nameof(endpointAddress));
-            
+
+            CommandTimeout = 5000;
             m_endpointAddress = endpointAddress;
 
             m_sessionSocket = new WebSocket(m_endpointAddress);
@@ -35,6 +36,15 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             m_sessionSocket.MessageReceived += Ws_MessageReceived;
             m_sessionSocket.Error += Ws_Error;
             m_sessionSocket.Opened += Ws_Opened;
+        }
+
+        /// <summary>
+        /// Gets or sets the number of milliseconds to wait for a command to complete.
+        /// </summary>
+        public int CommandTimeout
+        {
+            get;
+            set;
         }
 
         /// <summary>
@@ -51,12 +61,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
         /// <returns></returns>
-        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command)
+        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
         {
-            return await SendCommand<TCommand>(command, CancellationToken.None);
+            return await SendCommand<TCommand>(command, CancellationToken.None, throwExceptionIfResponseNotReceived);
         }
-
 
         /// <summary>
         /// Sends the specified command and returns the associated command response.
@@ -65,14 +74,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, CancellationToken cancellationToken)
+        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, CancellationToken cancellationToken, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
         {
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
 
-            var result = await SendCommandInternal(command, cancellationToken);
-            
+            var result = await SendCommandInternal(command, cancellationToken, throwExceptionIfResponseNotReceived);
+
             if (result == null)
                 return null;
 
@@ -88,11 +97,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
         /// <returns></returns>
-        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command)
+        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
             where TCommandResponse : ICommandResponse<TCommand>
         {
-            return await SendCommand<TCommand, TCommandResponse>(command, CancellationToken.None);
+            return await SendCommand<TCommand, TCommandResponse>(command, CancellationToken.None, throwExceptionIfResponseNotReceived);
         }
 
         /// <summary>
@@ -103,14 +112,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, CancellationToken cancellationToken)
+        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, CancellationToken cancellationToken, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
             where TCommandResponse : ICommandResponse<TCommand>
         {
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
 
-            var result = await SendCommandInternal(command, cancellationToken);
+            var result = await SendCommandInternal(command, cancellationToken, throwExceptionIfResponseNotReceived);
 
             if (result == null)
                 return default(TCommandResponse);
@@ -118,7 +127,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             return result.ToObject<TCommandResponse>();
         }
 
-        private async Task<JToken> SendCommandInternal<TCommand>(TCommand command, CancellationToken cancellationToken)
+        private async Task<JToken> SendCommandInternal<TCommand>(TCommand command, CancellationToken cancellationToken, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
         {
             var contents = JsonConvert.SerializeObject(new
@@ -134,7 +143,10 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
 
             m_sessionSocket.Send(contents);
 
-            await Task.Run(() => m_responseReceived.Wait(5000, cancellationToken));
+            var responseWasReceived = await Task.Run(() => m_responseReceived.Wait(CommandTimeout), cancellationToken);
+
+            if (!responseWasReceived && throwExceptionIfResponseNotReceived)
+                throw new InvalidOperationException($"A command response was not received: {command.CommandName}");
 
             return m_lastResponseResult;
         }
@@ -159,7 +171,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
 
                     return methodName;
                 });
-            
+
             var callbackWrapper = new Action<object>(obj => eventCallback((TEvent)obj));
             m_eventHandlers.AddOrUpdate(eventName,
                 (m) => new ConcurrentBag<Action<object>>(new[] { callbackWrapper }),
@@ -213,7 +225,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             if (messageObject.TryGetValue("id", out JToken idProperty) && idProperty.Value<long>() == m_currentCommandId)
             {
 
-                if (messageObject.TryGetValue("error", out JToken errorProperty ))
+                if (messageObject.TryGetValue("error", out JToken errorProperty))
                 {
                     var message = errorProperty.Value<string>("message");
                     var data = errorProperty.Value<string>("data");
@@ -277,7 +289,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                 m_isDisposed = true;
             }
         }
-        
+
         /// <summary>
         /// Disposes of the ChromeSession and frees all resources.
         ///</summary>
