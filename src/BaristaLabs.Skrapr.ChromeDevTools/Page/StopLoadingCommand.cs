@@ -1,0 +1,25 @@
+namespace BaristaLabs.Skrapr.ChromeDevTools.Page
+{
+    using Newtonsoft.Json;
+
+    /// <summary>
+    /// Force the page stop all navigations and pending resource fetches.
+    /// </summary>
+    public sealed class StopLoadingCommand : ICommand
+    {
+        private const string ChromeRemoteInterface_CommandName = "Page.stopLoading";
+        
+        [JsonIgnore]
+        public string CommandName
+        {
+            get { return ChromeRemoteInterface_CommandName; }
+        }
+
+    
+    }
+
+    public sealed class StopLoadingCommandResponse : ICommandResponse<StopLoadingCommand>
+    {
+    
+    }
+}
