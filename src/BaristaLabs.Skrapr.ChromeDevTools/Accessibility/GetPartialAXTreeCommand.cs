@@ -34,7 +34,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
         /// </summary>
         
         [JsonProperty("fetchRelatives")]
-        public bool FetchRelatives
+        public bool? FetchRelatives
         {
             get;
             set;

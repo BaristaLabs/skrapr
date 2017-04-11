@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// </summary>
         
         [JsonProperty("suspended")]
-        public bool Suspended
+        public bool? Suspended
         {
             get;
             set;

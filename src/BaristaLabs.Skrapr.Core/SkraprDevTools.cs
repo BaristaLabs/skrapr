@@ -16,10 +16,10 @@
     public class SkraprDevTools
     {
         private readonly ChromeSession m_session;
-        private Page.Frame m_currentFrame;
+        private string m_currentFrameId;
         private Runtime.ExecutionContextDescription m_currentFrameContext;
 
-        private readonly ManualResetEventSlim m_pageStoppedLoading;
+        private readonly ManualResetEventSlim m_pageStoppedLoading = new ManualResetEventSlim(false);
 
         private SkraprDevTools(ChromeSession session)
         {
@@ -39,7 +39,7 @@
         /// </summary>
         public bool IsLoading
         {
-            get { return m_pageStoppedLoading.IsSet; }
+            get { return !m_pageStoppedLoading.IsSet; }
         }
 
         /// <summary>
@@ -54,12 +54,13 @@
 
         public async Task Navigate(string url)
         {
+            m_pageStoppedLoading.Reset();
             var navigateResponse = await m_session.SendCommand<Page.NavigateCommand, Page.NavigateCommandResponse>(new Page.NavigateCommand
             {
                 Url = url
             });
 
-            Debug.Assert(navigateResponse.FrameId == m_currentFrame.Id);
+            m_currentFrameId = navigateResponse.FrameId;
         }
 
         /// <summary>
@@ -74,11 +75,17 @@
             return IsLoading;
         }
 
-        public async Task<JToken> EvaluateScript(string script)
+        /// <summary>
+        /// Evaluates the specified script expression on global object.
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="isPromise"></param>
+        /// <returns></returns>
+        public async Task<Runtime.RemoteObject> EvaluateScript(string script, bool isPromise = false)
         {
             var evaluateResponse = await m_session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
             {
-                AwaitPromise = true,
+                AwaitPromise = isPromise,
                 ContextId = m_currentFrameContext.Id,
                 Expression = script,
                 GeneratePreview = false,
@@ -89,7 +96,7 @@
                 UserGesture = true
             });
 
-            return evaluateResponse.Result.Value as JToken;
+            return evaluateResponse.Result;
         }
 
         private async Task Initialize()
@@ -99,40 +106,40 @@
             //Chrome Debug session, browsing to http://localhost:<port>/ in another
             //browser instance, and looking at the WS traffic in devtools.
 
-            Session.Subscribe<Page.FrameNavigatedEvent>(Process_FrameNavigatedEvent);
-            Session.Subscribe<Page.FrameStoppedLoadingEvent>(Process_FrameStoppedLoading);
+            Session.Subscribe<Page.FrameNavigatedEvent>(ProcessFrameNavigatedEvent);
+            Session.Subscribe<Page.FrameStoppedLoadingEvent>(ProcessFrameStoppedLoading);
 
-            Session.Subscribe<Runtime.ExecutionContextCreatedEvent>(Process_ExecutionContextCreated);
+            Session.Subscribe<Runtime.ExecutionContextCreatedEvent>(ProcessExecutionContextCreated);
 
             //TODO: Don't sequentially await these.
             await Session.SendCommand(new Page.EnableCommand());
             var resourceTree = await GetResourceTree();
-            m_currentFrame = resourceTree.Frame;
+            m_currentFrameId = resourceTree.Frame.Id;
             await Session.SendCommand(new Runtime.EnableCommand());
         }
 
-        private void Process_ExecutionContextCreated(Runtime.ExecutionContextCreatedEvent e)
+        private void ProcessExecutionContextCreated(Runtime.ExecutionContextCreatedEvent e)
         {
             var auxData = e.Context.AuxData as JObject;
             var frameId = auxData["frameId"].Value<string>();
 
-            if (m_currentFrame.Id == frameId)
+            if (m_currentFrameId == frameId)
             {
                 m_currentFrameContext = e.Context;
             }
         }
 
-        private void Process_FrameNavigatedEvent(Page.FrameNavigatedEvent e)
+        private void ProcessFrameNavigatedEvent(Page.FrameNavigatedEvent e)
         {
-            if (m_currentFrame.Id == e.Frame.Id)
+            if (m_currentFrameId == e.Frame.Id)
             {
                 m_pageStoppedLoading.Reset();
             }
         }
 
-        private void Process_FrameStoppedLoading(Page.FrameStoppedLoadingEvent e)
+        private void ProcessFrameStoppedLoading(Page.FrameStoppedLoadingEvent e)
         {
-            if (m_currentFrame.Id == e.FrameId)
+            if (m_currentFrameId == e.FrameId)
             {
                 m_pageStoppedLoading.Set();
             }

@@ -36,7 +36,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// <summary>
         /// Initiator line number, set for Parser type only (0-based).
         ///</summary>
-        public double LineNumber
+        public double? LineNumber
         {
             get;
             set;

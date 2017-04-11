@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
         /// Gets or sets the finished
         /// </summary>
         
-        public bool Finished
+        public bool? Finished
         {
             get;
             set;

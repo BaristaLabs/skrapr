@@ -55,7 +55,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// True if loading was canceled.
         /// </summary>
         
-        public bool Canceled
+        public bool? Canceled
         {
             get;
             set;

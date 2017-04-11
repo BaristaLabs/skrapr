@@ -63,7 +63,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// <summary>
         /// Child count for <code>Container</code> nodes.
         ///</summary>
-        public long ChildNodeCount
+        public long? ChildNodeCount
         {
             get;
             set;
@@ -243,7 +243,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// <summary>
         /// Whether the node is SVG.
         ///</summary>
-        public bool IsSVG
+        public bool? IsSVG
         {
             get;
             set;

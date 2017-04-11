@@ -1,13 +1,16 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Page
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Resource type as it was perceived by the rendering engine.
     /// </summary>
+    [JsonConverter(typeof(StringClassConverter))]
     public sealed class ResourceType
     {
         private string m_value;
-
-        private ResourceType(string value)
+        
+        public ResourceType(string value)
         {
             m_value = value;
         }
@@ -27,7 +30,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
             return m_value.GetHashCode();
         }
 
-
+    
         public static ResourceType Document = new ResourceType("Document");
     
         public static ResourceType Stylesheet = new ResourceType("Stylesheet");

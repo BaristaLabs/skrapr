@@ -34,7 +34,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// </summary>
         
         [JsonProperty("minRepeatCount")]
-        public long MinRepeatCount
+        public long? MinRepeatCount
         {
             get;
             set;
@@ -46,7 +46,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// </summary>
         
         [JsonProperty("minDuration")]
-        public double MinDuration
+        public double? MinDuration
         {
             get;
             set;

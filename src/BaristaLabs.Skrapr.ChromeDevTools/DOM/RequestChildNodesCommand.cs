@@ -34,7 +34,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// </summary>
         
         [JsonProperty("depth")]
-        public long Depth
+        public long? Depth
         {
             get;
             set;
@@ -46,7 +46,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// </summary>
         
         [JsonProperty("pierce")]
-        public bool Pierce
+        public bool? Pierce
         {
             get;
             set;

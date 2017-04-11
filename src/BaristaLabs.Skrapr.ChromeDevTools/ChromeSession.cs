@@ -27,7 +27,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         {
             if (String.IsNullOrWhiteSpace(endpointAddress))
                 throw new ArgumentNullException(nameof(endpointAddress));
-
+            
             CommandTimeout = 5000;
             m_endpointAddress = endpointAddress;
 
@@ -60,11 +60,12 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// </summary>
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
+        /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
         public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
         {
-            return await SendCommand<TCommand>(command, CancellationToken.None, throwExceptionIfResponseNotReceived);
+            return await SendCommand(command, CancellationToken.None, throwExceptionIfResponseNotReceived);
         }
 
         /// <summary>
@@ -73,6 +74,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
         public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, CancellationToken cancellationToken, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
@@ -81,7 +83,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                 throw new ArgumentNullException(nameof(command));
 
             var result = await SendCommandInternal(command, cancellationToken, throwExceptionIfResponseNotReceived);
-
+            
             if (result == null)
                 return null;
 
@@ -96,6 +98,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// </summary>
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
+        /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
         public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
@@ -111,6 +114,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <typeparam name="TCommandResponse"></typeparam>
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
         public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, CancellationToken cancellationToken, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
@@ -171,7 +175,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
 
                     return methodName;
                 });
-
+            
             var callbackWrapper = new Action<object>(obj => eventCallback((TEvent)obj));
             m_eventHandlers.AddOrUpdate(eventName,
                 (m) => new ConcurrentBag<Action<object>>(new[] { callbackWrapper }),
@@ -225,7 +229,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             if (messageObject.TryGetValue("id", out JToken idProperty) && idProperty.Value<long>() == m_currentCommandId)
             {
 
-                if (messageObject.TryGetValue("error", out JToken errorProperty))
+                if (messageObject.TryGetValue("error", out JToken errorProperty ))
                 {
                     var message = errorProperty.Value<string>("message");
                     var data = errorProperty.Value<string>("data");
@@ -289,7 +293,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                 m_isDisposed = true;
             }
         }
-
+        
         /// <summary>
         /// Disposes of the ChromeSession and frees all resources.
         ///</summary>

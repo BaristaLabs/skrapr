@@ -36,53 +36,22 @@
         }
 
         /// <summary>
-        /// Returns the version information of the chrome browser.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<ChromeVersion> GetChromeVersion()
-        {
-            ChromeVersion version;
-            using (var chromeDebuggerClient = GetDebuggerClient())
-            {
-                var chromeVersionResponseBody = await chromeDebuggerClient.GetStringAsync("/json/version");
-                version = JsonConvert.DeserializeObject<ChromeVersion>(chromeVersionResponseBody);
-            }
-
-            return version;
-        }
-
-        /// <summary>
         /// Returns a collection of sessions descriptions that are currently active on the chrome browser.
         /// </summary>
         /// <param name="chromeUrl"></param>
         /// <returns></returns>
-        public async Task<ICollection<ChromeSessionInfo>> GetChromeSessions()
+        public async Task<ICollection<ChromeSessionInfo>> GetSessions()
         {
-            using (var chromeDebuggerClient = GetDebuggerClient())
-            {
-                var sessions = await chromeDebuggerClient.GetStringAsync("/json");
-                return JsonConvert.DeserializeObject<ICollection<ChromeSessionInfo>>(sessions);
-            }
+            return await GetChromeSessions(m_chromeHost, m_chromeDebuggingPort);
         }
 
         /// <summary>
-        /// Returns a HttpClient that can be used to interact with the current Chrome Browser.
+        /// Returns the version information of the chrome browser.
         /// </summary>
         /// <returns></returns>
-        private HttpClient GetDebuggerClient()
+        public async Task<ChromeVersion> GetVersion()
         {
-            UriBuilder builder = new UriBuilder()
-            {
-                Host = m_chromeHost,
-                Port = m_chromeDebuggingPort
-            };
-
-            var chromeHttpClient = new HttpClient()
-            {
-                BaseAddress = builder.Uri
-            };
-
-            return chromeHttpClient;
+            return await GetChromeVersion(m_chromeHost, m_chromeDebuggingPort);
         }
 
         #region IDisposable Support
@@ -172,6 +141,56 @@
             }
 
             return new ChromeBrowser(chromeProcess, directoryInfo, host, remoteDebuggingPort);
+        }
+
+        /// <summary>
+        /// Returns a collection of sessions descriptions that are currently active on the chrome browser.
+        /// </summary>
+        /// <param name="chromeUrl"></param>
+        /// <returns></returns>
+        public static async Task<ICollection<ChromeSessionInfo>> GetChromeSessions(string host = "localhost", int remoteDebuggingPort = 9222)
+        {
+            using (var chromeDebuggerClient = GetDebuggerClient(host, remoteDebuggingPort))
+            {
+                var sessions = await chromeDebuggerClient.GetStringAsync("/json");
+                return JsonConvert.DeserializeObject<ICollection<ChromeSessionInfo>>(sessions);
+            }
+        }
+
+        /// <summary>
+        /// Returns the version information of the chrome browser.
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<ChromeVersion> GetChromeVersion(string host = "localhost", int remoteDebuggingPort = 9222)
+        {
+            ChromeVersion version;
+            using (var chromeDebuggerClient = GetDebuggerClient(host, remoteDebuggingPort))
+            {
+                var chromeVersionResponseBody = await chromeDebuggerClient.GetStringAsync("/json/version");
+                version = JsonConvert.DeserializeObject<ChromeVersion>(chromeVersionResponseBody);
+            }
+
+            return version;
+        }
+
+        /// <summary>
+        /// Returns a HttpClient that can be used to interact with a chrome browser at the specified uri.
+        /// </summary>
+        /// <returns></returns>
+        private static HttpClient GetDebuggerClient(string host = "localhost", int remoteDebuggingPort = 9222)
+        {
+            UriBuilder builder = new UriBuilder()
+            {
+                Host = host,
+                Port = remoteDebuggingPort
+            };
+
+            var chromeHttpClient = new HttpClient()
+            {
+                BaseAddress = builder.Uri
+            };
+
+            return chromeHttpClient;
         }
     }
 }

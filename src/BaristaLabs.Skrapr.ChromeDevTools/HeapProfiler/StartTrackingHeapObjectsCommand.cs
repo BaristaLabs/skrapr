@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
         /// </summary>
         
         [JsonProperty("trackAllocations")]
-        public bool TrackAllocations
+        public bool? TrackAllocations
         {
             get;
             set;

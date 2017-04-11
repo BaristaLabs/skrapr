@@ -27,7 +27,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// <summary>
         /// Whether the property has "!important" annotation (implies <code>false</code> if absent).
         ///</summary>
-        public bool Important
+        public bool? Important
         {
             get;
             set;

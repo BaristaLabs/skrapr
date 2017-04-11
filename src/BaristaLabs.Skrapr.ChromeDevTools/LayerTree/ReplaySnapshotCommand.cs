@@ -34,7 +34,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// </summary>
         
         [JsonProperty("fromStep")]
-        public long FromStep
+        public long? FromStep
         {
             get;
             set;
@@ -46,7 +46,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// </summary>
         
         [JsonProperty("toStep")]
-        public long ToStep
+        public long? ToStep
         {
             get;
             set;
@@ -58,7 +58,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// </summary>
         
         [JsonProperty("scale")]
-        public double Scale
+        public double? Scale
         {
             get;
             set;

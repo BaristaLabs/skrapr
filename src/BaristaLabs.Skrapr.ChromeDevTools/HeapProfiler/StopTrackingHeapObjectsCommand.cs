@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
         /// </summary>
         
         [JsonProperty("reportProgress")]
-        public bool ReportProgress
+        public bool? ReportProgress
         {
             get;
             set;

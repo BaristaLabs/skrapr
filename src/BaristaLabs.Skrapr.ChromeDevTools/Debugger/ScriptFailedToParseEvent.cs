@@ -121,7 +121,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// True, if this script has sourceURL.
         /// </summary>
         
-        public bool HasSourceURL
+        public bool? HasSourceURL
         {
             get;
             set;

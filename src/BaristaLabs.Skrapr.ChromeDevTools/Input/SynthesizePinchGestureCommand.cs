@@ -58,7 +58,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Input
         /// </summary>
         
         [JsonProperty("relativeSpeed")]
-        public long RelativeSpeed
+        public long? RelativeSpeed
         {
             get;
             set;

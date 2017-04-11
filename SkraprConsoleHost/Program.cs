@@ -13,6 +13,10 @@
 
     class Program
     {
+        //Launch chrome with
+        //"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223
+        //Consider using PM2 to launch both chrome and SkraprCLI (is there a .net equiv?)
+
         static void Main(string[] args)
         {
             var cliArguments = Cli.Parse<CliArguments>(args);
@@ -32,32 +36,33 @@
             //Setup Hangfire
             GlobalConfiguration.Configuration.UseStorage(new MemoryStorage());
 
-            Console.WriteLine("Launching Chrome Browser...");
-            using (var chromeBrowser = ChromeBrowser.Launch())
-            {
-                var sessions = chromeBrowser.GetChromeSessions().GetAwaiter().GetResult();
-                var devTools = SkraprDevTools.Connect(sessions.First(s => s.Type == "page")).GetAwaiter().GetResult();
-                devTools.Navigate("http://www.toririchard.com").GetAwaiter().GetResult();
-                devTools.WaitForPageToStopLoading().GetAwaiter().GetResult();
+            Console.WriteLine("Connecting to a Chrome session...");
 
-                var currentUrl = devTools.EvaluateScript("window.location.toString()").GetAwaiter().GetResult();
-                Console.WriteLine(currentUrl);
+            var sessions = ChromeBrowser.GetChromeSessions(cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort).GetAwaiter().GetResult();
+            var devTools = SkraprDevTools.Connect(sessions.First(s => s.Type == "page")).GetAwaiter().GetResult();
 
-                //using (new BackgroundJobServer())
-                //{
-                //    Console.WriteLine("Skrapr started. Press ENTER to exit...");
+            Console.WriteLine("Performing tasks...");
+            devTools.Navigate("http://www.toririchard.com").GetAwaiter().GetResult();
+            devTools.WaitForPageToStopLoading().GetAwaiter().GetResult();
 
-                //    Console.WriteLine("Executing initial Skrape...");
-                //    var definitionJobId = BackgroundJob.Enqueue(() => Console.WriteLine("Foo"));
+            var currentUrl = devTools.EvaluateScript("window.location.toString()").GetAwaiter().GetResult();
+            Console.WriteLine(currentUrl.Value);
 
-                    
-                //    //If the definition specifies a recurrence, specify the continue with it here
-                //    //BackgroundJob.ContinueWith(definitionJobId, () => )
-                //    RecurringJob.AddOrUpdate("1", () => Console.WriteLine("Foo"), () => "* * * * *");
+            //using (new BackgroundJobServer())
+            //{
+            //    Console.WriteLine("Skrapr started. Press ENTER to exit...");
 
-                //    Console.ReadLine();
-                //}
-            }
+            //    Console.WriteLine("Executing initial Skrape...");
+            //    var definitionJobId = BackgroundJob.Enqueue(() => Console.WriteLine("Foo"));
+
+
+            //    //If the definition specifies a recurrence, specify the continue with it here
+            //    //BackgroundJob.ContinueWith(definitionJobId, () => )
+            //    RecurringJob.AddOrUpdate("1", () => Console.WriteLine("Foo"), () => "* * * * *");
+
+            //    Console.ReadLine();
+            //}
+            Console.ReadLine();
         }
     }
 }

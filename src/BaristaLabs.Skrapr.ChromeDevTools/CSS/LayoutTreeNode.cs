@@ -45,7 +45,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// <summary>
         /// Index into the computedStyles array returned by getLayoutTreeAndStyles.
         ///</summary>
-        public long StyleIndex
+        public long? StyleIndex
         {
             get;
             set;

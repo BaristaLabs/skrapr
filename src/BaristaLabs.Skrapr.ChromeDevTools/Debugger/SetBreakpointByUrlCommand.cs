@@ -58,7 +58,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// </summary>
         
         [JsonProperty("columnNumber")]
-        public long ColumnNumber
+        public long? ColumnNumber
         {
             get;
             set;

@@ -34,7 +34,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// </summary>
         
         [JsonProperty("includeUserAgentShadowDOM")]
-        public bool IncludeUserAgentShadowDOM
+        public bool? IncludeUserAgentShadowDOM
         {
             get;
             set;

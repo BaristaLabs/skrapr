@@ -110,7 +110,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// True, if this script is generated as a result of the live edit operation.
         /// </summary>
         
-        public bool IsLiveEdit
+        public bool? IsLiveEdit
         {
             get;
             set;
@@ -132,7 +132,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// True, if this script has sourceURL.
         /// </summary>
         
-        public bool HasSourceURL
+        public bool? HasSourceURL
         {
             get;
             set;
