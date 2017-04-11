@@ -39,7 +39,9 @@
             Console.WriteLine("Connecting to a Chrome session...");
 
             var sessions = ChromeBrowser.GetChromeSessions(cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort).GetAwaiter().GetResult();
-            var devTools = SkraprDevTools.Connect(sessions.First(s => s.Type == "page")).GetAwaiter().GetResult();
+            var session = sessions.First(s => s.Type == "page");
+            var devTools = SkraprDevTools.Connect(session).GetAwaiter().GetResult();
+            Console.WriteLine($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
 
             Console.WriteLine("Performing tasks...");
             devTools.Navigate("http://www.toririchard.com").GetAwaiter().GetResult();
@@ -62,6 +64,8 @@
 
             //    Console.ReadLine();
             //}
+
+            Console.WriteLine("All Done!");
             Console.ReadLine();
         }
     }
