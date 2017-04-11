@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SkraprConsoleHost": {
+      "commandName": "Project",
+      "commandLineArgs": "\"skraprdefinitions\\\\sample.json\""
+    }
+  }
+}

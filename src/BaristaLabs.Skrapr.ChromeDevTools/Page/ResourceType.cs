@@ -17,7 +17,17 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
             return m_value;
         }
 
-    
+        public override bool Equals(object obj)
+        {
+            return m_value.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return m_value.GetHashCode();
+        }
+
+
         public static ResourceType Document = new ResourceType("Document");
     
         public static ResourceType Stylesheet = new ResourceType("Stylesheet");

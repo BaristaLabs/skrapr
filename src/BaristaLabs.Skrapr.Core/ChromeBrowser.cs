@@ -52,7 +52,7 @@
         }
 
         /// <summary>
-        /// Returns a collection of sessions that are currently active on the chrome browser.
+        /// Returns a collection of sessions descriptions that are currently active on the chrome browser.
         /// </summary>
         /// <param name="chromeUrl"></param>
         /// <returns></returns>
@@ -145,7 +145,7 @@
         /// </summary>
         /// <param name="remoteDebuggingPort"></param>
         /// <returns></returns>
-        public static ChromeBrowser LaunchChromeBrowser(string host = "localhost", int remoteDebuggingPort = 9222)
+        public static ChromeBrowser Launch(string host = "localhost", int remoteDebuggingPort = 9222)
         {
             string path = Path.GetRandomFileName();
             var directoryInfo = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), path));
