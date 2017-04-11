@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\BaristaLabs.Skrapr.ChromeDevTools\BaristaLabs.Skrapr.ChromeDevTools.csproj" />
-    <ProjectReference Include="..\src\BaristaLabs.Skrapr.Core\BaristaLabs.Skrapr.Core.csproj" />
+    <ProjectReference Include="..\BaristaLabs.Skrapr.ChromeDevTools\BaristaLabs.Skrapr.ChromeDevTools.csproj" />
+    <ProjectReference Include="..\BaristaLabs.Skrapr.Core\BaristaLabs.Skrapr.Core.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{75E99B21-2A8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkraprWebHost", "src\SkraprWebHost\SkraprWebHost.csproj", "{CEDF0415-277E-407A-B106-7726E942CD78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkraprConsoleHost", "SkraprConsoleHost\SkraprConsoleHost.csproj", "{D56B4061-8A87-4BFF-A399-FE3A4F2AA749}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkraprConsoleHost", "src\SkraprConsoleHost\SkraprConsoleHost.csproj", "{D56B4061-8A87-4BFF-A399-FE3A4F2AA749}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
