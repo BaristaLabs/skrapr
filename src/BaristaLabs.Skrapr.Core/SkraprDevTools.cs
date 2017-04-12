@@ -3,10 +3,11 @@
     using BaristaLabs.Skrapr.ChromeDevTools;
     using Newtonsoft.Json.Linq;
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Dom = ChromeDevTools.DOM;
+    using Input = ChromeDevTools.Input;
     using Page = ChromeDevTools.Page;
     using Runtime = ChromeDevTools.Runtime;
 
@@ -69,10 +70,56 @@
         /// <returns></returns>
         public async Task<bool> WaitForPageToStopLoading(int millisecondsTimeout = 15000)
         {
-            if (IsLoading)
-                await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+            if (!IsLoading)
+                m_pageStoppedLoading.Reset();
+                
+            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;
+        }
+
+        /// <summary>
+        /// Gets the root document node of the current page of the session.
+        /// </summary>
+        /// <returns>A Dom.Node representing the document.</returns>
+        public async Task<Dom.Node> GetDocument(long? depth = null, bool? pierce = null)
+        {
+            var response = await m_session.SendCommand<Dom.GetDocumentCommand, Dom.GetDocumentCommandResponse>(new Dom.GetDocumentCommand
+            {
+                Depth = depth,
+                Pierce = pierce
+            });
+            return response.Root;
+        }
+
+        public async Task<bool> ClickDomElement(string selector)
+        {
+            var documentNode = await GetDocument(1, false);
+            var response = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
+            {
+                NodeId = documentNode.NodeId,
+                Selector = selector
+            });
+
+            if (response.NodeId <= 0)
+                return false;
+
+            await m_session.SendCommand(new Dom.RequestChildNodesCommand
+            {
+                NodeId = response.NodeId,
+                Depth = 1,
+                Pierce = false
+            });
+
+
+            await m_session.SendCommand(new Input.DispatchMouseEventCommand
+            {
+                Button = "left",
+                Type = "down",
+
+            });
+
+            return true;
         }
 
         /// <summary>
@@ -110,12 +157,14 @@
             Session.Subscribe<Page.FrameStoppedLoadingEvent>(ProcessFrameStoppedLoading);
 
             Session.Subscribe<Runtime.ExecutionContextCreatedEvent>(ProcessExecutionContextCreated);
+            Session.Subscribe<Dom.SetChildNodesEvent>(ProcessSetChildNodesEvent);
 
             //TODO: Don't sequentially await these.
             await Session.SendCommand(new Page.EnableCommand());
             var resourceTree = await GetResourceTree();
             m_currentFrameId = resourceTree.Frame.Id;
             await Session.SendCommand(new Runtime.EnableCommand());
+            await Session.SendCommand(new Dom.EnableCommand());
         }
 
         private void ProcessExecutionContextCreated(Runtime.ExecutionContextCreatedEvent e)
@@ -143,6 +192,11 @@
             {
                 m_pageStoppedLoading.Set();
             }
+        }
+
+        private void ProcessSetChildNodesEvent(Dom.SetChildNodesEvent e)
+        {
+            
         }
 
         public static async Task<SkraprDevTools> Connect(ChromeSessionInfo sessionInfo)

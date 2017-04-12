@@ -50,6 +50,9 @@
             var currentUrl = devTools.EvaluateScript("window.location.toString()").GetAwaiter().GetResult();
             Console.WriteLine(currentUrl.Value);
 
+            devTools.ClickDomElement(".site-header a").GetAwaiter().GetResult();
+            devTools.WaitForPageToStopLoading().GetAwaiter().GetResult();
+
             //using (new BackgroundJobServer())
             //{
             //    Console.WriteLine("Skrapr started. Press ENTER to exit...");
