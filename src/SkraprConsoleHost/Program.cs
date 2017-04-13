@@ -2,10 +2,9 @@
 {
     using BaristaLabs.Skrapr;
     using EntryPoint;
-    using Hangfire;
-    using Hangfire.MemoryStorage;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Serilog;
     using System;
     using System.IO;
     using System.Linq;
@@ -29,14 +28,32 @@
                 .AddLogging()
                 .BuildServiceProvider();
 
-            Console.WriteLine("Connecting to a Chrome session...");
+            //Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .WriteTo.ColoredConsole()
+                .CreateLogger();
+
+            //Configure the logger.
+            var logger = serviceProvider
+                .GetService<ILoggerFactory>()
+                .AddSerilog()
+                .CreateLogger<Program>();
+
+            logger.LogDebug($"Connecting to a Chrome session on {cliArguments.RemoteDebuggingHost}:{cliArguments.RemoteDebuggingPort}...");
 
             var sessions = ChromeBrowser.GetChromeSessions(cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort).GetAwaiter().GetResult();
-            var session = sessions.First(s => s.Type == "page");
-            var devTools = SkraprDevTools.Connect(session).GetAwaiter().GetResult();
-            Console.WriteLine($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
+            var session = sessions.FirstOrDefault(s => s.Type == "page" && !String.IsNullOrWhiteSpace(s.WebSocketDebuggerUrl));
 
-            var processor = SkraprDefinitionProcessor.Create(cliArguments.SkraprDefinitionPath, devTools);
+            //TODO: Create a new session if one doesn't exist.
+            if (session == null)
+                throw new InvalidOperationException("Unable to locate a suitable session -- ensure that the Developer Tools window is closed on an existing session.");
+
+            var devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
+            logger.LogDebug($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
+
+            var processor = SkraprDefinitionProcessor.Create(cliArguments.SkraprDefinitionPath, devTools.Session, devTools);
             processor.Begin();
 
             //Setup Hangfire
@@ -52,7 +69,7 @@
             //    Console.ReadKey();
             //}
 
-            Console.WriteLine("All Done!");
+            logger.LogDebug("All Done!");
             Console.ReadLine();
         }
     }

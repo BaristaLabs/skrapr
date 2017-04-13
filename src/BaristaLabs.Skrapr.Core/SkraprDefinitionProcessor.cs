@@ -1,5 +1,6 @@
 ﻿namespace BaristaLabs.Skrapr
 {
+    using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Definitions;
     using Newtonsoft.Json;
     using System;
@@ -17,14 +18,16 @@
     {
         private readonly BlockingCollection<string> m_queue;
 
-        private SkraprDefinition m_definition;
-        private SkraprDevTools m_devTools;
+        private readonly SkraprDefinition m_definition;
+        private readonly SkraprDevTools m_devTools;
+        private readonly ChromeSession m_session;
 
-        public SkraprDefinitionProcessor(SkraprDefinition definition, SkraprDevTools devTools)
+        public SkraprDefinitionProcessor(SkraprDefinition definition, ChromeSession session, SkraprDevTools devTools)
         {
             m_queue = new BlockingCollection<string>();
 
             m_devTools = devTools ?? throw new ArgumentNullException(nameof(devTools));
+            m_session = session;
             m_definition = definition;
         }
 
@@ -36,6 +39,11 @@
         public SkraprDevTools DevTools
         {
             get { return m_devTools; }
+        }
+
+        public ChromeSession Session
+        {
+            get { return m_session; }
         }
 
         /// <summary>
@@ -87,7 +95,8 @@
 
             var context = new SkraprContext
             {
-                DevTools = DevTools
+                DevTools = DevTools,
+                Session = Session
             };
 
             foreach(var task in rule.Tasks)
@@ -96,7 +105,7 @@
             }
         }
 
-        public static SkraprDefinitionProcessor Create(string pathToSkraprDefinition, SkraprDevTools devTools)
+        public static SkraprDefinitionProcessor Create(string pathToSkraprDefinition, ChromeSession session, SkraprDevTools devTools)
         {
             if (!File.Exists(pathToSkraprDefinition))
                 throw new FileNotFoundException($"The specified skrapr definition ({pathToSkraprDefinition}) could not be found. Please check that the skrapr definition exists.");
@@ -104,7 +113,7 @@
             var skraprDefinitionJson = File.ReadAllText(pathToSkraprDefinition);
 
             var skraprDefinition = JsonConvert.DeserializeObject<SkraprDefinition>(skraprDefinitionJson);
-            return new SkraprDefinitionProcessor(skraprDefinition, devTools);
+            return new SkraprDefinitionProcessor(skraprDefinition, session, devTools);
         }
     }
 }

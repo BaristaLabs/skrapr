@@ -1,14 +1,12 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
-    using System;
     using System.Threading.Tasks;
 
     public class ClickDomElementTask : ITask
     {
         public string Name
         {
-            get;
-            set;
+            get { return "ClickDomElement"; }
         }
 
         public string Selector

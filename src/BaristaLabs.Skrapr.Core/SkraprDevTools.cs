@@ -1,11 +1,15 @@
 ﻿namespace BaristaLabs.Skrapr
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Css = ChromeDevTools.CSS;
     using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
     using Page = ChromeDevTools.Page;
@@ -21,6 +25,8 @@
         private Runtime.ExecutionContextDescription m_currentFrameContext;
 
         private readonly ManualResetEventSlim m_pageStoppedLoading = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
+        private long? m_targetChildNodeId = null;
 
         private SkraprDevTools(ChromeSession session)
         {
@@ -53,6 +59,12 @@
             return getFramesResponse.FrameTree;
         }
 
+        /// <summary>
+        /// Instructs the current session to navigate to the specified Url.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="forceNavigate"></param>
+        /// <returns></returns>
         public async Task Navigate(string url, bool forceNavigate = false)
         {
             if (!forceNavigate)
@@ -69,6 +81,26 @@
             });
 
             m_currentFrameId = navigateResponse.FrameId;
+        }
+
+        public async Task<bool> GetChildNodeData(long nodeId, long depth = 1, bool pierce = false)
+        {
+            //If we're already waiting, throw.
+            if (m_targetChildNodeId != null)
+                throw new InvalidOperationException("Already waiting for child node data.");
+
+            m_targetChildNodeId = nodeId;
+
+            m_childNodeEvent.Reset();
+            await m_session.SendCommand(new Dom.RequestChildNodesCommand
+            {
+                NodeId = nodeId,
+                Depth = depth,
+                Pierce = pierce
+            });
+            await Task.Run(() => m_childNodeEvent.Wait());
+            m_targetChildNodeId = null;
+            return false;
         }
 
         /// <summary>
@@ -101,7 +133,7 @@
         /// Gets the root document node of the current page of the session.
         /// </summary>
         /// <returns>A Dom.Node representing the document.</returns>
-        public async Task<Dom.Node> GetDocument(long? depth = null, bool? pierce = null)
+        public async Task<Dom.Node> GetDocument(long depth = 1, bool pierce = false)
         {
             var response = await m_session.SendCommand<Dom.GetDocumentCommand, Dom.GetDocumentCommandResponse>(new Dom.GetDocumentCommand
             {
@@ -111,31 +143,42 @@
             return response.Root;
         }
 
-        public async Task<bool> ClickDomElement(string selector)
+        public async Task<Css.LayoutTreeNode> GetLayoutTreeNodeForDomElement(string cssSelector)
         {
-            var documentNode = await GetDocument(1, false);
-            var response = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
+            var document = await GetDocument();
+            var domElement = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
             {
-                NodeId = documentNode.NodeId,
-                Selector = selector
+                NodeId = document.NodeId, //Document node id is probably most likely always 1.
+                Selector = cssSelector
             });
 
-            if (response.NodeId <= 0)
+            if (domElement.NodeId <= 0)
+                return null;
+
+            var elementCssComputedStyle = await m_session.SendCommand<Css.GetLayoutTreeAndStylesCommand, Css.GetLayoutTreeAndStylesCommandResponse>(new Css.GetLayoutTreeAndStylesCommand
+            {
+                ComputedStyleWhitelist = new string[0]
+            });
+
+            return elementCssComputedStyle.LayoutTreeNodes.FirstOrDefault(e => e.NodeId == domElement.NodeId);
+        }
+
+        public async Task<bool> ClickDomElement(string cssSelector)
+        {
+            var layoutTreeNode = await GetLayoutTreeNodeForDomElement(cssSelector);
+
+            if (layoutTreeNode == null)
                 return false;
-
-            await m_session.SendCommand(new Dom.RequestChildNodesCommand
-            {
-                NodeId = response.NodeId,
-                Depth = 1,
-                Pierce = false
-            });
-
 
             await m_session.SendCommand(new Input.DispatchMouseEventCommand
             {
                 Button = "left",
-                Type = "down",
-
+                Type = "mousePressed",
+                ClickCount = 1,
+                Modifiers = 0,
+                X = (long)layoutTreeNode.BoundingBox.X,
+                Y = (long)layoutTreeNode.BoundingBox.Y,
+                Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
             });
 
             return true;
@@ -215,16 +258,25 @@
 
         private void ProcessSetChildNodesEvent(Dom.SetChildNodesEvent e)
         {
-            
+            if (m_targetChildNodeId != null)
+            {
+            }
         }
 
-        public static async Task<SkraprDevTools> Connect(ChromeSessionInfo sessionInfo)
+        public static async Task<SkraprDevTools> Connect(IServiceProvider serviceProvider, ChromeSessionInfo sessionInfo)
         {
+            if (serviceProvider == null)
+                throw new ArgumentNullException(nameof(serviceProvider));
+
             if (sessionInfo == null)
                 throw new ArgumentNullException(nameof(sessionInfo));
 
+            var logger = serviceProvider
+                .GetService<ILoggerFactory>()
+                .CreateLogger<ChromeSession>();
+
             //Create a new session using the information in the session info.
-            var session = new ChromeSession(sessionInfo.WebSocketDebuggerUrl);
+            var session = new ChromeSession(logger, sessionInfo.WebSocketDebuggerUrl);
             var devTools = new SkraprDevTools(session);
             await devTools.Initialize();
 

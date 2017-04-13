@@ -4,10 +4,42 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
 
     public class TaskConverter : JsonConverter
     {
+        public static Lazy<IDictionary<string, Type>> s_taskTypes = new Lazy<IDictionary<string, Type>>(() =>
+       {
+           var taskTypeDictionary = new Dictionary<string, Type>();
+           var taskInterfaceType = typeof(ITask);
+           var types = typeof(TaskConverter).GetTypeInfo().Assembly
+               .GetTypes()
+               .Select(t => t.GetTypeInfo())
+               .Where(ti => ti.IsClass && !ti.IsAbstract && ti.ImplementedInterfaces.Any(ii => ii == taskInterfaceType));
+
+           foreach (var t in types)
+           {
+               var taskInstance = (ITask)Activator.CreateInstance(t.AsType());
+               if (String.IsNullOrWhiteSpace(taskInstance.Name))
+                   throw new InvalidOperationException($"The type {t} does not specify a name.");
+
+               if (taskTypeDictionary.ContainsKey(taskInstance.Name))
+                   throw new InvalidOperationException($"The name for {t} has already been specified by {taskTypeDictionary[taskInstance.Name]}");
+               
+               taskTypeDictionary.Add(taskInstance.Name, t.AsType());
+           }
+
+           return taskTypeDictionary;
+       });
+
+        static TaskConverter()
+        {
+            
+        }
+
+        
         public override bool CanConvert(Type objectType)
         {
             return typeof(ITask).IsAssignableFrom(objectType);
@@ -18,18 +50,12 @@
             JObject task = JObject.Load(reader);
             object target = null;
 
-            switch (task["name"].Value<String>())
-            {
-                case "Navigate":
-                    target = new NavigateTask();
-                    break;
-                case "ClickDomElement":
-                    target = new ClickDomElementTask();
-                    break;
-                default:
-                    throw new ArgumentException($"Invalid task type: { task["name"] }");
-            }
-
+            var taskName = task["name"].Value<String>();
+            if (s_taskTypes.Value.ContainsKey(taskName))
+                target = Activator.CreateInstance(s_taskTypes.Value[taskName]);
+            else
+                throw new ArgumentException($"Invalid task type: { taskName }");
+            
             serializer.Populate(task.CreateReader(), target);
 
             return target;
