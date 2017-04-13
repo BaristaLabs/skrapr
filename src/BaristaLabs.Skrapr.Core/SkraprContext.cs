@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BaristaLabs.Skrapr
+﻿namespace BaristaLabs.Skrapr
 {
-    class SkraprContext
+    public class SkraprContext
     {
+        public SkraprDevTools DevTools
+        {
+            get;
+            set;
+        }
     }
 }

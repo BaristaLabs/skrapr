@@ -1,17 +1,19 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
     using Newtonsoft.Json;
-    using System.ComponentModel;
+    using System;
+    using System.Threading.Tasks;
+
+    using Network = ChromeDevTools.Network;
 
     public class NavigateTask : ITask
     {
-        public string TaskName
+        public string Name
         {
             get { return "Navigate"; }
         }
 
         [JsonProperty("userAgent")]
-        [DefaultValue("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.102 Safari/537.36")]
         public string UserAgent
         {
             get;
@@ -23,6 +25,21 @@
         {
             get;
             set;
+        }
+
+        public async Task PerformTask(SkraprContext context)
+        {
+            //If a useragent is specified, override the default user agent
+            if (!String.IsNullOrWhiteSpace(UserAgent))
+            {
+                await context.DevTools.Session.SendCommand(new Network.SetUserAgentOverrideCommand
+                {
+                    UserAgent = UserAgent
+                });
+            }
+
+            Console.WriteLine($"Navigating to {Url}");
+            await context.DevTools.Navigate(Url);
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
-    using Newtonsoft.Json;
+    using System.Threading.Tasks;
 
     public interface ITask
     {
-        string TaskName
+        string Name
         {
             get;
         }
 
-
+        Task PerformTask(SkraprContext context);
     }
 }

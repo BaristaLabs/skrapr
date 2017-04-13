@@ -18,13 +18,16 @@
             JObject task = JObject.Load(reader);
             object target = null;
 
-            switch (task["Name"].Value<String>())
+            switch (task["name"].Value<String>())
             {
                 case "Navigate":
                     target = new NavigateTask();
                     break;
+                case "ClickDomElement":
+                    target = new ClickDomElementTask();
+                    break;
                 default:
-                    throw new ArgumentException("Invalid task type");
+                    throw new ArgumentException($"Invalid task type: { task["name"] }");
             }
 
             serializer.Populate(task.CreateReader(), target);
@@ -34,7 +37,9 @@
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            //Serialize normally.
+            var t = JToken.FromObject(value);
+            t.WriteTo(writer);
         }
     }
 }

@@ -1,0 +1,28 @@
+﻿{
+  "name": "Tori Richard Shirts",
+  "startUrls": [
+    "http://www.toririchard.com"
+  ],
+  "rules": [
+    {
+      "urlPattern": "^http://www.toririchard.com$",
+      "tasks": [
+        {
+          "name": "ClickDomElement",
+          "selector": ".site-nav ul:nth-child(2n) a"
+        }
+      ]
+    },
+    {
+      "urlPattern": "^http://www.toririchard.com/mens-shirts$",
+      "tasks": [
+      ]
+    }
+  ],
+  "schedules": [
+    {
+      "type": "cron",
+      "expression": "5 * * * *"
+    }
+  ]
+}

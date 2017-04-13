@@ -30,6 +30,19 @@
             set;
         }
 
+        /// <summary>
+        /// Gets or sets a collection of urls that will be prevented from loading by the browser.
+        /// </summary>
+        /// <remarks>
+        /// Use this to prevent tracking or heavy resources from loading.
+        /// </remarks>
+        [JsonProperty("blockedUrls")]
+        public ICollection<string> BlockedUrls
+        {
+            get;
+            set;
+        }
+
         // <summary>
         /// Gets or sets a collection of urls that will be used as the start point for skraping.
         /// </summary>

@@ -53,8 +53,15 @@
             return getFramesResponse.FrameTree;
         }
 
-        public async Task Navigate(string url)
+        public async Task Navigate(string url, bool forceNavigate = false)
         {
+            if (!forceNavigate)
+            {
+                var tree = await GetResourceTree();
+                if (tree.Frame.Url == url)
+                    return;
+            }
+
             m_pageStoppedLoading.Reset();
             var navigateResponse = await m_session.SendCommand<Page.NavigateCommand, Page.NavigateCommandResponse>(new Page.NavigateCommand
             {
@@ -65,14 +72,26 @@
         }
 
         /// <summary>
-        /// Waits until the next page stopped loading event
+        /// Waits until the current navigation to stop loading.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> WaitForPageToStopLoading(int millisecondsTimeout = 15000)
+        public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
+        {
+            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+
+            return IsLoading;
+        }
+
+        /// <summary>
+        /// Waits for the next navigation to stop loading.
+        /// </summary>
+        /// <param name="millisecondsTimeout"></param>
+        /// <returns></returns>
+        public async Task<bool> WaitForNextNavigation(int millisecondsTimeout = 15000)
         {
             if (!IsLoading)
                 m_pageStoppedLoading.Reset();
-                
+
             await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;

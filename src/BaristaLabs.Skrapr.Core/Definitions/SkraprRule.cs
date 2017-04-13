@@ -1,5 +1,6 @@
 ﻿namespace BaristaLabs.Skrapr.Definitions
 {
+    using BaristaLabs.Skrapr.Converters;
     using BaristaLabs.Skrapr.Tasks;
     using Newtonsoft.Json;
     using System.Collections.Generic;
@@ -11,7 +12,7 @@
         /// Gets or sets the url pattern to use. This is a regular expression.
         /// </summary>
         [JsonProperty("urlPattern")]
-        public string Url
+        public string UrlPattern
         {
             get;
             set;
@@ -28,7 +29,7 @@
             set;
         }
 
-        [JsonProperty("tasks")]
+        [JsonProperty("tasks", ItemConverterType = typeof(TaskConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ICollection<ITask> Tasks
         {
             get;

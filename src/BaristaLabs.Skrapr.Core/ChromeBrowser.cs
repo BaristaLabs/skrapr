@@ -156,6 +156,9 @@
                 return JsonConvert.DeserializeObject<ICollection<ChromeSessionInfo>>(sessions);
             }
         }
+        //TODO: Additional commands
+        // new: /json/new
+        // close: /json/close/95648007-927f-4bb5-a7b7-d48522330fb6
 
         /// <summary>
         /// Returns the version information of the chrome browser.
