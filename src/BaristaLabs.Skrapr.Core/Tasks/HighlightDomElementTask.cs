@@ -28,10 +28,15 @@
             if (layoutTreeNode == null)
                 return;
 
+            await context.Session.SendCommand(new Dom.HideHighlightCommand());
+            await context.Session.SendCommand(new Dom.SetInspectedNodeCommand
+            {
+                NodeId = layoutTreeNode.NodeId
+            });
+
             var response = await context.Session.SendCommand<Dom.HighlightNodeCommand, Dom.HighlightNodeCommandResponse>(new Dom.HighlightNodeCommand
             {
                 NodeId = layoutTreeNode.NodeId,
-                ObjectId = null,
                 HighlightConfig = HighlightConfig
             });
         }

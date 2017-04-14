@@ -130,7 +130,7 @@
         }
 
         /// <summary>
-        /// Gets the root document node of the current page of the session.
+        /// Returns the root document node of the current page of the session.
         /// </summary>
         /// <returns>A Dom.Node representing the document.</returns>
         public async Task<Dom.Node> GetDocument(long depth = 1, bool pierce = false)
@@ -141,6 +141,23 @@
                 Pierce = pierce
             });
             return response.Root;
+        }
+
+        /// <summary>
+        /// Returns the node id for the given css selector. Value will be less than 1 if selector does not correspond to a dom element.
+        /// </summary>
+        /// <param name="cssSelector"></param>
+        /// <returns></returns>
+        public async Task<long> GetNodeForSelector(string cssSelector)
+        {
+            var document = await GetDocument();
+            var domElement = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
+            {
+                NodeId = document.NodeId, //Document node id is probably most likely always 1.
+                Selector = cssSelector
+            });
+
+            return domElement.NodeId;
         }
 
         public async Task<Css.LayoutTreeNode> GetLayoutTreeNodeForDomElement(string cssSelector)

@@ -26,7 +26,7 @@
                    throw new InvalidOperationException($"The type {t} does not specify a name.");
 
                if (taskTypeDictionary.ContainsKey(taskInstance.Name))
-                   throw new InvalidOperationException($"The name for {t} has already been specified by {taskTypeDictionary[taskInstance.Name]}");
+                   throw new InvalidOperationException($"The task name {taskInstance.Name} on {t} has already been specified by {taskTypeDictionary[taskInstance.Name]}");
                
                taskTypeDictionary.Add(taskInstance.Name, t.AsType());
            }

@@ -59,15 +59,6 @@
 
             //Start processing of the queue.
             ProcessQueue();
-            /*
-            DevTools.Navigate(m_definition.StartUrls.First()).GetAwaiter().GetResult();
-            DevTools.WaitForCurrentNavigation().GetAwaiter().GetResult();
-
-            var currentUrl = DevTools.EvaluateScript("window.location.toString()").GetAwaiter().GetResult();
-            Console.WriteLine(currentUrl.Value);
-
-            DevTools.ClickDomElement(".site-header a").GetAwaiter().GetResult();
-            DevTools.WaitForNextNavigation().GetAwaiter().GetResult();*/
         }
 
         private void ProcessQueue()
