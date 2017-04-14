@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Issued when object should be inspected (for example, as a result of inspect() command line API call).
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
         /// Gets or sets the object
         /// </summary>
         
+        [JsonProperty("object")]
         public RemoteObject Object
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
         /// Gets or sets the hints
         /// </summary>
         
+        [JsonProperty("hints")]
         public object Hints
         {
             get;

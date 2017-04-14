@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Called when a pseudo element is added to an element.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Pseudo element's parent element id.
         /// </summary>
         
+        [JsonProperty("parentId")]
         public long ParentId
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// The added pseudo element.
         /// </summary>
         
+        [JsonProperty("pseudoElement")]
         public Node PseudoElement
         {
             get;

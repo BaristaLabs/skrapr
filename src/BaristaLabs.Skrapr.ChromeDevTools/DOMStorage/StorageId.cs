@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.DOMStorage
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// DOM Storage identifier.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOMStorage
         /// <summary>
         /// Security origin for the storage.
         ///</summary>
+        [JsonProperty("securityOrigin")]
         public string SecurityOrigin
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOMStorage
         /// <summary>
         /// Whether the storage is local storage (not session storage).
         ///</summary>
+        [JsonProperty("isLocalStorage")]
         public bool IsLocalStorage
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// CSS keyframes rule representation.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// <summary>
         /// Animation name.
         ///</summary>
+        [JsonProperty("animationName")]
         public Value AnimationName
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// <summary>
         /// List of keyframes.
         ///</summary>
+        [JsonProperty("keyframes")]
         public CSSKeyframeRule[] Keyframes
         {
             get;

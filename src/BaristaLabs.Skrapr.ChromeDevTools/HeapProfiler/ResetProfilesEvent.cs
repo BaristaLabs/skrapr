@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>

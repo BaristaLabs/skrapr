@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Data entry.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Key object.
         ///</summary>
+        [JsonProperty("key")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject Key
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Primary key object.
         ///</summary>
+        [JsonProperty("primaryKey")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject PrimaryKey
         {
             get;
@@ -27,6 +31,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Value object.
         ///</summary>
+        [JsonProperty("value")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject Value
         {
             get;

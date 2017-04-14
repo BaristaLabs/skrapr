@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Log
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Issued when new message was logged.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Log
         /// The entry.
         /// </summary>
         
+        [JsonProperty("entry")]
         public LogEntry Entry
         {
             get;

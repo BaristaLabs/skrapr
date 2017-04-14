@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Gets or sets the nodeId
         /// </summary>
         
+        [JsonProperty("nodeId")]
         public long NodeId
         {
             get;

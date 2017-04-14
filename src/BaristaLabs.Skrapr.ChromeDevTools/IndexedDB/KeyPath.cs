@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Key path.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Key path type.
         ///</summary>
+        [JsonProperty("type")]
         public string Type
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// String value.
         ///</summary>
+        [JsonProperty("string", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string String
         {
             get;
@@ -27,6 +31,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Array value.
         ///</summary>
+        [JsonProperty("array", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string[] Array
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Database with an array of object stores.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Database name.
         ///</summary>
+        [JsonProperty("name")]
         public string Name
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Database version.
         ///</summary>
+        [JsonProperty("version")]
         public long Version
         {
             get;
@@ -27,6 +31,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// <summary>
         /// Object stores in this database.
         ///</summary>
+        [JsonProperty("objectStores")]
         public ObjectStore[] ObjectStores
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// Layer tree, absent if not in the comspositing mode.
         /// </summary>
         
+        [JsonProperty("layers", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public Layer[] Layers
         {
             get;

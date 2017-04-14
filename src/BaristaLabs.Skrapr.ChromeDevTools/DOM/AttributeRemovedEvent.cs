@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired when <code>Element</code>'s attribute is removed.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Id of the node that has changed.
         /// </summary>
         
+        [JsonProperty("nodeId")]
         public long NodeId
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// A ttribute name.
         /// </summary>
         
+        [JsonProperty("name")]
         public string Name
         {
             get;

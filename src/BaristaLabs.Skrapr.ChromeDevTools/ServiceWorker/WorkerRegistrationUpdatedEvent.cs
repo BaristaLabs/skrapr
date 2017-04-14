@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
         /// Gets or sets the registrations
         /// </summary>
         
+        [JsonProperty("registrations")]
         public ServiceWorkerRegistration[] Registrations
         {
             get;

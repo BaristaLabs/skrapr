@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Rectangle where scrolling happens on the main thread.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// <summary>
         /// Rectangle itself.
         ///</summary>
+        [JsonProperty("rect")]
         public BaristaLabs.Skrapr.ChromeDevTools.DOM.Rect Rect
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// <summary>
         /// Reason for rectangle to force scrolling on the main thread
         ///</summary>
+        [JsonProperty("type")]
         public string Type
         {
             get;

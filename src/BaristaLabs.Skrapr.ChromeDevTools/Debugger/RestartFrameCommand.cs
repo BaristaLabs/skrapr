@@ -50,7 +50,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// Async stack trace, if any.
         ///</summary>
         
-        [JsonProperty("asyncStackTrace")]
+        [JsonProperty("asyncStackTrace, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.StackTrace AsyncStackTrace
         {
             get;

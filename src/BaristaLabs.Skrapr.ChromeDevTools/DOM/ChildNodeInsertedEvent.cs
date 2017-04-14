@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Mirrors <code>DOMNodeInserted</code> event.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Id of the node that has changed.
         /// </summary>
         
+        [JsonProperty("parentNodeId")]
         public long ParentNodeId
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// If of the previous siblint.
         /// </summary>
         
+        [JsonProperty("previousNodeId")]
         public long PreviousNodeId
         {
             get;
@@ -33,6 +37,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Inserted node data.
         /// </summary>
         
+        [JsonProperty("node")]
         public Node Node
         {
             get;

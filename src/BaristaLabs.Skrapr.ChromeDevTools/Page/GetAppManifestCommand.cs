@@ -50,7 +50,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Manifest content.
         ///</summary>
         
-        [JsonProperty("data")]
+        [JsonProperty("data, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public string Data
         {
             get;

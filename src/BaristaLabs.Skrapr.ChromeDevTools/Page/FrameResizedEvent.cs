@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Page
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>

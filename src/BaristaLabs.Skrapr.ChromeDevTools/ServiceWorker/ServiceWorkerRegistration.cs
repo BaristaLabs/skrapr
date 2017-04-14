@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// ServiceWorker registration.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
         /// <summary>
         /// 
         ///</summary>
+        [JsonProperty("registrationId")]
         public string RegistrationId
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
         /// <summary>
         /// 
         ///</summary>
+        [JsonProperty("scopeURL")]
         public string ScopeURL
         {
             get;
@@ -27,6 +31,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
         /// <summary>
         /// 
         ///</summary>
+        [JsonProperty("isDeleted")]
         public bool IsDeleted
         {
             get;

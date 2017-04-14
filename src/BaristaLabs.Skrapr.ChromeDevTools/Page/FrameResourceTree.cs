@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Page
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Information about the Frame hierarchy along with their cached resources.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// <summary>
         /// Frame information for this tree item.
         ///</summary>
+        [JsonProperty("frame")]
         public Frame Frame
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// <summary>
         /// Child frames.
         ///</summary>
+        [JsonProperty("childFrames", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public FrameResourceTree[] ChildFrames
         {
             get;
@@ -27,6 +31,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// <summary>
         /// Information about frame resources.
         ///</summary>
+        [JsonProperty("resources")]
         public FrameResource[] Resources
         {
             get;

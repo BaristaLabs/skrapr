@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.ApplicationCache
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.ApplicationCache
         /// Gets or sets the isNowOnline
         /// </summary>
         
+        [JsonProperty("isNowOnline")]
         public bool IsNowOnline
         {
             get;

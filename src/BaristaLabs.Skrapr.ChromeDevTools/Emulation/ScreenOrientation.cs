@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Screen orientation.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
         /// <summary>
         /// Orientation type.
         ///</summary>
+        [JsonProperty("type")]
         public string Type
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
         /// <summary>
         /// Orientation angle.
         ///</summary>
+        [JsonProperty("angle")]
         public long Angle
         {
             get;

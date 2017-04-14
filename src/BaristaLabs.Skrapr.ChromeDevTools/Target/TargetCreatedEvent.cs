@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Target
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Issued when a possible inspection target is created.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
         /// Gets or sets the targetInfo
         /// </summary>
         
+        [JsonProperty("targetInfo")]
         public TargetInfo TargetInfo
         {
             get;

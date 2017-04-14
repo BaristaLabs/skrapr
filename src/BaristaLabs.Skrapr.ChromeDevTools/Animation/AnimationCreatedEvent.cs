@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Event for each animation that has been created.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
         /// Id of the animation that was created.
         /// </summary>
         
+        [JsonProperty("id")]
         public string Id
         {
             get;

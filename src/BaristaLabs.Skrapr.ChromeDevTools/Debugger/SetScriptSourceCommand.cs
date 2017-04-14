@@ -62,7 +62,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// New stack trace in case editing has happened while VM was stopped.
         ///</summary>
         
-        [JsonProperty("callFrames")]
+        [JsonProperty("callFrames, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public CallFrame[] CallFrames
         {
             get;
@@ -74,7 +74,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// Whether current call stack  was modified after applying the changes.
         ///</summary>
         
-        [JsonProperty("stackChanged")]
+        [JsonProperty("stackChanged, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public bool? StackChanged
         {
             get;
@@ -86,7 +86,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// Async stack trace, if any.
         ///</summary>
         
-        [JsonProperty("asyncStackTrace")]
+        [JsonProperty("asyncStackTrace, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.StackTrace AsyncStackTrace
         {
             get;
@@ -98,7 +98,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// Exception details if any.
         ///</summary>
         
-        [JsonProperty("exceptionDetails")]
+        [JsonProperty("exceptionDetails, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.ExceptionDetails ExceptionDetails
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Page
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired when frame has been attached to its parent.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Id of the frame that has been attached.
         /// </summary>
         
+        [JsonProperty("frameId")]
         public string FrameId
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Parent frame identifier.
         /// </summary>
         
+        [JsonProperty("parentFrameId")]
         public string ParentFrameId
         {
             get;

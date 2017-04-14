@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Page
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Whether dialog was confirmed.
         /// </summary>
         
+        [JsonProperty("result")]
         public bool Result
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired whenever an active document stylesheet is removed.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// Identifier of the removed stylesheet.
         /// </summary>
         
+        [JsonProperty("styleSheetId")]
         public string StyleSheetId
         {
             get;

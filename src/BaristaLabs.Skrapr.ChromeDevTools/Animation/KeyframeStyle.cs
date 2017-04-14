@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Keyframe Style
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
         /// <summary>
         /// Keyframe's time offset.
         ///</summary>
+        [JsonProperty("offset")]
         public string Offset
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
         /// <summary>
         /// <code>AnimationEffect</code>'s timing function.
         ///</summary>
+        [JsonProperty("easing")]
         public string Easing
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Database
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Database error.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Database
         /// <summary>
         /// Error message.
         ///</summary>
+        [JsonProperty("message")]
         public string Message
         {
             get;
@@ -18,6 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Database
         /// <summary>
         /// Error code.
         ///</summary>
+        [JsonProperty("code")]
         public long Code
         {
             get;

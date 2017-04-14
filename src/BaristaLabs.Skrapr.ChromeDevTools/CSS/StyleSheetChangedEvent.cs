@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired whenever a stylesheet is changed as a result of the client operation.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// Gets or sets the styleSheetId
         /// </summary>
         
+        [JsonProperty("styleSheetId")]
         public string StyleSheetId
         {
             get;

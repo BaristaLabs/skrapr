@@ -122,7 +122,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// Exception details.
         ///</summary>
         
-        [JsonProperty("exceptionDetails")]
+        [JsonProperty("exceptionDetails, DefaultValueHandling = DefaultValueHandling.Ignore")]
         public BaristaLabs.Skrapr.ChromeDevTools.Runtime.ExceptionDetails ExceptionDetails
         {
             get;

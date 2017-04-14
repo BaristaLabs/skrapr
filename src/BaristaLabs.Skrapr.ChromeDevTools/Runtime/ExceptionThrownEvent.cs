@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Issued when exception was thrown and unhandled.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
         /// Timestamp of the exception.
         /// </summary>
         
+        [JsonProperty("timestamp")]
         public double Timestamp
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
         /// Gets or sets the exceptionDetails
         /// </summary>
         
+        [JsonProperty("exceptionDetails")]
         public ExceptionDetails ExceptionDetails
         {
             get;

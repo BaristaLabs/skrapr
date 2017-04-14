@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// A subset of the full ComputedStyle as defined by the request whitelist.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// <summary>
         /// 
         ///</summary>
+        [JsonProperty("properties")]
         public CSSComputedStyleProperty[] Properties
         {
             get;

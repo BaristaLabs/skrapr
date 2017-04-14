@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Network
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired when WebSocket frame is sent.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// Request identifier.
         /// </summary>
         
+        [JsonProperty("requestId")]
         public string RequestId
         {
             get;
@@ -22,6 +25,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// Timestamp.
         /// </summary>
         
+        [JsonProperty("timestamp")]
         public double Timestamp
         {
             get;
@@ -33,6 +37,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// WebSocket response data.
         /// </summary>
         
+        [JsonProperty("response")]
         public WebSocketFrame Response
         {
             get;

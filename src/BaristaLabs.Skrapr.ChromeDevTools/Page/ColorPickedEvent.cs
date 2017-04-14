@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Page
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Fired when a color has been picked.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// RGBA of the picked color.
         /// </summary>
         
+        [JsonProperty("color")]
         public BaristaLabs.Skrapr.ChromeDevTools.DOM.RGBA Color
         {
             get;

@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Issued when new execution context is created.
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
         /// A newly created execution contex.
         /// </summary>
         
+        [JsonProperty("context")]
         public ExecutionContextDescription Context
         {
             get;

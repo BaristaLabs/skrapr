@@ -5,6 +5,8 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Serilog;
+    using Serilog.Events;
+    using Serilog.Formatting.Json;
     using System;
     using System.IO;
     using System.Linq;
@@ -28,11 +30,15 @@
                 .AddLogging()
                 .BuildServiceProvider();
 
+            //Remove previous log file
+            File.Delete("skraprlog.json");
+
             //Configure Serilog
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
-                .WriteTo.ColoredConsole()
+                .WriteTo.File(new JsonFormatter(), "skraprlog.json")
+                .WriteTo.ColoredConsole(restrictedToMinimumLevel: LogEventLevel.Debug)
                 .CreateLogger();
 
             //Configure the logger.

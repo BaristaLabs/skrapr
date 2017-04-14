@@ -1,6 +1,7 @@
 ﻿namespace BaristaLabs.Skrapr
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
+    using BaristaLabs.Skrapr.Extensions;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
@@ -160,6 +161,14 @@
             return domElement.NodeId;
         }
 
+        /// <summary>
+        /// Gets the layout tree node for the dom element corresponding to the specified selector.
+        /// </summary>
+        /// <remarks>
+        /// If the selector doesn't correspond to a dom element or the dom element is not visible, null will be returned.
+        /// </remarks>
+        /// <param name="cssSelector"></param>
+        /// <returns></returns>
         public async Task<Css.LayoutTreeNode> GetLayoutTreeNodeForDomElement(string cssSelector)
         {
             var document = await GetDocument();
@@ -187,14 +196,16 @@
             if (layoutTreeNode == null)
                 return false;
 
+            var toClick = layoutTreeNode.BoundingBox.GetMiddleOfRect();
+
             await m_session.SendCommand(new Input.DispatchMouseEventCommand
             {
                 Button = "left",
                 Type = "mousePressed",
                 ClickCount = 1,
                 Modifiers = 0,
-                X = (long)layoutTreeNode.BoundingBox.X,
-                Y = (long)layoutTreeNode.BoundingBox.Y,
+                X = (long)toClick.X,
+                Y = (long)toClick.Y,
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
             });
 

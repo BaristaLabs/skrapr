@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Network
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// WebSocket request data.
     /// </summary>
@@ -9,6 +11,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// <summary>
         /// HTTP request headers.
         ///</summary>
+        [JsonProperty("headers")]
         public Headers Headers
         {
             get;

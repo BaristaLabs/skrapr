@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Target
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Issued when detached from target for any reason (including <code>detachFromTarget</code> command).
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
         /// Gets or sets the targetId
         /// </summary>
         
+        [JsonProperty("targetId")]
         public string TargetId
         {
             get;

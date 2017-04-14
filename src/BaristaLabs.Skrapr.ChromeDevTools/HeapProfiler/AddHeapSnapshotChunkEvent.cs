@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// 
     /// </summary>
@@ -11,6 +13,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
         /// Gets or sets the chunk
         /// </summary>
         
+        [JsonProperty("chunk")]
         public string Chunk
         {
             get;

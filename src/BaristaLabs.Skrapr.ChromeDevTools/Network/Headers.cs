@@ -1,5 +1,7 @@
 namespace BaristaLabs.Skrapr.ChromeDevTools.Network
 {
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Request / response headers as keys / values of JSON object.
     /// </summary>
