@@ -64,6 +64,12 @@
           }
         },
         {
+          "name": "SetAttributeValue",
+          "selector": "ul.site-nav",
+          "attributeName": "style",
+          "attributeValue": "background-color: blue;"
+        },
+        {
           "name": "ClickDomElement",
           "selector": "ul.site-nav li:nth-of-type(1) ul li:nth-of-type(2)"
         }
