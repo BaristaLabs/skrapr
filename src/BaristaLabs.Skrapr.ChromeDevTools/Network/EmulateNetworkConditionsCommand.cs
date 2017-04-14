@@ -69,7 +69,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// Connection type if known.
         /// </summary>
         
-        [JsonProperty("connectionType")]
+        [JsonProperty("connectionType", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ConnectionType ConnectionType
         {
             get;

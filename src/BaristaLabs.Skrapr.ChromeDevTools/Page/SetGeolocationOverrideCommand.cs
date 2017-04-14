@@ -21,7 +21,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Mock latitude
         /// </summary>
         
-        [JsonProperty("latitude")]
+        [JsonProperty("latitude", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double? Latitude
         {
             get;
@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Mock longitude
         /// </summary>
         
-        [JsonProperty("longitude")]
+        [JsonProperty("longitude", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double? Longitude
         {
             get;
@@ -45,7 +45,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Mock accuracy
         /// </summary>
         
-        [JsonProperty("accuracy")]
+        [JsonProperty("accuracy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public double? Accuracy
         {
             get;

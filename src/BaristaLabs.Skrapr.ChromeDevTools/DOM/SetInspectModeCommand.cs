@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>.
         /// </summary>
         
-        [JsonProperty("highlightConfig")]
+        [JsonProperty("highlightConfig", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public HighlightConfig HighlightConfig
         {
             get;

@@ -31,7 +31,7 @@
             var response = await context.Session.SendCommand<Dom.HighlightNodeCommand, Dom.HighlightNodeCommandResponse>(new Dom.HighlightNodeCommand
             {
                 NodeId = layoutTreeNode.NodeId,
-                ObjectId = "",
+                ObjectId = null,
                 HighlightConfig = HighlightConfig
             });
         }

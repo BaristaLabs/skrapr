@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
         /// Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
         /// </summary>
         
-        [JsonProperty("fetchRelatives")]
+        [JsonProperty("fetchRelatives", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool? FetchRelatives
         {
             get;

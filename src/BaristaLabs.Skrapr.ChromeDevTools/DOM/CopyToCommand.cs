@@ -45,7 +45,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Drop the copy before this node (if absent, the copy becomes the last child of <code>targetNodeId</code>).
         /// </summary>
         
-        [JsonProperty("insertBeforeNodeId")]
+        [JsonProperty("insertBeforeNodeId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public long InsertBeforeNodeId
         {
             get;

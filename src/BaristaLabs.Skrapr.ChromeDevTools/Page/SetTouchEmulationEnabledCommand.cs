@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// Touch/gesture events configuration. Default: current platform.
         /// </summary>
         
-        [JsonProperty("configuration")]
+        [JsonProperty("configuration", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Configuration
         {
             get;

@@ -142,20 +142,20 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         private async Task<JToken> SendCommandInternal<TCommand>(TCommand command, CancellationToken cancellationToken, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
         {
-            var contents = JsonConvert.SerializeObject(new
+            var message = new
             {
                 id = Interlocked.Increment(ref m_currentCommandId),
                 method = command.CommandName,
                 @params = command
-            });
+            };
 
             await OpenSessionConnection();
 
+            LogTrace("Sending {id} {method}: {params}", message.id, message.method, JsonConvert.SerializeObject(message.@params));
+
+            var contents = JsonConvert.SerializeObject(message);
+
             m_responseReceived.Reset();
-
-            if (m_logger != null)
-                m_logger.LogInformation("SendCommand", contents);
-
             m_sessionSocket.Send(contents);
 
             var responseWasReceived = await Task.Run(() => m_responseReceived.Wait(CommandTimeout), cancellationToken);
@@ -222,6 +222,22 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             }
         }
 
+        private void LogTrace(string message, params object[] args)
+        {
+            if (m_logger == null)
+                return;
+
+            m_logger.LogTrace(message, args);
+        }
+
+        private void LogError(string message, params object[] args)
+        {
+            if (m_logger == null)
+                return;
+
+            m_logger.LogError(message, args);
+        }
+
         #region EventHandlers
         private void Ws_Opened(object sender, EventArgs e)
         {
@@ -230,9 +246,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
 
         private void Ws_Error(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
         {
-            if (m_logger != null)
-                m_logger.LogInformation("Web Socket Error", e.Exception);
-
+            LogError("Error: {exception}", e.Exception);
             throw e.Exception;
         }
 
@@ -240,12 +254,10 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         {
             var messageObject = JObject.Parse(e.Message);
 
-            if (m_logger != null)
-                m_logger.LogInformation("MessageReceived", e.Message);
-
-            if (messageObject.TryGetValue("id", out JToken idProperty) && idProperty.Value<long>() == m_currentCommandId)
+            long commandId;
+            if (messageObject.TryGetValue("id", out JToken idProperty) && (commandId = idProperty.Value<long>()) == m_currentCommandId)
             {
-
+                
                 if (messageObject.TryGetValue("error", out JToken errorProperty))
                 {
                     var message = errorProperty.Value<string>("message");
@@ -255,6 +267,8 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                     if (!String.IsNullOrWhiteSpace(data))
                         exceptionMessage = $"{message} - {data}";
 
+                    LogTrace("Recieved Error Response {id}: {message} {data}", commandId, message, data);
+
                     throw new CommandResponseException(exceptionMessage)
                     {
                         Code = errorProperty.Value<long>("code")
@@ -262,17 +276,21 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                 }
 
                 m_lastResponseResult = messageObject["result"];
+                LogTrace("Recieved Response {id}: {message}", commandId, m_lastResponseResult.ToString());
                 m_responseReceived.Set();
                 return;
             }
 
             if (messageObject.TryGetValue("method", out JToken methodProperty))
             {
+                var method = methodProperty.Value<string>();
                 var eventData = messageObject["params"];
-                RaiseEvent(methodProperty.Value<string>(), eventData);
+                LogTrace("Recieved Event {method}: {params}", method, eventData.ToString());
+                RaiseEvent(method, eventData);
                 return;
             }
 
+            LogTrace("Recieved Other: {message}", e.Message);
         }
         #endregion
 

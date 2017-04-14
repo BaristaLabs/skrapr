@@ -93,7 +93,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
         /// Key range.
         /// </summary>
         
-        [JsonProperty("keyRange")]
+        [JsonProperty("keyRange", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public KeyRange KeyRange
         {
             get;

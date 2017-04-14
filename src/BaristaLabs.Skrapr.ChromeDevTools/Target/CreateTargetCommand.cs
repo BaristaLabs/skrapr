@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
         /// Frame width in DIP (headless chrome only).
         /// </summary>
         
-        [JsonProperty("width")]
+        [JsonProperty("width", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public long? Width
         {
             get;
@@ -45,7 +45,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
         /// Frame height in DIP (headless chrome only).
         /// </summary>
         
-        [JsonProperty("height")]
+        [JsonProperty("height", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public long? Height
         {
             get;
@@ -57,7 +57,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
         /// The browser context to create the page in (headless chrome only).
         /// </summary>
         
-        [JsonProperty("browserContextId")]
+        [JsonProperty("browserContextId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string BrowserContextId
         {
             get;

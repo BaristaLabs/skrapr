@@ -33,7 +33,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// True to search in user agent shadow DOM.
         /// </summary>
         
-        [JsonProperty("includeUserAgentShadowDOM")]
+        [JsonProperty("includeUserAgentShadowDOM", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool? IncludeUserAgentShadowDOM
         {
             get;

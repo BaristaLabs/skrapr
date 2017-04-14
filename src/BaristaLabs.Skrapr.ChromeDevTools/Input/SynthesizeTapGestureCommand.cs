@@ -45,7 +45,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Input
         /// Duration between touchdown and touchup events in ms (default: 50).
         /// </summary>
         
-        [JsonProperty("duration")]
+        [JsonProperty("duration", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public long? Duration
         {
             get;
@@ -57,7 +57,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Input
         /// Number of times to perform the tap (e.g. 2 for double tap, default: 1).
         /// </summary>
         
-        [JsonProperty("tapCount")]
+        [JsonProperty("tapCount", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public long? TapCount
         {
             get;
@@ -69,7 +69,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Input
         /// Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
         /// </summary>
         
-        [JsonProperty("gestureSourceType")]
+        [JsonProperty("gestureSourceType", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public GestureSourceType GestureSourceType
         {
             get;

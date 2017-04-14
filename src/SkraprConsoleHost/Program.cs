@@ -30,7 +30,7 @@
 
             //Configure Serilog
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .WriteTo.ColoredConsole()
                 .CreateLogger();
