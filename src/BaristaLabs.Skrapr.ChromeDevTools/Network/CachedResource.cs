@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// Type of this resource.
         ///</summary>
         [JsonProperty("type")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Page.ResourceType Type
+        public Page.ResourceType Type
         {
             get;
             set;

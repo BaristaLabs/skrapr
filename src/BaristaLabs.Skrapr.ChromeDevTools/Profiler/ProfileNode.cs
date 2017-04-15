@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Profiler
         /// Function location.
         ///</summary>
         [JsonProperty("callFrame")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.CallFrame CallFrame
+        public Runtime.CallFrame CallFrame
         {
             get;
             set;

@@ -14,7 +14,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// </summary>
         
         [JsonProperty("color")]
-        public BaristaLabs.Skrapr.ChromeDevTools.DOM.RGBA Color
+        public DOM.RGBA Color
         {
             get;
             set;

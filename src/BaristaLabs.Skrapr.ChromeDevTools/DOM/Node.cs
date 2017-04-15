@@ -182,7 +182,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Pseudo element type for this node.
         ///</summary>
         [JsonProperty("pseudoType", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public PseudoType PseudoType
+        public PseudoType? PseudoType
         {
             get;
             set;
@@ -192,7 +192,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         /// Shadow root type.
         ///</summary>
         [JsonProperty("shadowRootType", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ShadowRootType ShadowRootType
+        public ShadowRootType? ShadowRootType
         {
             get;
             set;

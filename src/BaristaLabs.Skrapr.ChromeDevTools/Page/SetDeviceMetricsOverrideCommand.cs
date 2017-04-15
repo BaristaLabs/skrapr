@@ -166,7 +166,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         /// </summary>
         
         [JsonProperty("screenOrientation", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public BaristaLabs.Skrapr.ChromeDevTools.Emulation.ScreenOrientation ScreenOrientation
+        public Emulation.ScreenOrientation ScreenOrientation
         {
             get;
             set;

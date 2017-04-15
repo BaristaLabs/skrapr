@@ -26,7 +26,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Profiler
         /// </summary>
         
         [JsonProperty("location")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Debugger.Location Location
+        public Debugger.Location Location
         {
             get;
             set;

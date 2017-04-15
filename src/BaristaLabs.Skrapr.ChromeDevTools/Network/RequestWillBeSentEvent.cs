@@ -122,7 +122,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// </summary>
         
         [JsonProperty("type", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public BaristaLabs.Skrapr.ChromeDevTools.Page.ResourceType Type
+        public Page.ResourceType Type
         {
             get;
             set;

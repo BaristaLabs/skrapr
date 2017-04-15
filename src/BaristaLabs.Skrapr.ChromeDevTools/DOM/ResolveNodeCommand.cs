@@ -51,7 +51,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
         ///</summary>
         
         [JsonProperty("object")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject Object
+        public Runtime.RemoteObject Object
         {
             get;
             set;

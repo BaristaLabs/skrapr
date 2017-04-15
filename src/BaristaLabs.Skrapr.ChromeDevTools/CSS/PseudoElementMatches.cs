@@ -12,7 +12,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// Pseudo element type.
         ///</summary>
         [JsonProperty("pseudoType")]
-        public BaristaLabs.Skrapr.ChromeDevTools.DOM.PseudoType PseudoType
+        public DOM.PseudoType PseudoType
         {
             get;
             set;

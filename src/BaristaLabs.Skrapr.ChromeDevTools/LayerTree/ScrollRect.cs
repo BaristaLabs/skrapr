@@ -12,7 +12,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// Rectangle itself.
         ///</summary>
         [JsonProperty("rect")]
-        public BaristaLabs.Skrapr.ChromeDevTools.DOM.Rect Rect
+        public DOM.Rect Rect
         {
             get;
             set;

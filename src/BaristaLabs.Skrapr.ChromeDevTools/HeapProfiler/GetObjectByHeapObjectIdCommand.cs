@@ -51,7 +51,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
         ///</summary>
         
         [JsonProperty("result")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject Result
+        public Runtime.RemoteObject Result
         {
             get;
             set;

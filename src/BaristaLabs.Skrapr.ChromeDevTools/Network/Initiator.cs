@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// Initiator JavaScript stack trace, set for Script only.
         ///</summary>
         [JsonProperty("stack", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.StackTrace Stack
+        public Runtime.StackTrace Stack
         {
             get;
             set;

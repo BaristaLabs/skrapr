@@ -22,7 +22,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         /// Object representing the scope. For <code>global</code> and <code>with</code> scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties.
         ///</summary>
         [JsonProperty("object")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject Object
+        public Runtime.RemoteObject Object
         {
             get;
             set;

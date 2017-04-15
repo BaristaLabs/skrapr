@@ -39,7 +39,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
         ///</summary>
         
         [JsonProperty("remoteObject")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject RemoteObject
+        public Runtime.RemoteObject RemoteObject
         {
             get;
             set;

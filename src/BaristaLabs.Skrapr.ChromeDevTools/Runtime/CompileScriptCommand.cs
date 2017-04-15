@@ -58,7 +58,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
         /// </summary>
         
         [JsonProperty("executionContextId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public long ExecutionContextId
+        public long? ExecutionContextId
         {
             get;
             set;

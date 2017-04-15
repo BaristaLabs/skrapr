@@ -182,7 +182,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// Security state of the request resource.
         ///</summary>
         [JsonProperty("securityState")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Security.SecurityState SecurityState
+        public Security.SecurityState SecurityState
         {
             get;
             set;

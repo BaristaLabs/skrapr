@@ -26,7 +26,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.LayerTree
         /// </summary>
         
         [JsonProperty("clip")]
-        public BaristaLabs.Skrapr.ChromeDevTools.DOM.Rect Clip
+        public DOM.Rect Clip
         {
             get;
             set;

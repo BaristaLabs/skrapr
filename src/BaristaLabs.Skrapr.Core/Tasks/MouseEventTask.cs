@@ -55,6 +55,21 @@
 
             });
 
+            await context.Session.DOM.SetInspectMode(new Dom.SetInspectModeCommand
+            {
+                Mode = Dom.InspectMode.SearchForNode,
+                HighlightConfig = new Dom.HighlightConfig
+                {
+                    BorderColor = new Dom.RGBA
+                    {
+                        R = 255,
+                        G = 255,
+                        B = 0,
+                        A = 0.6
+                    }
+                }
+            });
+
             var nodeBoxModel = await context.Session.SendCommand<Dom.GetBoxModelCommand, Dom.GetBoxModelCommandResponse>(new Dom.GetBoxModelCommand
             {
                 NodeId = nodeId

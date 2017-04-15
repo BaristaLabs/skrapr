@@ -38,7 +38,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// </summary>
         
         [JsonProperty("type")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Page.ResourceType Type
+        public Page.ResourceType Type
         {
             get;
             set;
@@ -74,7 +74,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
         /// </summary>
         
         [JsonProperty("blockedReason", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public BlockedReason BlockedReason
+        public BlockedReason? BlockedReason
         {
             get;
             set;

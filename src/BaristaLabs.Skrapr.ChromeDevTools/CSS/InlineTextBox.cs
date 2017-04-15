@@ -12,7 +12,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
         /// The absolute position bounding box.
         ///</summary>
         [JsonProperty("boundingBox")]
-        public BaristaLabs.Skrapr.ChromeDevTools.DOM.Rect BoundingBox
+        public DOM.Rect BoundingBox
         {
             get;
             set;

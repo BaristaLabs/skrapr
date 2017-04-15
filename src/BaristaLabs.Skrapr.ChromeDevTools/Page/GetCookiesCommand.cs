@@ -27,7 +27,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
         ///</summary>
         
         [JsonProperty("cookies")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Network.Cookie[] Cookies
+        public Network.Cookie[] Cookies
         {
             get;
             set;

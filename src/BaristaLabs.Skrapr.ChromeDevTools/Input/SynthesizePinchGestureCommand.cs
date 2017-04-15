@@ -70,7 +70,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Input
         /// </summary>
         
         [JsonProperty("gestureSourceType", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public GestureSourceType GestureSourceType
+        public GestureSourceType? GestureSourceType
         {
             get;
             set;

@@ -111,7 +111,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         ///</summary>
         
         [JsonProperty("result")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.RemoteObject Result
+        public Runtime.RemoteObject Result
         {
             get;
             set;
@@ -123,7 +123,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
         ///</summary>
         
         [JsonProperty("exceptionDetails, DefaultValueHandling = DefaultValueHandling.Ignore")]
-        public BaristaLabs.Skrapr.ChromeDevTools.Runtime.ExceptionDetails ExceptionDetails
+        public Runtime.ExceptionDetails ExceptionDetails
         {
             get;
             set;
