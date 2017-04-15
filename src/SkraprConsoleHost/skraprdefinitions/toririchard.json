@@ -9,7 +9,7 @@
       "tasks": [
         {
           "name": "MouseEvent",
-          "selector": "ul.site-nav li:nth-of-type(1)"
+          "selector": "ul.site-nav li:nth-of-type(1) a"
         },
         {
           "name": "HighlightDomElement",

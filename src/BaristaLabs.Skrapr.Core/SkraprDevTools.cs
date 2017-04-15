@@ -6,6 +6,7 @@
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Collections.Concurrent;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -27,7 +28,7 @@
 
         private readonly ManualResetEventSlim m_pageStoppedLoading = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
-        private long? m_targetChildNodeId = null;
+        private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
 
         private SkraprDevTools(ChromeSession session)
         {
@@ -86,22 +87,18 @@
 
         public async Task<bool> GetChildNodeData(long nodeId, long depth = 1, bool pierce = false)
         {
-            //If we're already waiting, throw.
-            if (m_targetChildNodeId != null)
-                throw new InvalidOperationException("Already waiting for child node data.");
+            //TODO: Implement this.
+            throw new NotImplementedException();
 
-            m_targetChildNodeId = nodeId;
-
-            m_childNodeEvent.Reset();
-            await m_session.SendCommand(new Dom.RequestChildNodesCommand
-            {
-                NodeId = nodeId,
-                Depth = depth,
-                Pierce = pierce
-            });
-            await Task.Run(() => m_childNodeEvent.Wait());
-            m_targetChildNodeId = null;
-            return false;
+            //m_childNodeEvent.Reset();
+            //await m_session.SendCommand(new Dom.RequestChildNodesCommand
+            //{
+            //    NodeId = nodeId,
+            //    Depth = depth,
+            //    Pierce = pierce
+            //});
+            //await Task.Run(() => m_childNodeEvent.Wait());
+            //return false;
         }
 
         /// <summary>
@@ -247,6 +244,7 @@
             Session.Subscribe<Page.FrameStoppedLoadingEvent>(ProcessFrameStoppedLoading);
 
             Session.Subscribe<Runtime.ExecutionContextCreatedEvent>(ProcessExecutionContextCreated);
+            Session.Subscribe<Dom.DocumentUpdatedEvent>(ProcessDocumentUpdatedEvent);
             Session.Subscribe<Dom.SetChildNodesEvent>(ProcessSetChildNodesEvent);
 
             //TODO: Don't sequentially await these.
@@ -284,10 +282,16 @@
             }
         }
 
+        private void ProcessDocumentUpdatedEvent(Dom.DocumentUpdatedEvent e)
+        {
+            m_nodeDictionary.Clear();
+        }
+
         private void ProcessSetChildNodesEvent(Dom.SetChildNodesEvent e)
         {
-            if (m_targetChildNodeId != null)
+            foreach(var node in e.Nodes)
             {
+                m_nodeDictionary.AddOrUpdate(node.NodeId, node, (id, previousNode) => node);
             }
         }
 

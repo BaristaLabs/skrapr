@@ -4,6 +4,9 @@
     using System;
     using System.Threading.Tasks;
     using Input = ChromeDevTools.Input;
+    using Css = ChromeDevTools.CSS;
+    using Dom = ChromeDevTools.DOM;
+    using Page = ChromeDevTools.Page;
 
     public class MouseEventTask : ITask
     {
@@ -43,33 +46,114 @@
 
         public async Task PerformTask(SkraprContext context)
         {
-            var layoutTreeNode = await context.DevTools.GetLayoutTreeNodeForDomElement(Selector);
-            if (layoutTreeNode == null)
+            var nodeId = await context.DevTools.GetNodeForSelector(".logo-placeholder");
+            if (nodeId < 1)
                 return;
 
-            var toGo = layoutTreeNode.BoundingBox.GetMiddleOfRect();
-
-            var response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
+            var viewPort = await context.Session.SendCommand<Page.GetLayoutMetricsCommand, Page.GetLayoutMetricsCommandResponse>(new Page.GetLayoutMetricsCommand
             {
-                Button = "left",
-                Type = "mousePressed",
-                ClickCount = 0,
-                Modifiers = 0,
-                X = (long)toGo.X,
-                Y = (long)toGo.Y,
-                Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+
             });
 
-            response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
+            var nodeBoxModel = await context.Session.SendCommand<Dom.GetBoxModelCommand, Dom.GetBoxModelCommandResponse>(new Dom.GetBoxModelCommand
             {
-                Button = "left",
-                Type = "mouseReleased",
-                ClickCount = 0,
-                Modifiers = 0,
-                X = (long)toGo.X,
-                Y = (long)toGo.Y,
-                Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+                NodeId = nodeId
             });
+
+            for(int i = 0; i < nodeBoxModel.Model.Content.Length; i++)
+            {
+                nodeBoxModel.Model.Content[i] = nodeBoxModel.Model.Content[i] / 2;
+            }
+            await context.Session.SendCommand(new Dom.HighlightQuadCommand
+            {
+                Quad = nodeBoxModel.Model.Content,
+                Color = new Dom.RGBA
+                {
+                    R = 0,
+                    G = 0,
+                    B = 255,
+                    A = 0.7
+                },
+                OutlineColor = new Dom.RGBA
+                {
+                    R = 255,
+                    G = 0,
+                    B = 0,
+                    A = 1
+                }
+            });
+
+            //await context.Session.SendCommand(new Dom.HighlightRectCommand
+            //{
+            //    X = (long)layoutTreeNode.BoundingBox.X,
+            //    Y = (long)layoutTreeNode.BoundingBox.Y,
+            //    Height = (long)layoutTreeNode.BoundingBox.Height,
+            //    Width = (long)layoutTreeNode.BoundingBox.Width,
+            //    Color = new Dom.RGBA
+            //    {
+            //        R = 0,
+            //        G = 0,
+            //        B = 255,
+            //        A = 0.7
+            //    },
+            //    OutlineColor = new Dom.RGBA
+            //    {
+            //        R = 255,
+            //        G = 0,
+            //        B = 0,
+            //        A = 1
+            //    }
+            //});
+
+            var computedStyles = await context.Session.SendCommand<Css.GetComputedStyleForNodeCommand, Css.GetComputedStyleForNodeCommandResponse>(new Css.GetComputedStyleForNodeCommand
+            {
+                NodeId = nodeId
+            });
+
+            await context.Session.SendCommand(new Dom.HighlightNodeCommand
+            {
+                NodeId = nodeId,
+                HighlightConfig = new Dom.HighlightConfig
+                {
+                    ShowInfo = true,
+                    ContentColor = new Dom.RGBA
+                    {
+                        R = 0,
+                        G = 0,
+                        B = 255,
+                        A = 0.7
+                    },
+                    BorderColor = new Dom.RGBA
+                    {
+                        R = 255,
+                        G = 0,
+                        B = 0,
+                        A = 1
+                    }
+                }
+            });
+
+            //var response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
+            //{
+            //    Button = "left",
+            //    Type = "mousePressed",
+            //    ClickCount = 1,
+            //    Modifiers = 0,
+            //    X = (long)toGo.X,
+            //    Y = (long)toGo.Y,
+            //    Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+            //});
+
+            //response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
+            //{
+            //    Button = "left",
+            //    Type = "mouseReleased",
+            //    ClickCount = 1,
+            //    Modifiers = 0,
+            //    X = (long)toGo.X,
+            //    Y = (long)toGo.Y,
+            //    Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+            //});
         }
     }
 }
