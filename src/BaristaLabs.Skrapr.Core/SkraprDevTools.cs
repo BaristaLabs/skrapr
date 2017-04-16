@@ -92,9 +92,12 @@
             m_currentFrameId = navigateResponse.FrameId;
         }
 
+        /// <summary>
+        /// Determine the scale factor for the current page by comparing the BoxModel of the document to the ViewPort Client Info
+        /// </summary>
+        /// <returns></returns>
         public async Task<Tuple<double, double>> GetPageScaleFactor()
         {
-            //Determine the scale factor for the current page by comparing the BoxModel of the document to the ViewPort Client Info
             var documentNode = await Session.DOM.GetDocument();
             var documentBoxModel = await Session.DOM.GetBoxModel(new Dom.GetBoxModelCommand
             {

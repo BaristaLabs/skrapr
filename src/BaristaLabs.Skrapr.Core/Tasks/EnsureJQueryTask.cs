@@ -3,6 +3,9 @@
     using System.Threading.Tasks;
     using System;
 
+    /// <summary>
+    /// Represents a task that ensures that jQuery is present on the page.
+    /// </summary>
     public class EnsureJQueryTask : TaskBase
     {
         public EnsureJQueryTask()

@@ -8,62 +8,19 @@
       "urlPattern": "^http://www.toririchard.com$",
       "tasks": [
         {
-          "name": "MouseEvent",
-          "selector": "ul.site-nav li:nth-of-type(1) a"
+          "name": "ClickDomElement",
+          "selector": ".MENS",
+          "isNavigation": true
+        },
+        {
+          "name": "ClickDomElement",
+          "selector": "#sidebar li:nth-of-type(2) a",
+          "isNavigation": true
         },
         {
           "name": "HighlightDomElement",
-          "selector": "ul.site-nav",
-          "highlightConfig": {
-            "showInfo": true,
-            "showRulers": false,
-            "showExtensionLines": false,
-            "contentColor": {
-              "r": 111,
-              "g": 168,
-              "b": 220,
-              "a": 0.66
-            },
-            "paddingColor": {
-              "r": 147,
-              "g": 196,
-              "b": 125,
-              "a": 0.55
-            },
-            "borderColor": {
-              "r": 255,
-              "g": 229,
-              "b": 153,
-              "a": 0.66
-            },
-            "marginColor": {
-              "r": 246,
-              "g": 178,
-              "b": 107,
-              "a": 0.66
-            },
-            "eventTargetColor": {
-              "r": 255,
-              "g": 196,
-              "b": 196,
-              "a": 0.66
-            },
-            "shapeColor": {
-              "r": 96,
-              "g": 82,
-              "b": 177,
-              "a": 0.8
-            },
-            "shapeMarginColor": {
-              "r": 96,
-              "g": 82,
-              "b": 127,
-              "a": 0.6
-            },
-            "displayAsMaterial": true
-          }
+          "selector": ".thumb-grid"
         }
-        
       ]
     },
     {
