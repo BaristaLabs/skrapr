@@ -23,6 +23,7 @@
     public class SkraprDevTools
     {
         #region Fields
+        private readonly ILogger m_logger;
         private readonly string m_targetId;
         private readonly ChromeSession m_session;
         private string m_currentFrameId;
@@ -88,8 +89,9 @@
         /// Creates a new instance of the SkraprDevTools using the provided sesion.
         /// </summary>
         /// <param name="session"></param>
-        private SkraprDevTools(ChromeSession session, string targetId)
+        private SkraprDevTools(ILogger logger, ChromeSession session, string targetId)
         {
+            m_logger = logger ?? throw new ArgumentNullException(nameof(logger));
             m_session = session ?? throw new ArgumentNullException(nameof(session));
             m_targetId = targetId;
         }
@@ -158,6 +160,52 @@
         }
 
         /// <summary>
+        /// Injects a script element to the current page that points to an external script.
+        /// </summary>
+        /// <param name="scriptUrl"></param>
+        /// <returns></returns>
+        public async Task InjectScriptElement(string scriptUrl, string type = "text/javascript", string condition = null, bool awaitConditionPromise = false)
+        {
+            if (String.IsNullOrWhiteSpace(scriptUrl))
+                throw new InvalidOperationException("A script url must be specified.");
+
+            if (!String.IsNullOrWhiteSpace(condition))
+            {
+                m_logger.LogDebug("{functionName} Condition parameter has been specified - determining if script should be injected.", nameof(InjectScriptElement));
+
+                var shouldInjectJsResponse = await Session.Runtime.Evaluate(condition, contextId: CurrentFrameContext.Id, awaitPromise: awaitConditionPromise);
+
+                if (shouldInjectJsResponse.Type == "boolean" && shouldInjectJsResponse.Value is bool && (bool)shouldInjectJsResponse.Value == false)
+                {
+                    m_logger.LogDebug("{functionName} condition result was false - skipping script injection.", nameof(InjectScriptElement));
+                    return;
+                }
+            }
+
+            m_logger.LogDebug("{functionName} injecting script tag with src={scriptUrl} type={type}", nameof(InjectScriptElement), scriptUrl, type);
+
+            var result = await Session.Runtime.Evaluate($@"
+new Promise(function (resolve, reject) {{
+    var r = false;
+    var s = document.createElement('script');
+    s.type = '{type}';
+    s.src = '{scriptUrl}';
+    s.async = true;
+    s.onload = s.onreadystatechange = function() {{
+        if (!r && (!this.readyState || this.readyState == 'complete')) {{
+            r = true;
+            resolve(this);
+        }}
+    }};
+    s.onerror = s.onabort = reject;
+    document.body.appendChild(s);
+}});
+            ", contextId: CurrentFrameContext.Id, awaitPromise: true);
+
+            //TODO: If the result is an error, throw.
+        }
+
+        /// <summary>
         /// Instructs the current session to navigate to the specified Url.
         /// </summary>
         /// <param name="url"></param>
@@ -165,11 +213,16 @@
         /// <returns></returns>
         public async Task Navigate(string url, bool forceNavigate = false)
         {
+            m_logger.LogDebug("{functionName} Navigating to {url}", nameof(Navigate), url);
             if (!forceNavigate)
             {
-                var tree = await Session.Page.GetResourceTree();
-                if (tree.Frame.Url == url)
+                var targetInfo = await Session.Target.GetTargetInfo(m_targetId);
+
+                if (targetInfo.Url == url)
+                {
+                    m_logger.LogDebug("{functionName} No navigation needed - Current session currently at current page ({pageUrl})", nameof(Navigate), targetInfo.Url);
                     return;
+                }
             }
 
             m_pageStoppedLoading.Reset();
@@ -179,13 +232,16 @@
             });
 
             m_currentFrameId = navigateResponse.FrameId;
+            m_logger.LogDebug("{functionName} Completed navigation to {url} (New frame id: {frameId})", nameof(Navigate), url, m_currentFrameId);
         }
+
         /// <summary>
         /// Waits until the current navigation to stop loading.
         /// </summary>
         /// <returns></returns>
         public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
         {
+            m_logger.LogDebug("{functionName} Waiting for current navigation to complete.", nameof(WaitForCurrentNavigation));
             await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;
@@ -198,6 +254,8 @@
         /// <returns></returns>
         public async Task<bool> WaitForNextNavigation(int millisecondsTimeout = 15000)
         {
+            m_logger.LogDebug("{functionName} Waiting for next navigation.", nameof(WaitForNextNavigation));
+
             if (!IsLoading)
                 m_pageStoppedLoading.Reset();
 
@@ -287,13 +345,17 @@
             if (sessionInfo == null)
                 throw new ArgumentNullException(nameof(sessionInfo));
 
-            var logger = serviceProvider
+            var chromeSessionLogger = serviceProvider
                 .GetService<ILoggerFactory>()
                 .CreateLogger<ChromeSession>();
 
+            var devToolsLogger = serviceProvider
+                .GetService<ILoggerFactory>()
+                .CreateLogger<SkraprDevTools>();
+
             //Create a new session using the information in the session info.
-            var session = new ChromeSession(logger, sessionInfo.WebSocketDebuggerUrl);
-            var devTools = new SkraprDevTools(session, sessionInfo.Id);
+            var session = new ChromeSession(chromeSessionLogger, sessionInfo.WebSocketDebuggerUrl);
+            var devTools = new SkraprDevTools(devToolsLogger, session, sessionInfo.Id);
             await devTools.Initialize();
 
             return devTools;

@@ -45,6 +45,11 @@
         },
         {
           "name": "ActLikeAHuman"
+        },
+        {
+          "name": "InjectScriptElement",
+          "condition":  "window['URI'] === undefined;",
+          "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js"
         }
       ]
     }

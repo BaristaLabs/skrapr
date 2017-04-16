@@ -12,11 +12,11 @@
         /// <param name="script"></param>
         /// <param name="isPromise"></param>
         /// <returns></returns>
-        public static async Task<Runtime.RemoteObject> EvaluateScript(this Runtime.RuntimeAdapter runtimeAdapter, string script, long? contextId = null, bool returnByValue = false, bool isPromise = false)
+        public static async Task<Runtime.RemoteObject> Evaluate(this Runtime.RuntimeAdapter runtimeAdapter, string script, long? contextId = null, bool returnByValue = false, bool awaitPromise = false)
         {
             var evaluateResponse = await runtimeAdapter.Session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
             {
-                AwaitPromise = isPromise,
+                AwaitPromise = awaitPromise,
                 ContextId = contextId,
                 Expression = script,
                 GeneratePreview = false,

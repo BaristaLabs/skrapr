@@ -2,6 +2,7 @@
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Definitions;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Represents a worker that processes a skrapr definition.
@@ -20,6 +21,14 @@
         /// Gets the Skrapr dev tools associated with the worker
         /// </summary>
         SkraprDevTools DevTools
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets a logger associated with the worker.
+        /// </summary>
+        ILogger Logger
         {
             get;
         }

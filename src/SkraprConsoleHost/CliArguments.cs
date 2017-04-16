@@ -11,6 +11,14 @@
             RemoteDebuggingPort = 9223;
         }
 
+        [Option(ShortName: 'a', LongName: "attach")]
+        [Help("Indicates that if a rule in the definition matches the current url to begin at that point. If not, uses the start urls.")]
+        public bool Attach
+        {
+            get;
+            set;
+        }
+
         [OptionParameter(LongName: "remote-debugging-host")]
         [Help("Specifies the host of the remote debugger. Default is localhost.")]
         public string RemoteDebuggingHost

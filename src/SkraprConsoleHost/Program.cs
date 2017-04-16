@@ -1,6 +1,7 @@
 ﻿namespace Skrapr
 {
     using BaristaLabs.Skrapr;
+    using BaristaLabs.Skrapr.Extensions;
     using EntryPoint;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -59,8 +60,28 @@
             var devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
             logger.LogDebug($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
 
-            var processor = SkraprWorker.Create(cliArguments.SkraprDefinitionPath, devTools.Session, devTools);
-            processor.AddStartUrls();
+            var worker = SkraprWorker.Create(serviceProvider, cliArguments.SkraprDefinitionPath, devTools.Session, devTools);
+
+            if (cliArguments.Attach == true)
+            {
+                var targetInfo = devTools.Session.Target.GetTargetInfo(session.Id).GetAwaiter().GetResult();
+                var matchingRuleCount = worker.GetMatchingRules(targetInfo.Url).Count();
+                if (matchingRuleCount > 0)
+                {
+                    logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's url; Continuing.");
+                    worker.AddUrl(targetInfo.Url);
+                }
+                else
+                {
+                    logger.LogDebug($"Attach specified but no rules matched the current session's url; Adding start urls.");
+                    worker.AddStartUrls();
+                }
+            }
+            else
+            {
+                logger.LogDebug($"Adding start urls.");
+                worker.AddStartUrls();
+            }
 
             //Setup Hangfire
             //GlobalConfiguration.Configuration.UseStorage(new MemoryStorage());
@@ -75,8 +96,12 @@
             //    Console.ReadKey();
             //}
 
-            logger.LogDebug("Processing...");
-            Console.ReadLine();
+            logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
+            Console.ReadKey();
+
+            logger.LogDebug("Stop requested. Shutting down.");
+            //TODO: session, worker.
+            worker.Dispose();
         }
     }
 }
