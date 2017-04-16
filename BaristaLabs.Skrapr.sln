@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaristaLabs.Skrapr.Core", "src\BaristaLabs.Skrapr.Core\BaristaLabs.Skrapr.Core.csproj", "{5F2D4CD1-D575-440B-990E-DD57B2A1B7FD}"
 EndProject
@@ -12,6 +12,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkraprWebHost", "src\SkraprWebHost\SkraprWebHost.csproj", "{CEDF0415-277E-407A-B106-7726E942CD78}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkraprConsoleHost", "src\SkraprConsoleHost\SkraprConsoleHost.csproj", "{D56B4061-8A87-4BFF-A399-FE3A4F2AA749}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4FF087D2-3361-48C1-B3CE-D3A105AA2448}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

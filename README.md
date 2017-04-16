@@ -1,0 +1,4 @@
+Skrapr
+---
+
+Declarative browser automation
