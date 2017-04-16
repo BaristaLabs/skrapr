@@ -7,6 +7,7 @@
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -30,17 +31,15 @@
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
         private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
 
-        private SkraprDevTools(ChromeSession session)
-        {
-            m_session = session ?? throw new ArgumentNullException(nameof(session));
-        }
+
+        #region Properties
 
         /// <summary>
-        /// Gets the Chrome session associated with this dev tools instance.
+        /// Gets an IDictionary of the child nodes currently seen by the dev tools -- use the GetChildNodeData to obtain information about a specific node.
         /// </summary>
-        public ChromeSession Session
+        public IDictionary<long, Dom.Node> ChildNodes
         {
-            get { return m_session; }
+            get { return m_nodeDictionary; }
         }
 
         /// <summary>
@@ -49,16 +48,24 @@
         public bool IsLoading
         {
             get { return !m_pageStoppedLoading.IsSet; }
+
         }
+        /// <summary>
+        /// Gets the Chrome session associated with this dev tools instance.
+        /// </summary>
+        public ChromeSession Session
+        {
+            get { return m_session; }
+        }
+        #endregion
 
         /// <summary>
-        /// Returns the present frame / resource tree structure.
+        /// Creates a new instance of the SkraprDevTools using the provided sesion.
         /// </summary>
-        /// <returns></returns>
-        public async Task<Page.FrameResourceTree> GetResourceTree()
+        /// <param name="session"></param>
+        private SkraprDevTools(ChromeSession session)
         {
-            var getFramesResponse = await m_session.SendCommand<Page.GetResourceTreeCommand, Page.GetResourceTreeCommandResponse>(new Page.GetResourceTreeCommand());
-            return getFramesResponse.FrameTree;
+            m_session = session ?? throw new ArgumentNullException(nameof(session));
         }
 
         /// <summary>
@@ -71,7 +78,7 @@
         {
             if (!forceNavigate)
             {
-                var tree = await GetResourceTree();
+                var tree = await Session.Page.GetResourceTree();
                 if (tree.Frame.Url == url)
                     return;
             }
@@ -83,6 +90,22 @@
             });
 
             m_currentFrameId = navigateResponse.FrameId;
+        }
+
+        public async Task<Tuple<double, double>> GetPageScaleFactor()
+        {
+            //Determine the scale factor for the current page by comparing the BoxModel of the document to the ViewPort Client Info
+            var documentNode = await Session.DOM.GetDocument();
+            var documentBoxModel = await Session.DOM.GetBoxModel(new Dom.GetBoxModelCommand
+            {
+                NodeId = documentNode.NodeId
+            });
+
+            var documentLayoutMetrics = await Session.Page.GetLayoutMetrics();
+
+            double scaleX = documentLayoutMetrics.LayoutViewport.ClientWidth / documentBoxModel.Model.Width;
+            double scaleY = documentLayoutMetrics.LayoutViewport.ClientHeight / documentBoxModel.Model.Height;
+            return new Tuple<double, double>(scaleX, scaleY);
         }
 
         public async Task<bool> GetChildNodeData(long nodeId, long depth = 1, bool pierce = false)
@@ -128,27 +151,13 @@
         }
 
         /// <summary>
-        /// Returns the root document node of the current page of the session.
-        /// </summary>
-        /// <returns>A Dom.Node representing the document.</returns>
-        public async Task<Dom.Node> GetDocument(long depth = 1, bool pierce = false)
-        {
-            var response = await m_session.SendCommand<Dom.GetDocumentCommand, Dom.GetDocumentCommandResponse>(new Dom.GetDocumentCommand
-            {
-                Depth = depth,
-                Pierce = pierce
-            });
-            return response.Root;
-        }
-
-        /// <summary>
         /// Returns the node id for the given css selector. Value will be less than 1 if selector does not correspond to a dom element.
         /// </summary>
         /// <param name="cssSelector"></param>
         /// <returns></returns>
         public async Task<long> GetNodeForSelector(string cssSelector)
         {
-            var document = await GetDocument();
+            var document = await Session.DOM.GetDocument();
             var domElement = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
             {
                 NodeId = document.NodeId, //Document node id is probably most likely always 1.
@@ -168,7 +177,7 @@
         /// <returns></returns>
         public async Task<Css.LayoutTreeNode> GetLayoutTreeNodeForDomElement(string cssSelector)
         {
-            var document = await GetDocument();
+            var document = await Session.DOM.GetDocument();
             var domElement = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
             {
                 NodeId = document.NodeId, //Document node id is probably most likely always 1.
@@ -215,7 +224,7 @@
         /// <param name="script"></param>
         /// <param name="isPromise"></param>
         /// <returns></returns>
-        public async Task<Runtime.RemoteObject> EvaluateScript(string script, bool isPromise = false)
+        public async Task<Runtime.RemoteObject> EvaluateScript(string script, bool byValue = false, bool isPromise = false)
         {
             var evaluateResponse = await m_session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
             {
@@ -224,8 +233,8 @@
                 Expression = script,
                 GeneratePreview = false,
                 IncludeCommandLineAPI = true,
-                ObjectGroup = "console",
-                ReturnByValue = false,
+                ObjectGroup = "Skrapr",
+                ReturnByValue = byValue,
                 Silent = false,
                 UserGesture = true
             });
@@ -249,7 +258,7 @@
 
             //TODO: Don't sequentially await these.
             await Session.SendCommand(new Page.EnableCommand());
-            var resourceTree = await GetResourceTree();
+            var resourceTree = await Session.Page.GetResourceTree();
             m_currentFrameId = resourceTree.Frame.Id;
             await Session.SendCommand(new Runtime.EnableCommand());
             await Session.SendCommand(new Dom.EnableCommand());

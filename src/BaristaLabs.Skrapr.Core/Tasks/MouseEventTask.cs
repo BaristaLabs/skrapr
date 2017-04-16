@@ -7,6 +7,7 @@
     using Css = ChromeDevTools.CSS;
     using Dom = ChromeDevTools.DOM;
     using Page = ChromeDevTools.Page;
+    using System.Linq;
 
     public class MouseEventTask : ITask
     {
@@ -46,42 +47,62 @@
 
         public async Task PerformTask(SkraprContext context)
         {
-            var nodeId = await context.DevTools.GetNodeForSelector(".logo-placeholder");
+            await context.Session.DOM.GetDocument(-1);
+
+            var nodeId = await context.DevTools.GetNodeForSelector(Selector);
             if (nodeId < 1)
                 return;
 
-            var viewPort = await context.Session.SendCommand<Page.GetLayoutMetricsCommand, Page.GetLayoutMetricsCommandResponse>(new Page.GetLayoutMetricsCommand
+            if (context.DevTools.ChildNodes.ContainsKey(nodeId))
             {
+                var backendNodeInfo = context.DevTools.ChildNodes[nodeId].BackendNodeId;
+                //await context.Session.Runtime.CallFunctionOn(new ChromeDevTools.Runtime.CallFunctionOnCommand
+                //{
+                //    ObjectId = backendNodeInfo.
+                //});
+            }
 
-            });
-
-            await context.Session.DOM.SetInspectMode(new Dom.SetInspectModeCommand
-            {
-                Mode = Dom.InspectMode.SearchForNode,
-                HighlightConfig = new Dom.HighlightConfig
-                {
-                    BorderColor = new Dom.RGBA
-                    {
-                        R = 255,
-                        G = 255,
-                        B = 0,
-                        A = 0.6
-                    }
-                }
-            });
-
-            var nodeBoxModel = await context.Session.SendCommand<Dom.GetBoxModelCommand, Dom.GetBoxModelCommandResponse>(new Dom.GetBoxModelCommand
+            await context.Session.DOM.SetInspectedNode(new Dom.SetInspectedNodeCommand
             {
                 NodeId = nodeId
             });
 
-            for(int i = 0; i < nodeBoxModel.Model.Content.Length; i++)
+            var result = await context.DevTools.EvaluateScript("JSON.stringify($0.getBoundingClientRect())");
+            var nodeBoxModel = await context.Session.DOM.GetBoxModel(nodeId);
+
+            var highlightObject = await context.Session.DOM.GetHighlightObjectForTest(nodeId);
+            var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
+            var contentPathPoints = contentPath.GetQuad();
+
+            var scaleFactor = await context.DevTools.GetPageScaleFactor();
+            //await context.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
+            //{
+            //    X = layoutMetrics.LayoutViewport.PageX,
+            //    Y = layoutMetrics.LayoutViewport.PageY,
+            //    Width = layoutMetrics.LayoutViewport.ClientWidth,
+            //    Height = layoutMetrics.LayoutViewport.ClientHeight,
+            //    Color = new Dom.RGBA
+            //    {
+            //        R = 0,
+            //        G = 0,
+            //        B = 255,
+            //        A = 0.7
+            //    },
+            //    OutlineColor = new Dom.RGBA
+            //    {
+            //        R = 255,
+            //        G = 0,
+            //        B = 0,
+            //        A = 1
+            //    },
+            //});
+
+            await context.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
             {
-                nodeBoxModel.Model.Content[i] = nodeBoxModel.Model.Content[i] / 2;
-            }
-            await context.Session.SendCommand(new Dom.HighlightQuadCommand
-            {
-                Quad = nodeBoxModel.Model.Content,
+                X = (long)contentPathPoints[0]/2,
+                Y = (long)contentPathPoints[1]/2,
+                Width = (long)(highlightObject.ElementInfo.NodeWidth / 2),
+                Height = (long)(highlightObject.ElementInfo.NodeHeight / 2.2),
                 Color = new Dom.RGBA
                 {
                     R = 0,
@@ -95,8 +116,29 @@
                     G = 0,
                     B = 0,
                     A = 1
-                }
+                },
             });
+
+            //await context.Session.DOM.HighlightQuad(new Dom.HighlightQuadCommand
+            //{
+            //    Quad = contentPath.GetQuad(),
+            //    Color = new Dom.RGBA
+            //    {
+            //        R = 0,
+            //        G = 0,
+            //        B = 255,
+            //        A = 0.7
+            //    },
+            //    OutlineColor = new Dom.RGBA
+            //    {
+            //        R = 255,
+            //        G = 0,
+            //        B = 0,
+            //        A = 1
+            //    },
+            //});
+
+            
 
             //await context.Session.SendCommand(new Dom.HighlightRectCommand
             //{
