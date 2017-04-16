@@ -13,19 +13,39 @@
           "isNavigation": true
         },
         {
+          "name": "ActLikeAHuman"
+        },
+        {
+          "name": "AddCurrentPage"
+        }
+      ]
+    },
+    {
+      "urlPattern": "^http://www.toririchard.com/mens$",
+      "tasks": [
+        {
           "name": "ClickDomElement",
           "selector": "#sidebar li:nth-of-type(2) a",
           "isNavigation": true
         },
         {
-          "name": "HighlightDomElement",
-          "selector": ".thumb-grid"
+          "name": "ActLikeAHuman"
+        },
+        {
+          "name": "AddCurrentPage"
         }
       ]
     },
     {
-      "urlPattern": "^http://www.toririchard.com/mens-shirts$",
+      "urlPattern": "^http://www.toririchard.com/mens-shirts.*$",
       "tasks": [
+        {
+          "name": "HighlightDomElement",
+          "selector": ".thumb-grid"
+        },
+        {
+          "name": "ActLikeAHuman"
+        }
       ]
     }
   ],

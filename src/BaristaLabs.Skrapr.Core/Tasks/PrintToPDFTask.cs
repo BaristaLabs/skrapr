@@ -4,16 +4,16 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class PrintToPDFTask : ITask
+    public class PrintToPDFTask : SkraprTask
     {
-        public string Name
+        public override string Name
         {
             get { return "PrintToPDF"; }
         }
 
-        public async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            var base64Pdf = await context.Session.SendCommand("Page.printToPDF", JToken.FromObject(new object()), CancellationToken.None);
+            var base64Pdf = await worker.Session.SendCommand("Page.printToPDF", JToken.FromObject(new object()), CancellationToken.None);
 
         }
     }

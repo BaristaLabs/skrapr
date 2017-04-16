@@ -9,7 +9,7 @@
     using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
 
-    public class ClickDomElementTask : TaskBase
+    public class ClickDomElementTask : SkraprTask
     {
         public override string Name
         {
@@ -48,11 +48,11 @@
             Button = "left";
         }
 
-        public override async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            var documentNode = await context.Session.DOM.GetDocument(1);
+            var documentNode = await worker.Session.DOM.GetDocument(1);
 
-            var nodeIds = await context.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
+            var nodeIds = await worker.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
             {
                 NodeId = documentNode.NodeId,
                 Selector = Selector
@@ -62,7 +62,7 @@
             if (nodeId < 1)
                 return;
 
-            var highlightObject = await context.Session.DOM.GetHighlightObjectForTest(nodeId);
+            var highlightObject = await worker.Session.DOM.GetHighlightObjectForTest(nodeId);
             var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
             var contentPathPoints = contentPath.GetQuad();
 
@@ -77,7 +77,7 @@
             var target = targetClickRect.GetRandomSpotWithinRect();
             var clickDelay = TRandom.New().Next(100, 1000);
 
-            await context.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
+            await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {
                 Button = Button,
                 Type = "mousePressed",
@@ -90,7 +90,7 @@
 
             await Task.Run(() => Thread.Sleep(clickDelay));
 
-            await context.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
+            await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {
                 Button = Button,
                 Type = "mouseReleased",
@@ -102,7 +102,7 @@
             });
 
             if (IsNavigation)
-                await context.DevTools.WaitForNextNavigation();
+                await worker.DevTools.WaitForNextNavigation();
         }
     }
 }

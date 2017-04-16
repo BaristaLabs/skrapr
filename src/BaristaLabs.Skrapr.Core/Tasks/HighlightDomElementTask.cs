@@ -8,9 +8,9 @@
     /// <summary>
     /// Represents a task that highlights the specified dom element based on a css selector.
     /// </summary>
-    public class HighlightDomElementTask : ITask
+    public class HighlightDomElementTask : SkraprTask
     {
-        public string Name
+        public override string Name
         {
             get { return "HighlightDomElement"; }
         }
@@ -58,15 +58,15 @@
             };
         }
 
-        public async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            var scaleFactor = await context.DevTools.GetPageScaleFactor();
+            var scaleFactor = await worker.DevTools.GetPageScaleFactor();
             var xScaleFactor = scaleFactor.Item1;
             var yScaleFactor = scaleFactor.Item2;
 
-            var documentNode = await context.Session.DOM.GetDocument(1);
+            var documentNode = await worker.Session.DOM.GetDocument(1);
 
-            var nodeIds = await context.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
+            var nodeIds = await worker.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
             {
                 NodeId = documentNode.NodeId,
                 Selector = Selector
@@ -77,7 +77,7 @@
             //    return;
             foreach (var nodeId in nodeIds.NodeIds)
             {
-                var highlightObject = await context.Session.DOM.GetHighlightObjectForTest(nodeId);
+                var highlightObject = await worker.Session.DOM.GetHighlightObjectForTest(nodeId);
                 var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
                 var contentPathPoints = contentPath.GetQuad();
 
@@ -89,7 +89,7 @@
                     Height = highlightObject.ElementInfo.NodeHeight / yScaleFactor //2.2
                 };
 
-                await context.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
+                await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
                 {
                     X = (long)(targetRect.X),
                     Y = (long)(targetRect.Y),

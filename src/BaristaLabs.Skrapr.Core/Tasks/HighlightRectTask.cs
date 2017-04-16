@@ -4,9 +4,9 @@
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
-    public class HighlightRectTask : ITask
+    public class HighlightRectTask : SkraprTask
     {
-        public string Name
+        public override string Name
         {
             get { return "HighlightRect"; }
         }
@@ -76,9 +76,9 @@
             set;
         }
 
-        public async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            await context.Session.SendCommand(new Dom.HighlightRectCommand
+            await worker.Session.SendCommand(new Dom.HighlightRectCommand
             {
                 X = X,
                 Y = Y,

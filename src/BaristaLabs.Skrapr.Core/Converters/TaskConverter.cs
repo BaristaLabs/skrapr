@@ -13,7 +13,7 @@
         public static Lazy<IDictionary<string, Type>> s_taskTypes = new Lazy<IDictionary<string, Type>>(() =>
        {
            var taskTypeDictionary = new Dictionary<string, Type>();
-           var taskInterfaceType = typeof(ITask);
+           var taskInterfaceType = typeof(ISkraprTask);
            var types = typeof(TaskConverter).GetTypeInfo().Assembly
                .GetTypes()
                .Select(t => t.GetTypeInfo())
@@ -21,7 +21,7 @@
 
            foreach (var t in types)
            {
-               var taskInstance = (ITask)Activator.CreateInstance(t.AsType());
+               var taskInstance = (ISkraprTask)Activator.CreateInstance(t.AsType());
                if (String.IsNullOrWhiteSpace(taskInstance.Name))
                    throw new InvalidOperationException($"The type {t} does not specify a name.");
 
@@ -42,7 +42,7 @@
         
         public override bool CanConvert(Type objectType)
         {
-            return typeof(ITask).IsAssignableFrom(objectType);
+            return typeof(ISkraprTask).IsAssignableFrom(objectType);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

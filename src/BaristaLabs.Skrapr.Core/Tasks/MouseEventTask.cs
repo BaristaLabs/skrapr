@@ -7,14 +7,14 @@
     using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
 
-    public class MouseEventTask : ITask
+    public class MouseEventTask : SkraprTask
     {
         public MouseEventTask()
         {
             Type = "mouseMoved";
         }
 
-        public string Name
+        public override string Name
         {
             get { return "MouseEvent"; }
         }
@@ -49,11 +49,11 @@
             set;
         }
 
-        public async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            var documentNode = await context.Session.DOM.GetDocument(1);
+            var documentNode = await worker.Session.DOM.GetDocument(1);
 
-            var nodeIds = await context.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
+            var nodeIds = await worker.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
             {
                 NodeId = documentNode.NodeId,
                 Selector = Selector
@@ -63,7 +63,7 @@
             if (nodeId < 1)
                 return;
 
-            var highlightObject = await context.Session.DOM.GetHighlightObjectForTest(nodeId);
+            var highlightObject = await worker.Session.DOM.GetHighlightObjectForTest(nodeId);
             var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
             var contentPathPoints = contentPath.GetQuad();
 
@@ -157,7 +157,7 @@
             //if (targetNodeId.NodeId != nodeId)
             //    throw new InvalidOperationException("A hole was torn in the universe.");
 
-            await context.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
+            await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {
                 Button = "left",
                 Type = "mousePressed",
@@ -168,7 +168,7 @@
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
             });
 
-            await context.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
+            await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {
                 Button = "left",
                 Type = "mouseReleased",
@@ -180,7 +180,7 @@
             });
 
             if (IsNavigation)
-                await context.DevTools.WaitForNextNavigation();
+                await worker.DevTools.WaitForNextNavigation();
         }
     }
 }

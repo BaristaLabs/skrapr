@@ -30,7 +30,7 @@
         }
 
         [JsonProperty("tasks", ItemConverterType = typeof(TaskConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public ICollection<ITask> Tasks
+        public ICollection<ISkraprTask> Tasks
         {
             get;
             set;

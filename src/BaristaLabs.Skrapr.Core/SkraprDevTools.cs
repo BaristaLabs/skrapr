@@ -14,7 +14,6 @@
 
     using Css = ChromeDevTools.CSS;
     using Dom = ChromeDevTools.DOM;
-    using Input = ChromeDevTools.Input;
     using Page = ChromeDevTools.Page;
     using Runtime = ChromeDevTools.Runtime;
 
@@ -23,6 +22,8 @@
     /// </summary>
     public class SkraprDevTools
     {
+        #region Fields
+        private readonly string m_targetId;
         private readonly ChromeSession m_session;
         private string m_currentFrameId;
         private Runtime.ExecutionContextDescription m_currentFrameContext;
@@ -30,7 +31,7 @@
         private readonly ManualResetEventSlim m_pageStoppedLoading = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
         private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
-
+        #endregion
 
         #region Properties
 
@@ -40,6 +41,22 @@
         public IDictionary<long, Dom.Node> ChildNodes
         {
             get { return m_nodeDictionary; }
+        }
+
+        /// <summary>
+        /// Gets the frame id associated with the current session.
+        /// </summary>
+        public string CurrentFrameId
+        {
+            get { return m_currentFrameId; }
+        }
+
+        /// <summary>
+        /// Gets the frame context associated with the current session.
+        /// </summary>
+        public Runtime.ExecutionContextDescription CurrentFrameContext
+        {
+            get { return m_currentFrameContext; }
         }
 
         /// <summary>
@@ -57,58 +74,24 @@
         {
             get { return m_session; }
         }
+
+        /// <summary>
+        /// Gets the id of the target associated with the dev tools.
+        /// </summary>
+        public string TargetId
+        {
+            get { return m_targetId; }
+        }
         #endregion
 
         /// <summary>
         /// Creates a new instance of the SkraprDevTools using the provided sesion.
         /// </summary>
         /// <param name="session"></param>
-        private SkraprDevTools(ChromeSession session)
+        private SkraprDevTools(ChromeSession session, string targetId)
         {
             m_session = session ?? throw new ArgumentNullException(nameof(session));
-        }
-
-        /// <summary>
-        /// Instructs the current session to navigate to the specified Url.
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="forceNavigate"></param>
-        /// <returns></returns>
-        public async Task Navigate(string url, bool forceNavigate = false)
-        {
-            if (!forceNavigate)
-            {
-                var tree = await Session.Page.GetResourceTree();
-                if (tree.Frame.Url == url)
-                    return;
-            }
-
-            m_pageStoppedLoading.Reset();
-            var navigateResponse = await m_session.SendCommand<Page.NavigateCommand, Page.NavigateCommandResponse>(new Page.NavigateCommand
-            {
-                Url = url
-            });
-
-            m_currentFrameId = navigateResponse.FrameId;
-        }
-
-        /// <summary>
-        /// Determine the scale factor for the current page by comparing the BoxModel of the document to the ViewPort Client Info
-        /// </summary>
-        /// <returns></returns>
-        public async Task<Tuple<double, double>> GetPageScaleFactor()
-        {
-            var documentNode = await Session.DOM.GetDocument();
-            var documentBoxModel = await Session.DOM.GetBoxModel(new Dom.GetBoxModelCommand
-            {
-                NodeId = documentNode.NodeId
-            });
-
-            var documentLayoutMetrics = await Session.Page.GetLayoutMetrics();
-
-            double scaleX = documentLayoutMetrics.LayoutViewport.ClientWidth / documentBoxModel.Model.Width;
-            double scaleY = documentLayoutMetrics.LayoutViewport.ClientHeight / documentBoxModel.Model.Height;
-            return new Tuple<double, double>(scaleX, scaleY);
+            m_targetId = targetId;
         }
 
         public async Task<bool> GetChildNodeData(long nodeId, long depth = 1, bool pierce = false)
@@ -128,29 +111,22 @@
         }
 
         /// <summary>
-        /// Waits until the current navigation to stop loading.
+        /// Determine the scale factor for the current page by comparing the BoxModel of the document to the ViewPort Client Info
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
+        public async Task<Tuple<double, double>> GetPageScaleFactor()
         {
-            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+            var documentNode = await Session.DOM.GetDocument();
+            var documentBoxModel = await Session.DOM.GetBoxModel(new Dom.GetBoxModelCommand
+            {
+                NodeId = documentNode.NodeId
+            });
 
-            return IsLoading;
-        }
+            var documentLayoutMetrics = await Session.Page.GetLayoutMetrics();
 
-        /// <summary>
-        /// Waits for the next navigation to stop loading.
-        /// </summary>
-        /// <param name="millisecondsTimeout"></param>
-        /// <returns></returns>
-        public async Task<bool> WaitForNextNavigation(int millisecondsTimeout = 15000)
-        {
-            if (!IsLoading)
-                m_pageStoppedLoading.Reset();
-
-            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
-
-            return IsLoading;
+            double scaleX = documentLayoutMetrics.LayoutViewport.ClientWidth / documentBoxModel.Model.Width;
+            double scaleY = documentLayoutMetrics.LayoutViewport.ClientHeight / documentBoxModel.Model.Height;
+            return new Tuple<double, double>(scaleX, scaleY);
         }
 
         /// <summary>
@@ -181,52 +157,56 @@
             return elementCssComputedStyle.LayoutTreeNodes.FirstOrDefault(e => e.NodeId == domElement.NodeId);
         }
 
-        public async Task<bool> ClickDomElement(string cssSelector)
+        /// <summary>
+        /// Instructs the current session to navigate to the specified Url.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="forceNavigate"></param>
+        /// <returns></returns>
+        public async Task Navigate(string url, bool forceNavigate = false)
         {
-            var layoutTreeNode = await GetLayoutTreeNodeForDomElement(cssSelector);
-
-            if (layoutTreeNode == null)
-                return false;
-
-            var toClick = layoutTreeNode.BoundingBox.GetMiddleOfRect();
-
-            await m_session.SendCommand(new Input.DispatchMouseEventCommand
+            if (!forceNavigate)
             {
-                Button = "left",
-                Type = "mousePressed",
-                ClickCount = 1,
-                Modifiers = 0,
-                X = (long)toClick.X,
-                Y = (long)toClick.Y,
-                Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+                var tree = await Session.Page.GetResourceTree();
+                if (tree.Frame.Url == url)
+                    return;
+            }
+
+            m_pageStoppedLoading.Reset();
+            var navigateResponse = await m_session.Page.Navigate(new Page.NavigateCommand
+            {
+                Url = url
             });
 
-            return true;
+            m_currentFrameId = navigateResponse.FrameId;
+        }
+        /// <summary>
+        /// Waits until the current navigation to stop loading.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
+        {
+            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+
+            return IsLoading;
         }
 
         /// <summary>
-        /// Evaluates the specified script expression on global object.
+        /// Waits for the next navigation to stop loading.
         /// </summary>
-        /// <param name="script"></param>
-        /// <param name="isPromise"></param>
+        /// <param name="millisecondsTimeout"></param>
         /// <returns></returns>
-        public async Task<Runtime.RemoteObject> EvaluateScript(string script, bool byValue = false, bool isPromise = false)
+        public async Task<bool> WaitForNextNavigation(int millisecondsTimeout = 15000)
         {
-            var evaluateResponse = await m_session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
-            {
-                AwaitPromise = isPromise,
-                ContextId = m_currentFrameContext.Id,
-                Expression = script,
-                GeneratePreview = false,
-                IncludeCommandLineAPI = true,
-                ObjectGroup = "Skrapr",
-                ReturnByValue = byValue,
-                Silent = false,
-                UserGesture = true
-            });
+            if (!IsLoading)
+                m_pageStoppedLoading.Reset();
 
-            return evaluateResponse.Result;
+            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+
+            return IsLoading;
         }
+
+        #region Private Methods
 
         private async Task Initialize()
         {
@@ -289,7 +269,16 @@
                 m_nodeDictionary.AddOrUpdate(node.NodeId, node, (id, previousNode) => node);
             }
         }
+        #endregion
 
+        #region Static Members
+
+        /// <summary>
+        /// Connects to the specified chrome session.
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="sessionInfo"></param>
+        /// <returns></returns>
         public static async Task<SkraprDevTools> Connect(IServiceProvider serviceProvider, ChromeSessionInfo sessionInfo)
         {
             if (serviceProvider == null)
@@ -304,10 +293,11 @@
 
             //Create a new session using the information in the session info.
             var session = new ChromeSession(logger, sessionInfo.WebSocketDebuggerUrl);
-            var devTools = new SkraprDevTools(session);
+            var devTools = new SkraprDevTools(session, sessionInfo.Id);
             await devTools.Initialize();
 
             return devTools;
         }
+        #endregion
     }
 }

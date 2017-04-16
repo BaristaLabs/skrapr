@@ -6,7 +6,7 @@
     /// <summary>
     /// Represents a task that ensures that jQuery is present on the page.
     /// </summary>
-    public class EnsureJQueryTask : TaskBase
+    public class EnsureJQueryTask : SkraprTask
     {
         public EnsureJQueryTask()
         {
@@ -33,7 +33,7 @@
             set;
         }
     
-        public override Task PerformTask(SkraprContext context)
+        public override Task PerformTask(ISkraprWorker worker)
         {
             throw new NotImplementedException();
         }

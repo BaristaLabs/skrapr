@@ -4,27 +4,30 @@
     using BaristaLabs.Skrapr.Definitions;
     using Newtonsoft.Json;
     using System;
-    using System.Collections.Concurrent;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using System.Threading;
     using System.Threading.Tasks;
+    using System.Threading.Tasks.Dataflow;
 
     /// <summary>
     /// Represents a class that processes a Skrapr Definition.
     /// </summary>
-    public sealed class SkraprDefinitionProcessor
+    public sealed class SkraprWorker : ISkraprWorker
     {
-        private readonly BlockingCollection<string> m_queue;
+        private readonly ActionBlock<string> m_urlQueue;
 
         private readonly SkraprDefinition m_definition;
         private readonly SkraprDevTools m_devTools;
         private readonly ChromeSession m_session;
 
-        public SkraprDefinitionProcessor(SkraprDefinition definition, ChromeSession session, SkraprDevTools devTools)
+        public SkraprWorker(SkraprDefinition definition, ChromeSession session, SkraprDevTools devTools)
         {
-            m_queue = new BlockingCollection<string>();
+            m_urlQueue = new ActionBlock<string>(ProcessUrlQueue, new ExecutionDataflowBlockOptions
+            {
+                EnsureOrdered = true,
+                MaxDegreeOfParallelism = 1
+            });
 
             m_devTools = devTools ?? throw new ArgumentNullException(nameof(devTools));
             m_session = session;
@@ -49,33 +52,33 @@
         /// <summary>
         /// Start processing the definition.
         /// </summary>
-        public void Begin()
+        public void AddStartUrls()
         {
             //Enqueue the start urls associated with the definition.
             foreach (var url in m_definition.StartUrls)
             {
-                m_queue.Add(url);
+                m_urlQueue.Post(url);
             }
-
-            //Start processing of the queue.
-            ProcessQueue().GetAwaiter().GetResult();
         }
 
-        private async Task ProcessQueue()
+        /// <summary>
+        /// Adds the specified url to the queue.
+        /// </summary>
+        /// <param name="url"></param>
+        public void AddUrl(string url)
         {
-            while (m_queue.TryTake(out string url, Timeout.Infinite))
-            {
-                //Navigate to the URL.
-                DevTools.Navigate(url).Wait();
-                DevTools.WaitForCurrentNavigation().Wait();
-                var matchingRules = Definition.Rules.Where(r => Regex.IsMatch(url, r.UrlPattern));
-                foreach(var rule in matchingRules)
-                {
-                    await ProcessSkraprRule(rule);
-                }
+            m_urlQueue.Post(url);
+        }
 
-                if (m_queue.Count == 0)
-                    m_queue.CompleteAdding();
+        private async Task ProcessUrlQueue(string url)
+        {
+            //Navigate to the URL.
+            await DevTools.Navigate(url);
+            await DevTools.WaitForCurrentNavigation();
+            var matchingRules = Definition.Rules.Where(r => Regex.IsMatch(url, r.UrlPattern));
+            foreach (var rule in matchingRules)
+            {
+                await ProcessSkraprRule(rule);
             }
         }
 
@@ -84,19 +87,13 @@
             if (rule == null)
                 throw new ArgumentNullException(nameof(rule));
 
-            var context = new SkraprContext
-            {
-                DevTools = DevTools,
-                Session = Session
-            };
-
             foreach(var task in rule.Tasks)
             {
-                await task.PerformTask(context);
+                await task.PerformTask(this);
             }
         }
 
-        public static SkraprDefinitionProcessor Create(string pathToSkraprDefinition, ChromeSession session, SkraprDevTools devTools)
+        public static SkraprWorker Create(string pathToSkraprDefinition, ChromeSession session, SkraprDevTools devTools)
         {
             if (!File.Exists(pathToSkraprDefinition))
                 throw new FileNotFoundException($"The specified skrapr definition ({pathToSkraprDefinition}) could not be found. Please check that the skrapr definition exists.");
@@ -104,7 +101,7 @@
             var skraprDefinitionJson = File.ReadAllText(pathToSkraprDefinition);
 
             var skraprDefinition = JsonConvert.DeserializeObject<SkraprDefinition>(skraprDefinitionJson);
-            return new SkraprDefinitionProcessor(skraprDefinition, session, devTools);
+            return new SkraprWorker(skraprDefinition, session, devTools);
         }
     }
 }

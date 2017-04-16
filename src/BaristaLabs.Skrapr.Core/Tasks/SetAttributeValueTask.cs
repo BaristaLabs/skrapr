@@ -4,9 +4,9 @@
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
-    public class SetAttributeValueTask : ITask
+    public class SetAttributeValueTask : SkraprTask
     {
-        public string Name
+        public override string Name
         {
             get { return "SetAttributeValue"; }
         }
@@ -29,13 +29,13 @@
             set;
         }
 
-        public async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            var nodeId = await context.Session.DOM.GetNodeIdForSelector(Selector);
+            var nodeId = await worker.Session.DOM.GetNodeIdForSelector(Selector);
             if (nodeId < 1)
                 return;
 
-            await context.Session.SendCommand(new Dom.SetAttributeValueCommand
+            await worker.Session.SendCommand(new Dom.SetAttributeValueCommand
             {
                 NodeId = nodeId,
                 Name = AttributeName,

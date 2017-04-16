@@ -59,8 +59,8 @@
             var devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
             logger.LogDebug($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
 
-            var processor = SkraprDefinitionProcessor.Create(cliArguments.SkraprDefinitionPath, devTools.Session, devTools);
-            processor.Begin();
+            var processor = SkraprWorker.Create(cliArguments.SkraprDefinitionPath, devTools.Session, devTools);
+            processor.AddStartUrls();
 
             //Setup Hangfire
             //GlobalConfiguration.Configuration.UseStorage(new MemoryStorage());
@@ -75,7 +75,7 @@
             //    Console.ReadKey();
             //}
 
-            logger.LogDebug("All Done!");
+            logger.LogDebug("Processing...");
             Console.ReadLine();
         }
     }

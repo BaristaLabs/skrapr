@@ -6,9 +6,12 @@
 
     using Network = ChromeDevTools.Network;
 
-    public class NavigateTask : ITask
+    /// <summary>
+    /// Represents a task that navigates the current page to a specified url.
+    /// </summary>
+    public class NavigateTask : SkraprTask
     {
-        public string Name
+        public override string Name
         {
             get { return "Navigate"; }
         }
@@ -27,19 +30,19 @@
             set;
         }
 
-        public async Task PerformTask(SkraprContext context)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
             //If a useragent is specified, override the default user agent
             if (!String.IsNullOrWhiteSpace(UserAgent))
             {
-                await context.DevTools.Session.SendCommand(new Network.SetUserAgentOverrideCommand
+                await worker.DevTools.Session.Network.SetUserAgentOverride(new Network.SetUserAgentOverrideCommand
                 {
                     UserAgent = UserAgent
                 });
             }
 
             Console.WriteLine($"Navigating to {Url}");
-            await context.DevTools.Navigate(Url);
+            await worker.DevTools.Navigate(Url);
         }
     }
 }

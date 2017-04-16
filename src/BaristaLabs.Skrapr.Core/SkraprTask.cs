@@ -1,18 +1,18 @@
-﻿namespace BaristaLabs.Skrapr.Tasks
+﻿namespace BaristaLabs.Skrapr
 {
     using System.Threading.Tasks;
 
     /// <summary>
     /// Represents an abstract implementation of the ITask interface.
     /// </summary>
-    public abstract class TaskBase : ITask
+    public abstract class SkraprTask : ISkraprTask
     {
         public abstract string Name
         {
             get;
         }
 
-        public abstract Task PerformTask(SkraprContext context);
+        public abstract Task PerformTask(ISkraprWorker worker);
 
         public override string ToString()
         {
