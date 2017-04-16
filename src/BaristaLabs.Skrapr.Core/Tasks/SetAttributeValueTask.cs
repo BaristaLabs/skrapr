@@ -1,5 +1,6 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
+    using BaristaLabs.Skrapr.Extensions;
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
@@ -30,7 +31,7 @@
 
         public async Task PerformTask(SkraprContext context)
         {
-            var nodeId = await context.DevTools.GetNodeForSelector(Selector);
+            var nodeId = await context.Session.DOM.GetNodeIdForSelector(Selector);
             if (nodeId < 1)
                 return;
 

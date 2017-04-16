@@ -47,62 +47,40 @@
 
         public async Task PerformTask(SkraprContext context)
         {
-            await context.Session.DOM.GetDocument(-1);
+            var documentNode = await context.Session.DOM.GetDocument(1);
 
-            var nodeId = await context.DevTools.GetNodeForSelector(Selector);
-            if (nodeId < 1)
-                return;
-
-            if (context.DevTools.ChildNodes.ContainsKey(nodeId))
+            var nodeIds = await context.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
             {
-                var backendNodeInfo = context.DevTools.ChildNodes[nodeId].BackendNodeId;
-                //await context.Session.Runtime.CallFunctionOn(new ChromeDevTools.Runtime.CallFunctionOnCommand
-                //{
-                //    ObjectId = backendNodeInfo.
-                //});
-            }
-
-            await context.Session.DOM.SetInspectedNode(new Dom.SetInspectedNodeCommand
-            {
-                NodeId = nodeId
+                NodeId = documentNode.NodeId,
+                Selector = ".MENS"
             });
 
-            var result = await context.DevTools.EvaluateScript("JSON.stringify($0.getBoundingClientRect())");
-            var nodeBoxModel = await context.Session.DOM.GetBoxModel(nodeId);
+            var nodeId = nodeIds.NodeIds.First();
+            if (nodeId < 1)
+                return;
 
             var highlightObject = await context.Session.DOM.GetHighlightObjectForTest(nodeId);
             var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
             var contentPathPoints = contentPath.GetQuad();
 
             var scaleFactor = await context.DevTools.GetPageScaleFactor();
-            //await context.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
-            //{
-            //    X = layoutMetrics.LayoutViewport.PageX,
-            //    Y = layoutMetrics.LayoutViewport.PageY,
-            //    Width = layoutMetrics.LayoutViewport.ClientWidth,
-            //    Height = layoutMetrics.LayoutViewport.ClientHeight,
-            //    Color = new Dom.RGBA
-            //    {
-            //        R = 0,
-            //        G = 0,
-            //        B = 255,
-            //        A = 0.7
-            //    },
-            //    OutlineColor = new Dom.RGBA
-            //    {
-            //        R = 255,
-            //        G = 0,
-            //        B = 0,
-            //        A = 1
-            //    },
-            //});
+            var xScaleFactor = scaleFactor.Item1;
+            var yScaleFactor = scaleFactor.Item2;
+
+            var targetRect = new Dom.Rect
+            {
+                X = contentPathPoints[0] / xScaleFactor,
+                Y = contentPathPoints[1] / yScaleFactor,
+                Width = highlightObject.ElementInfo.NodeWidth / xScaleFactor,
+                Height = highlightObject.ElementInfo.NodeHeight / yScaleFactor //2.2
+            };
 
             await context.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
             {
-                X = (long)contentPathPoints[0]/2,
-                Y = (long)contentPathPoints[1]/2,
-                Width = (long)(highlightObject.ElementInfo.NodeWidth / 2),
-                Height = (long)(highlightObject.ElementInfo.NodeHeight / 2.2),
+                X = (long)(targetRect.X),
+                Y = (long)(targetRect.Y),
+                Width = (long)(targetRect.Width),
+                Height = (long)(targetRect.Height),
                 Color = new Dom.RGBA
                 {
                     R = 0,
@@ -119,98 +97,74 @@
                 },
             });
 
-            //await context.Session.DOM.HighlightQuad(new Dom.HighlightQuadCommand
-            //{
-            //    Quad = contentPath.GetQuad(),
-            //    Color = new Dom.RGBA
-            //    {
-            //        R = 0,
-            //        G = 0,
-            //        B = 255,
-            //        A = 0.7
-            //    },
-            //    OutlineColor = new Dom.RGBA
-            //    {
-            //        R = 255,
-            //        G = 0,
-            //        B = 0,
-            //        A = 1
-            //    },
-            //});
-
-            
-
-            //await context.Session.SendCommand(new Dom.HighlightRectCommand
-            //{
-            //    X = (long)layoutTreeNode.BoundingBox.X,
-            //    Y = (long)layoutTreeNode.BoundingBox.Y,
-            //    Height = (long)layoutTreeNode.BoundingBox.Height,
-            //    Width = (long)layoutTreeNode.BoundingBox.Width,
-            //    Color = new Dom.RGBA
-            //    {
-            //        R = 0,
-            //        G = 0,
-            //        B = 255,
-            //        A = 0.7
-            //    },
-            //    OutlineColor = new Dom.RGBA
-            //    {
-            //        R = 255,
-            //        G = 0,
-            //        B = 0,
-            //        A = 1
-            //    }
-            //});
-
-            var computedStyles = await context.Session.SendCommand<Css.GetComputedStyleForNodeCommand, Css.GetComputedStyleForNodeCommandResponse>(new Css.GetComputedStyleForNodeCommand
+            //Validation
+            var target = targetRect.GetRandomSpotWithinRect();
+            var targetNodeId = await context.Session.DOM.GetNodeForLocation(new Dom.GetNodeForLocationCommand
             {
-                NodeId = nodeId
+                X = (long)target.X,
+                Y = (long)target.Y
             });
 
-            await context.Session.SendCommand(new Dom.HighlightNodeCommand
+            await context.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
             {
-                NodeId = nodeId,
+                X = (long)target.X,
+                Y = (long)target.Y,
+                Width = 1,
+                Height = 1,
+                Color = new Dom.RGBA
+                {
+                    R = 255,
+                    G = 0,
+                    B = 0,
+                    A = 1
+                },
+                OutlineColor = new Dom.RGBA
+                {
+                    R = 255,
+                    G = 0,
+                    B = 0,
+                    A = 1
+                },
+            });
+
+            await context.Session.DOM.HighlightNode(new Dom.HighlightNodeCommand
+            {
+                NodeId = targetNodeId.NodeId,
                 HighlightConfig = new Dom.HighlightConfig
                 {
-                    ShowInfo = true,
                     ContentColor = new Dom.RGBA
-                    {
-                        R = 0,
-                        G = 0,
-                        B = 255,
-                        A = 0.7
-                    },
-                    BorderColor = new Dom.RGBA
                     {
                         R = 255,
                         G = 0,
                         B = 0,
-                        A = 1
+                        A = 0.7
                     }
                 }
             });
+            //if (targetNodeId.NodeId != nodeId)
+            //    throw new InvalidOperationException("A hole was torn in the universe.");
 
-            //var response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
-            //{
-            //    Button = "left",
-            //    Type = "mousePressed",
-            //    ClickCount = 1,
-            //    Modifiers = 0,
-            //    X = (long)toGo.X,
-            //    Y = (long)toGo.Y,
-            //    Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
-            //});
+            var response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
+            {
+                Button = "left",
+                Type = "mousePressed",
+                ClickCount = 1,
+                Modifiers = 0,
+                X = (long)target.X,
+                Y = (long)target.Y,
+                Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+            });
 
-            //response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
-            //{
-            //    Button = "left",
-            //    Type = "mouseReleased",
-            //    ClickCount = 1,
-            //    Modifiers = 0,
-            //    X = (long)toGo.X,
-            //    Y = (long)toGo.Y,
-            //    Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
-            //});
+            response = await context.Session.SendCommand<Input.DispatchMouseEventCommand, Input.DispatchMouseEventCommandResponse>(new Input.DispatchMouseEventCommand
+            {
+                Button = "left",
+                Type = "mouseReleased",
+                ClickCount = 1,
+                Modifiers = 0,
+                X = (long)target.X,
+                Y = (long)target.Y,
+                Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
+            });
         }
     }
 }

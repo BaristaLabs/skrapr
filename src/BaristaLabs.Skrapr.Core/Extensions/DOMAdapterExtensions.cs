@@ -62,6 +62,23 @@
 
             return data.ToObject<HighlightObject>();
         }
+
+        /// <summary>
+        /// Returns the node id for the given css selector. Value will be less than 1 if selector does not correspond to a dom element.
+        /// </summary>
+        /// <param name="cssSelector"></param>
+        /// <returns></returns>
+        public static async Task<long> GetNodeIdForSelector(this Dom.DOMAdapter domAdapter, string cssSelector)
+        {
+            var document = await domAdapter.Session.DOM.GetDocument();
+            var domElement = await domAdapter.Session.DOM.QuerySelector(new Dom.QuerySelectorCommand
+            {
+                NodeId = document.NodeId,
+                Selector = cssSelector
+            });
+
+            return domElement.NodeId;
+        }
     }
 
     public class HighlightObject

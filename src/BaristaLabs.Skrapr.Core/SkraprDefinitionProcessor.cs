@@ -58,10 +58,10 @@
             }
 
             //Start processing of the queue.
-            ProcessQueue();
+            ProcessQueue().GetAwaiter().GetResult();
         }
 
-        private void ProcessQueue()
+        private async Task ProcessQueue()
         {
             while (m_queue.TryTake(out string url, Timeout.Infinite))
             {
@@ -71,7 +71,7 @@
                 var matchingRules = Definition.Rules.Where(r => Regex.IsMatch(url, r.UrlPattern));
                 foreach(var rule in matchingRules)
                 {
-                    ProcessSkraprRule(rule).GetAwaiter().GetResult();
+                    await ProcessSkraprRule(rule);
                 }
 
                 if (m_queue.Count == 0)

@@ -151,23 +151,6 @@
         }
 
         /// <summary>
-        /// Returns the node id for the given css selector. Value will be less than 1 if selector does not correspond to a dom element.
-        /// </summary>
-        /// <param name="cssSelector"></param>
-        /// <returns></returns>
-        public async Task<long> GetNodeForSelector(string cssSelector)
-        {
-            var document = await Session.DOM.GetDocument();
-            var domElement = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
-            {
-                NodeId = document.NodeId, //Document node id is probably most likely always 1.
-                Selector = cssSelector
-            });
-
-            return domElement.NodeId;
-        }
-
-        /// <summary>
         /// Gets the layout tree node for the dom element corresponding to the specified selector.
         /// </summary>
         /// <remarks>
