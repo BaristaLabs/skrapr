@@ -9,6 +9,9 @@
     using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
 
+    /// <summary>
+    /// Represents a task that clicks a specified element on the page by selector.
+    /// </summary>
     public class ClickDomElementTask : SkraprTask
     {
         public override string Name
@@ -52,6 +55,7 @@
         {
             var documentNode = await worker.Session.DOM.GetDocument(1);
 
+            //Get the node to click.
             var nodeIds = await worker.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
             {
                 NodeId = documentNode.NodeId,
@@ -62,6 +66,9 @@
             if (nodeId < 1)
                 return;
 
+            //TODO: Position the viewport so the element is on screen if isn't already.
+
+            //Get the highlight object and create a rectangle representing the click area.
             var highlightObject = await worker.Session.DOM.GetHighlightObjectForTest(nodeId);
             var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
             var contentPathPoints = contentPath.GetQuad();
@@ -74,7 +81,10 @@
                 Height = highlightObject.ElementInfo.NodeHeight
             };
 
+            //Get a random point within the click area
             var target = targetClickRect.GetRandomSpotWithinRect();
+
+            //Click the random point, with a random delay between the down and up mouse events.
             var clickDelay = TRandom.New().Next(100, 1000);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
@@ -101,6 +111,7 @@
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
             });
 
+            //If navigation is specified, wait for navigation.
             if (IsNavigation)
                 await worker.DevTools.WaitForNextNavigation();
         }

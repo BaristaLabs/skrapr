@@ -355,7 +355,7 @@ new Promise(function (resolve, reject) {{
         /// Saves an image of the entire contents of the current page.
         /// </summary>
         /// <returns></returns>
-        public async Task TakeFullPageScreenshot(string outputFileName, int waitForResizeDelayMS = 5000)
+        public async Task TakeFullPageScreenshot(string outputFileName)
         {
             if (String.IsNullOrWhiteSpace(outputFileName))
                 throw new ArgumentNullException(nameof(outputFileName));
@@ -365,7 +365,7 @@ new Promise(function (resolve, reject) {{
             m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), (long)dimensions.fullWidth, (long)dimensions.fullHeight);
 
             //TODO: This needs to be improved -- it appears that the max visible size in any dimension
-            //is around 8192px - pages greater than this 8192px will be clipped.
+            //is around 8192px - pages greater than 8192px will be clipped.
 
             //Set the visible size to the full page size.
             await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
@@ -373,8 +373,6 @@ new Promise(function (resolve, reject) {{
                 Width = (long)dimensions.fullWidth,
                 Height = (long)dimensions.fullHeight
             });
-
-            await Task.Run(() => Thread.Sleep(waitForResizeDelayMS));
 
             var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: 60000);
             var imageBytes = Convert.FromBase64String(result.Data);
