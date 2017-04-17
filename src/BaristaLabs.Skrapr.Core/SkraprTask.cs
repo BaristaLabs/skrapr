@@ -12,6 +12,12 @@
             get;
         }
 
+        public string Description
+        {
+            get;
+            set;
+        }
+
         public abstract Task PerformTask(ISkraprWorker worker);
 
         public override string ToString()

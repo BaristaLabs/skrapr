@@ -16,7 +16,7 @@
         /// Gets or sets an optional expression that will be evaluated to determine if the script should be injected.
         /// </summary>
         /// <remarks>
-        /// If the condition is truthy, the script tag will NOT be injected.
+        /// If the condition is truthy, the script tag will be injected.
         /// </remarks>
         public string Condition
         {

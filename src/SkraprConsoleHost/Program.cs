@@ -55,7 +55,7 @@
 
             //TODO: Create a new session if one doesn't exist.
             if (session == null)
-                throw new InvalidOperationException("Unable to locate a suitable session -- ensure that the Developer Tools window is closed on an existing session.");
+                throw new InvalidOperationException("Unable to locate a suitable session. Ensure that the Developer Tools window is closed on an existing session or create a new chrome instance, specifying the debugger port as a command line argument.");
 
             var devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
             logger.LogDebug($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
@@ -65,11 +65,12 @@
             if (cliArguments.Attach == true)
             {
                 var targetInfo = devTools.Session.Target.GetTargetInfo(session.Id).GetAwaiter().GetResult();
-                var matchingRuleCount = worker.GetMatchingRules(targetInfo.Url).Count();
+                var target = new SkraprTarget(targetInfo.Url, null);
+                var matchingRuleCount = worker.GetMatchingRules(target).Count();
                 if (matchingRuleCount > 0)
                 {
                     logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's url; Continuing.");
-                    worker.AddUrl(targetInfo.Url);
+                    worker.AddTarget(target);
                 }
                 else
                 {

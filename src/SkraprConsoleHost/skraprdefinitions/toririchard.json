@@ -47,6 +47,12 @@
           "name": "HumanDelay"
         },
         {
+          "name": "ClickDomElement",
+          "selector": ".viewall-link",
+          "condition": "document.getElementsByClassName('someClass').length > 0",
+          "isNavigation": true
+        },
+        {
           "name": "InjectScriptElement",
           "condition": "window['URI'] === undefined;",
           "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js"

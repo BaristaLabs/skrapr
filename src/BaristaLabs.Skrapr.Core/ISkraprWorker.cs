@@ -42,9 +42,9 @@
         }
 
         /// <summary>
-        /// Adds a url to the urls being processed by the worker.
+        /// Adds a SkraprTarget to the targets being processed by the worker.
         /// </summary>
-        /// <param name="url"></param>
-        void AddUrl(string url);
+        /// <param name="target"></param>
+        void AddTarget(SkraprTarget target);
     }
 }

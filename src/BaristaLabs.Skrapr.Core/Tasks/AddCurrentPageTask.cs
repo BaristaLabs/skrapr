@@ -13,14 +13,20 @@
             get { return "AddCurrentPage"; }
         }
 
+        public string Rule
+        {
+            get;
+            set;
+        }
+
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            var currentPage = await worker.Session.Target.GetTargetInfo(new Target.GetTargetInfoCommand
+            var targetInfoResponse = await worker.Session.Target.GetTargetInfo(new Target.GetTargetInfoCommand
             {
                 TargetId = worker.DevTools.TargetId,
             });
 
-            worker.AddUrl(currentPage.TargetInfo.Url);
+            worker.AddTarget(new SkraprTarget(targetInfoResponse.TargetInfo.Url, Rule));
         }
     }
 }

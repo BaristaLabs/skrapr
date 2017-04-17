@@ -19,7 +19,7 @@
     public sealed class SkraprWorker : ISkraprWorker, IDisposable
     {
         private readonly ILogger m_logger;
-        private readonly ActionBlock<string> m_urlQueue;
+        private readonly ActionBlock<SkraprTarget> m_targetQueue;
 
         private readonly SkraprDefinition m_definition;
         private readonly SkraprDevTools m_devTools;
@@ -29,7 +29,7 @@
         {
             m_logger = logger ?? throw new ArgumentNullException(nameof(logger));
             m_logger = logger;
-            m_urlQueue = new ActionBlock<string>(ProcessUrlQueue, new ExecutionDataflowBlockOptions
+            m_targetQueue = new ActionBlock<SkraprTarget>(ProcessSkraprTarget, new ExecutionDataflowBlockOptions
             {
                 EnsureOrdered = true,
                 MaxDegreeOfParallelism = 1
@@ -68,41 +68,43 @@
             //Enqueue the start urls associated with the definition.
             foreach (var url in m_definition.StartUrls)
             {
-                m_urlQueue.Post(url);
+                m_targetQueue.Post(new SkraprTarget(url, null));
             }
         }
 
         /// <summary>
-        /// Adds the specified url to the queue.
+        /// Adds the specified target to the queue.
         /// </summary>
-        /// <param name="url"></param>
-        public void AddUrl(string url)
+        /// <param name="target"></param>
+        public void AddTarget(SkraprTarget target)
         {
-            m_urlQueue.Post(url);
+            m_targetQueue.Post(target);
         }
 
         /// <summary>
-        /// Gets a count of the number of rules that match the specified url.
+        /// Gets the rules that match the specified target.
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public IEnumerable<SkraprRule> GetMatchingRules(string url)
+        public IEnumerable<SkraprRule> GetMatchingRules(SkraprTarget target)
         {
-            return Definition.Rules.Where(r => Regex.IsMatch(url, r.UrlPattern, RegexOptions.IgnoreCase));
+            if (!String.IsNullOrWhiteSpace(target.Rule))
+                return Definition.Rules.Where(r => r.Name == target.Rule);
+            return Definition.Rules.Where(r => Regex.IsMatch(target.Url, r.UrlPattern, RegexOptions.IgnoreCase));
         }
 
-        private async Task ProcessUrlQueue(string url)
+        private async Task ProcessSkraprTarget(SkraprTarget target)
         {
-            m_logger.LogDebug("{functionName} Started Processing {url}", nameof(ProcessUrlQueue), url);
+            m_logger.LogDebug("{functionName} Started Processing {url}", nameof(ProcessSkraprTarget), target.Url);
             //Navigate to the URL.
-            await DevTools.Navigate(url);
-            var matchingRules = GetMatchingRules(url);
+            await DevTools.Navigate(target.Url);
+            var matchingRules = GetMatchingRules(target);
             foreach (var rule in matchingRules)
             {
-                m_logger.LogDebug("{functionName} Found rule that matches current url: {url} ({ruleName} - {urlPattern})", nameof(ProcessUrlQueue), url, rule.Name, rule.UrlPattern);
+                m_logger.LogDebug("{functionName} Found rule that matches current url: {url} ({ruleName} - {urlPattern})", nameof(ProcessSkraprTarget), target.Url, rule.Name, rule.UrlPattern);
                 await ProcessSkraprRule(rule);
             }
-            m_logger.LogDebug("{functionName} Completed Processing {url}", nameof(ProcessUrlQueue), url);
+            m_logger.LogDebug("{functionName} Completed Processing {url}", nameof(ProcessSkraprTarget), target.Url);
         }
 
         private async Task ProcessSkraprRule(SkraprRule rule)
@@ -119,7 +121,7 @@
                 }
                 catch(Exception ex)
                 {
-                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage}", nameof(ProcessSkraprRule), task.Name, ex.Message);
+                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
                 }
             }
         }
@@ -129,7 +131,7 @@
         {
             if (disposing)
             {
-                m_urlQueue.Complete();
+                m_targetQueue.Complete();
             }
         }
 
