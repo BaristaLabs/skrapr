@@ -8,6 +8,7 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -305,7 +306,7 @@ new Promise(function (resolve, reject) {{
 
                 if (targetInfo.Url == url)
                 {
-                    m_logger.LogDebug("{functionName} No navigation needed - Current session currently at current page ({pageUrl})", nameof(Navigate), targetInfo.Url);
+                    m_logger.LogDebug("{functionName} No navigation needed - Current session currently at target page ({pageUrl})", nameof(Navigate), targetInfo.Url);
                     return;
                 }
             }
@@ -347,6 +348,41 @@ new Promise(function (resolve, reject) {{
             await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;
+        }
+
+        /// <summary>
+        /// Saves an image of the entire contents of the current page.
+        /// </summary>
+        /// <returns></returns>
+        public async Task TakeFullPageScreenshot(string outputFileName)
+        {
+            if (String.IsNullOrWhiteSpace(outputFileName))
+                throw new ArgumentNullException(nameof(outputFileName));
+
+            dynamic dimensions = await GetPageDimensions();
+            m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), (long)dimensions.fullWidth, (long)dimensions.fullHeight);
+
+            //Set the visible size to the full page size.
+            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
+            {
+                Width = (long)dimensions.fullWidth,
+                Height = (long)dimensions.fullHeight
+            });
+
+            var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: 60000);
+            var imageBytes = Convert.FromBase64String(result.Data);
+            m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
+            File.WriteAllBytes(outputFileName, imageBytes);
+            m_logger.LogDebug("{functionName} wrote {bytes} bytes to {fileName}", nameof(TakeFullPageScreenshot), imageBytes.LongCount(), outputFileName);
+            imageBytes = null;
+            result = null;
+
+            //Set the visible size back to the original size.
+            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
+            {
+                Width = (long)dimensions.windowWidth,
+                Height = (long)dimensions.windowHeight
+            });
         }
 
         #region Private Methods

@@ -32,25 +32,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            dynamic dimensions = await worker.DevTools.GetPageDimensions();
-
-            await worker.Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
-            {
-                Width = (long)dimensions.fullWidth,
-                Height = (long)dimensions.fullHeight
-            });
-
-            var result = await worker.Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: 60000);
-            var imageBytes = Convert.FromBase64String(result.Data);
-            File.WriteAllBytes(OutputFilename, imageBytes);
-            imageBytes = null;
-
-            await worker.Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
-            {
-                Width = (long)dimensions.windowWidth,
-                Height = (long)dimensions.windowHeight
-            });
-
+            await worker.DevTools.TakeFullPageScreenshot(OutputFilename);
         }
     }
 }
