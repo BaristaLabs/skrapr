@@ -5,7 +5,7 @@
   ],
   "rules": [
     {
-      "urlPattern": "^http://www.toririchard.com$",
+      "urlPattern": "^http://www.toririchard.com/?$",
       "tasks": [
         {
           "name": "ClickDomElement",
@@ -13,7 +13,7 @@
           "isNavigation": true
         },
         {
-          "name": "ActLikeAHuman"
+          "name": "HumanDelay"
         },
         {
           "name": "AddCurrentPage"
@@ -29,7 +29,7 @@
           "isNavigation": true
         },
         {
-          "name": "ActLikeAHuman"
+          "name": "HumanDelay"
         },
         {
           "name": "AddCurrentPage"
@@ -40,11 +40,11 @@
       "urlPattern": "^http://www.toririchard.com/mens-shirts.*$",
       "tasks": [
         {
-          "name": "HighlightDomElement",
-          "selector": ".thumb-grid"
+          "name": "InjectStyleElement",
+          "styles": ".thumb-grid { background-color: rgba(0,0,255, 0.5); border: 2px solid red;}"
         },
         {
-          "name": "ActLikeAHuman"
+          "name": "HumanDelay"
         },
         {
           "name": "InjectScriptElement",

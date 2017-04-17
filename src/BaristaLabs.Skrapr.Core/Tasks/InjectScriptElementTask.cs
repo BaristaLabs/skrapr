@@ -1,11 +1,9 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
-    using BaristaLabs.Skrapr.Extensions;
-    using System;
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Represents a task that can be used to inject a script tag to an external JS resource.
+    /// Represents a task that can be used to inject a script tag to content or an external JS resource.
     /// </summary>
     public class InjectScriptElementTask : SkraprTask
     {
@@ -27,14 +25,16 @@
         }
 
         /// <summary>
-        /// Gets or sets a value that indicates if the condition returns a promise that should be awaited.
+        /// Gets or sets the contents of the script tag.
         /// </summary>
-        public bool AwaitConditionPromise
+        /// <remarks>
+        /// If a src and contents are both specified, the contents will be ignored.
+        /// </remarks>
+        public string Contents
         {
             get;
             set;
         }
-
 
         /// <summary>
         /// Gets or sets the type attribute of the script tag that will be injected. Defaults to text/javacript.
@@ -61,7 +61,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.DevTools.InjectScriptElement(ScriptUrl, Type, Condition, AwaitConditionPromise);
+            await worker.DevTools.InjectScriptElement(ScriptUrl, contents: Contents, type: Type, condition: Condition);
         }
     }
 }

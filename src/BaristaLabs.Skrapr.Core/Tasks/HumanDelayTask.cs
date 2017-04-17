@@ -2,11 +2,11 @@
 {
     using System.Threading.Tasks;
 
-    public class ActLikeAHumanTask : SkraprTask
+    public class HumanDelayTask : SkraprTask
     {
         public override string Name
         {
-            get { return "ActLikeAHuman"; }
+            get { return "HumanDelay"; }
         }
 
         public override async Task PerformTask(ISkraprWorker worker)

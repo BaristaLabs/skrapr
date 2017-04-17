@@ -88,7 +88,7 @@
         /// <returns></returns>
         public IEnumerable<SkraprRule> GetMatchingRules(string url)
         {
-            return Definition.Rules.Where(r => Regex.IsMatch(url, r.UrlPattern));
+            return Definition.Rules.Where(r => Regex.IsMatch(url, r.UrlPattern, RegexOptions.IgnoreCase));
         }
 
         private async Task ProcessUrlQueue(string url)
@@ -119,7 +119,7 @@
                 }
                 catch(Exception ex)
                 {
-                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {{exceptionMessage}}", nameof(ProcessSkraprRule), task.Name, ex.Message);
+                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage}", nameof(ProcessSkraprRule), task.Name, ex.Message);
                 }
             }
         }

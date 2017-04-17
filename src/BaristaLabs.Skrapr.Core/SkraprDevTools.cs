@@ -14,6 +14,7 @@
 
     using Css = ChromeDevTools.CSS;
     using Dom = ChromeDevTools.DOM;
+    using Emulation = ChromeDevTools.Emulation;
     using Page = ChromeDevTools.Page;
     using Runtime = ChromeDevTools.Runtime;
 
@@ -131,6 +132,57 @@
             return new Tuple<double, double>(scaleX, scaleY);
         }
 
+        public async Task<JObject> GetPageDimensions()
+        {
+            var result = await Session.Runtime.Evaluate(@"
+(function() {
+    'use strict';
+
+    var max = function (nums) {
+        return Math.max.apply(Math, nums.filter(function(x) { return x; }));
+    };
+
+    var body = document.body;
+
+    var originalX = window.scrollX,
+        originalY = window.scrollY,
+        originalOverflowStyle = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+
+    var widths = [
+        document.documentElement.clientWidth,
+        body.scrollWidth,
+        document.documentElement.scrollWidth,
+        body.offsetWidth,
+        document.documentElement.offsetWidth
+    ];
+    var heights = [
+        document.documentElement.clientHeight,
+        body.scrollHeight,
+        document.documentElement.scrollHeight,
+        body.offsetHeight,
+        document.documentElement.offsetHeight
+    ];
+
+    var result = {
+        fullWidth: max(widths),
+        fullHeight: max(heights),
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio,
+        originalOverflowStyle: originalOverflowStyle
+    };
+
+    document.documentElement.style.overflow = originalOverflowStyle;
+    return JSON.stringify(result);
+})();
+", contextId: CurrentFrameContext.Id);
+
+            var resultObject = JObject.Parse(result.Value as string);
+            return resultObject;
+        }
+
         /// <summary>
         /// Gets the layout tree node for the dom element corresponding to the specified selector.
         /// </summary>
@@ -160,25 +212,21 @@
         }
 
         /// <summary>
-        /// Injects a script element to the current page that points to an external script.
+        /// Injects a script element to the current page that contains inline script or points to an external script.
         /// </summary>
         /// <param name="scriptUrl"></param>
-        /// <returns></returns>
-        public async Task InjectScriptElement(string scriptUrl, string type = "text/javascript", string condition = null, bool awaitConditionPromise = false)
+        /// <returns>The nodeId of the injected element.</returns>
+        public async Task<long> InjectScriptElement(string scriptUrl, string contents = null, string type = "text/javascript", bool async = true, string condition = null)
         {
-            if (String.IsNullOrWhiteSpace(scriptUrl))
-                throw new InvalidOperationException("A script url must be specified.");
-
             if (!String.IsNullOrWhiteSpace(condition))
             {
                 m_logger.LogDebug("{functionName} Condition parameter has been specified - determining if script should be injected.", nameof(InjectScriptElement));
 
-                var shouldInjectJsResponse = await Session.Runtime.Evaluate(condition, contextId: CurrentFrameContext.Id, awaitPromise: awaitConditionPromise);
-
-                if (shouldInjectJsResponse.Type == "boolean" && shouldInjectJsResponse.Value is bool && (bool)shouldInjectJsResponse.Value == false)
+                var shouldInjectJsResponse = await Session.Runtime.EvaluateCondition(condition, contextId: CurrentFrameContext.Id);
+                if (!shouldInjectJsResponse)
                 {
                     m_logger.LogDebug("{functionName} condition result was false - skipping script injection.", nameof(InjectScriptElement));
-                    return;
+                    return -1;
                 }
             }
 
@@ -186,11 +234,13 @@
 
             var result = await Session.Runtime.Evaluate($@"
 new Promise(function (resolve, reject) {{
+    'use strict';
     var r = false;
     var s = document.createElement('script');
-    s.type = '{type}';
-    s.src = '{scriptUrl}';
-    s.async = true;
+    s.type = {type.GetJSValue()};
+    s.src = {scriptUrl.GetJSValue()};
+    s.async = {async.GetJSValue()};
+    s.text = {contents.GetJSValue()};
     s.onload = s.onreadystatechange = function() {{
         if (!r && (!this.readyState || this.readyState == 'complete')) {{
             r = true;
@@ -202,7 +252,42 @@ new Promise(function (resolve, reject) {{
 }});
             ", contextId: CurrentFrameContext.Id, awaitPromise: true);
 
-            //TODO: If the result is an error, throw.
+            
+
+            var nodeResponse = await Session.DOM.RequestNode(new Dom.RequestNodeCommand
+            {
+                ObjectId = result.ObjectId
+            });
+
+            return nodeResponse.NodeId;
+        }
+
+        /// <summary>
+        /// Injects a style element into the current page.
+        /// </summary>
+        /// <param name="scriptUrl"></param>
+        /// <returns>The nodeId of the injected element.</returns>
+        public async Task<long> InjectStyleElement(string styles, string type = "text/css")
+        {
+            m_logger.LogDebug("{functionName} injecting style tag.", nameof(InjectStyleElement));
+
+            var result = await Session.Runtime.Evaluate($@"
+(function() {{
+    'use strict';
+    var s = document.createElement('style');
+    s.type = {type.GetJSValue()};
+    s.innerText = {styles.GetJSValue()};
+    document.head.appendChild(s);
+    return s;
+}})();
+            ", contextId: CurrentFrameContext.Id, awaitPromise: false);
+
+            var nodeResponse = await Session.DOM.RequestNode(new Dom.RequestNodeCommand
+            {
+                ObjectId = result.ObjectId
+            });
+
+            return nodeResponse.NodeId;
         }
 
         /// <summary>
@@ -281,6 +366,8 @@ new Promise(function (resolve, reject) {{
             Session.Subscribe<Dom.SetChildNodesEvent>(ProcessSetChildNodesEvent);
 
             //TODO: Don't sequentially await these.
+            await Session.Emulation.ResetViewport(new Emulation.ResetViewportCommand());
+            await Session.Emulation.ResetPageScaleFactor(new Emulation.ResetPageScaleFactorCommand());
             await Session.SendCommand(new Page.EnableCommand());
             var resourceTree = await Session.Page.GetResourceTree();
             m_currentFrameId = resourceTree.Frame.Id;
