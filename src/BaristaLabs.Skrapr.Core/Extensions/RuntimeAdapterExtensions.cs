@@ -13,7 +13,7 @@
         /// <param name="script"></param>
         /// <param name="isPromise"></param>
         /// <returns></returns>
-        public static async Task<Runtime.RemoteObject> Evaluate(this Runtime.RuntimeAdapter runtimeAdapter, string script, long? contextId = null, bool returnByValue = false, bool awaitPromise = false)
+        public static async Task<Runtime.RemoteObject> Evaluate(this Runtime.RuntimeAdapter runtimeAdapter, string script, long? contextId = null, bool returnByValue = false, bool awaitPromise = false, bool silent = false, bool userGesture = true)
         {
             var evaluateResponse = await runtimeAdapter.Session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
             {
@@ -24,8 +24,8 @@
                 IncludeCommandLineAPI = true,
                 ObjectGroup = "Skrapr",
                 ReturnByValue = returnByValue,
-                Silent = false,
-                UserGesture = true
+                Silent = silent,
+                UserGesture = userGesture
             });
 
             if (evaluateResponse.ExceptionDetails != null)

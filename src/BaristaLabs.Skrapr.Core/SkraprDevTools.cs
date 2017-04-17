@@ -133,6 +133,10 @@
             return new Tuple<double, double>(scaleX, scaleY);
         }
 
+        /// <summary>
+        /// Returns an object that represents the actual page dimentions as returned by the JavaScript object model.
+        /// </summary>
+        /// <returns></returns>
         public async Task<JObject> GetPageDimensions()
         {
             var result = await Session.Runtime.Evaluate(@"
@@ -145,9 +149,7 @@
 
     var body = document.body;
 
-    var originalX = window.scrollX,
-        originalY = window.scrollY,
-        originalOverflowStyle = document.documentElement.style.overflow;
+    var originalOverflowStyle = document.documentElement.style.overflow;
 
     document.documentElement.style.overflow = 'hidden';
 
@@ -167,6 +169,8 @@
     ];
 
     var result = {
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
         fullWidth: max(widths),
         fullHeight: max(heights),
         windowWidth: window.innerWidth,
@@ -321,6 +325,73 @@ new Promise(function (resolve, reject) {{
             m_logger.LogDebug("{functionName} Completed navigation to {url} (New frame id: {frameId})", nameof(Navigate), url, m_currentFrameId);
         }
 
+
+        /// <summary>
+        /// Keeps scrolling to the bottom of the page until the scroll position stablizes
+        /// </summary>
+        /// <param name="maxScrolls"></param>
+        /// <returns></returns>
+        public async Task ScrollToAbsoluteBottom(int maxScrolls = 10, int iterateDelayMS = 1000)
+        {
+            long lastScrollY = -1, scrollY = -1, yPos;
+            do
+            {
+                dynamic pageDimensions = await GetPageDimensions();
+                lastScrollY = scrollY;
+                scrollY = (long)pageDimensions.scrollY;
+
+                if (lastScrollY == scrollY)
+                    return;
+
+                yPos = (long)pageDimensions.fullHeight;
+                await Session.Runtime.Evaluate($"window.scrollTo(0, {yPos});", m_currentFrameContext.Id);
+                maxScrolls--;
+                await Task.Run(() => Thread.Sleep(iterateDelayMS));
+            } while (maxScrolls > 0);
+        }
+
+
+        /// <summary>
+        /// Saves an image of the entire contents of the current page.
+        /// </summary>
+        /// <returns></returns>
+        public async Task TakeFullPageScreenshot(string outputFileName, int waitForResizeDelayMS = 5000)
+        {
+            if (String.IsNullOrWhiteSpace(outputFileName))
+                throw new ArgumentNullException(nameof(outputFileName));
+
+            
+            dynamic dimensions = await GetPageDimensions();
+            m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), (long)dimensions.fullWidth, (long)dimensions.fullHeight);
+
+            //TODO: This needs to be improved -- it appears that the max visible size in any dimension
+            //is around 8192px - pages greater than this 8192px will be clipped.
+
+            //Set the visible size to the full page size.
+            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
+            {
+                Width = (long)dimensions.fullWidth,
+                Height = (long)dimensions.fullHeight
+            });
+
+            await Task.Run(() => Thread.Sleep(waitForResizeDelayMS));
+
+            var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: 60000);
+            var imageBytes = Convert.FromBase64String(result.Data);
+            m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
+            File.WriteAllBytes(outputFileName, imageBytes);
+            m_logger.LogDebug("{functionName} wrote {bytes} bytes to {fileName}", nameof(TakeFullPageScreenshot), imageBytes.LongCount(), outputFileName);
+            imageBytes = null;
+            result = null;
+
+            //Set the visible size back to the original size.
+            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
+            {
+                Width = (long)dimensions.windowWidth,
+                Height = (long)dimensions.windowHeight
+            });
+        }
+
         /// <summary>
         /// Waits until the current navigation to stop loading.
         /// </summary>
@@ -349,42 +420,6 @@ new Promise(function (resolve, reject) {{
 
             return IsLoading;
         }
-
-        /// <summary>
-        /// Saves an image of the entire contents of the current page.
-        /// </summary>
-        /// <returns></returns>
-        public async Task TakeFullPageScreenshot(string outputFileName)
-        {
-            if (String.IsNullOrWhiteSpace(outputFileName))
-                throw new ArgumentNullException(nameof(outputFileName));
-
-            dynamic dimensions = await GetPageDimensions();
-            m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), (long)dimensions.fullWidth, (long)dimensions.fullHeight);
-
-            //Set the visible size to the full page size.
-            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
-            {
-                Width = (long)dimensions.fullWidth,
-                Height = (long)dimensions.fullHeight
-            });
-
-            var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: 60000);
-            var imageBytes = Convert.FromBase64String(result.Data);
-            m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
-            File.WriteAllBytes(outputFileName, imageBytes);
-            m_logger.LogDebug("{functionName} wrote {bytes} bytes to {fileName}", nameof(TakeFullPageScreenshot), imageBytes.LongCount(), outputFileName);
-            imageBytes = null;
-            result = null;
-
-            //Set the visible size back to the original size.
-            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
-            {
-                Width = (long)dimensions.windowWidth,
-                Height = (long)dimensions.windowHeight
-            });
-        }
-
         #region Private Methods
 
         private async Task Initialize()
