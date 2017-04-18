@@ -19,7 +19,7 @@
     public sealed class SkraprWorker : ISkraprWorker, IDisposable
     {
         private readonly ILogger m_logger;
-        private readonly ActionBlock<SkraprTarget> m_targetQueue;
+        private readonly ActionBlock<SkraprTarget> m_mainFlow;
 
         private readonly SkraprDefinition m_definition;
         private readonly SkraprDevTools m_devTools;
@@ -30,7 +30,7 @@
         {
             m_logger = logger ?? throw new ArgumentNullException(nameof(logger));
             m_logger = logger;
-            m_targetQueue = new ActionBlock<SkraprTarget>(ProcessSkraprTarget, new ExecutionDataflowBlockOptions
+            m_mainFlow = new ActionBlock<SkraprTarget>(ProcessSkraprTarget, new ExecutionDataflowBlockOptions
             {
                 EnsureOrdered = true,
                 MaxDegreeOfParallelism = 1
@@ -76,7 +76,7 @@
             //Enqueue the start urls associated with the definition.
             foreach (var url in m_definition.StartUrls)
             {
-                m_targetQueue.Post(new SkraprTarget(url, null));
+                m_mainFlow.Post(new SkraprTarget(url, null));
             }
         }
 
@@ -86,7 +86,7 @@
         /// <param name="target"></param>
         public void AddTarget(SkraprTarget target)
         {
-            m_targetQueue.Post(target);
+            m_mainFlow.Post(target);
         }
 
         /// <summary>
@@ -139,7 +139,7 @@
         {
             if (disposing)
             {
-                m_targetQueue.Complete();
+                m_mainFlow.Complete();
             }
         }
 
