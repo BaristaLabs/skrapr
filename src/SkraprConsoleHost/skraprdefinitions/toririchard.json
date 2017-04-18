@@ -16,7 +16,7 @@
           "name": "HumanDelay"
         },
         {
-          "name": "AddCurrentPage"
+          "name": "AddCurrentPageAsTarget"
         }
       ]
     },
@@ -32,7 +32,7 @@
           "name": "HumanDelay"
         },
         {
-          "name": "AddCurrentPage"
+          "name": "AddCurrentPageAsTarget"
         }
       ]
     },
@@ -41,10 +41,8 @@
       "tasks": [
         {
           "name": "InjectStyleElement",
+          "description":  "Highlight the shirts just because we can",
           "styles": ".thumb-grid { background-color: rgba(0,0,255, 0.5); border: 2px solid red;}"
-        },
-        {
-          "name": "HumanDelay"
         },
         {
           "name": "ClickDomElement",
@@ -54,15 +52,26 @@
         },
         {
           "name": "InjectScriptElement",
+          "description": "We don't really need URI.js but demonstrating it's possible",
           "condition": "window['URI'] === undefined;",
           "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js"
         },
         {
-          "name":  "ScrollToAbsoluteBottom"
+          "name": "ScrollToAbsoluteBottom",
+          "description":  "Ensure that all shirt elements have been loaded."
         },
         {
-          "name": "Screenshot"
+          "name": "AddAnchorsAsTargets",
+          "selector": ".thumb-grid a.name",
+          "rule": "IndividualShirt"
         }
+      ]
+    },
+    {
+      "name": "IndividualShirt",
+      "isolated": true,
+      "tasks": [
+
       ]
     }
   ],

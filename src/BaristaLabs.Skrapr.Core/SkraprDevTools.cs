@@ -31,7 +31,7 @@
         private string m_currentFrameId;
         private Runtime.ExecutionContextDescription m_currentFrameContext;
 
-        private readonly ManualResetEventSlim m_pageStoppedLoading = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim m_frameStoppedLoading = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
         private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
         #endregion
@@ -67,7 +67,7 @@
         /// </summary>
         public bool IsLoading
         {
-            get { return !m_pageStoppedLoading.IsSet; }
+            get { return !m_frameStoppedLoading.IsSet; }
 
         }
         /// <summary>
@@ -301,7 +301,7 @@ new Promise(function (resolve, reject) {{
         /// <param name="url"></param>
         /// <param name="forceNavigate"></param>
         /// <returns></returns>
-        public async Task Navigate(string url, bool forceNavigate = false)
+        public async Task Navigate(string url, bool forceNavigate = false, int millisecondsTimeout = 15000)
         {
             m_logger.LogDebug("{functionName} Navigating to {url}", nameof(Navigate), url);
             if (!forceNavigate)
@@ -315,12 +315,12 @@ new Promise(function (resolve, reject) {{
                 }
             }
 
-            m_pageStoppedLoading.Reset();
             var navigateResponse = await m_session.Page.Navigate(new Page.NavigateCommand
             {
                 Url = url
             });
 
+            await WaitForCurrentNavigation(millisecondsTimeout: millisecondsTimeout);
             m_currentFrameId = navigateResponse.FrameId;
             m_logger.LogDebug("{functionName} Completed navigation to {url} (New frame id: {frameId})", nameof(Navigate), url, m_currentFrameId);
         }
@@ -346,7 +346,7 @@ new Promise(function (resolve, reject) {{
                 yPos = (long)pageDimensions.fullHeight;
                 await Session.Runtime.Evaluate($"window.scrollTo(0, {yPos});", m_currentFrameContext.Id);
                 maxScrolls--;
-                await Task.Run(() => Thread.Sleep(iterateDelayMS));
+                await Task.Delay(iterateDelayMS);
             } while (maxScrolls > 0);
         }
 
@@ -397,7 +397,7 @@ new Promise(function (resolve, reject) {{
         public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
         {
             m_logger.LogDebug("{functionName} Waiting for current navigation to complete.", nameof(WaitForCurrentNavigation));
-            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+            await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;
         }
@@ -412,9 +412,9 @@ new Promise(function (resolve, reject) {{
             m_logger.LogDebug("{functionName} Waiting for next navigation.", nameof(WaitForNextNavigation));
 
             if (!IsLoading)
-                m_pageStoppedLoading.Reset();
+                m_frameStoppedLoading.Reset();
 
-            await Task.Run(() => m_pageStoppedLoading.Wait(millisecondsTimeout));
+            await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;
         }
@@ -427,7 +427,7 @@ new Promise(function (resolve, reject) {{
             //Chrome Debug session, browsing to http://localhost:<port>/ in another
             //browser instance, and looking at the WS traffic in devtools.
 
-            Session.Subscribe<Page.FrameNavigatedEvent>(ProcessFrameNavigatedEvent);
+            Session.Subscribe<Page.FrameStartedLoadingEvent>(ProcessFrameStartedLoading);
             Session.Subscribe<Page.FrameStoppedLoadingEvent>(ProcessFrameStoppedLoading);
 
             Session.Subscribe<Runtime.ExecutionContextCreatedEvent>(ProcessExecutionContextCreated);
@@ -455,11 +455,11 @@ new Promise(function (resolve, reject) {{
             }
         }
 
-        private void ProcessFrameNavigatedEvent(Page.FrameNavigatedEvent e)
+        private void ProcessFrameStartedLoading(Page.FrameStartedLoadingEvent e)
         {
-            if (m_currentFrameId == e.Frame.Id)
+            if (m_currentFrameId == e.FrameId)
             {
-                m_pageStoppedLoading.Reset();
+                m_frameStoppedLoading.Reset();
             }
         }
 
@@ -467,7 +467,7 @@ new Promise(function (resolve, reject) {{
         {
             if (m_currentFrameId == e.FrameId)
             {
-                m_pageStoppedLoading.Set();
+                m_frameStoppedLoading.Set();
             }
         }
 

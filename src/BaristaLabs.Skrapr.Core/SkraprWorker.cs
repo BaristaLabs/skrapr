@@ -24,8 +24,9 @@
         private readonly SkraprDefinition m_definition;
         private readonly SkraprDevTools m_devTools;
         private readonly ChromeSession m_session;
+        private readonly bool m_isDebugEnabled;
 
-        public SkraprWorker(ILogger logger, SkraprDefinition definition, ChromeSession session, SkraprDevTools devTools)
+        public SkraprWorker(ILogger logger, SkraprDefinition definition, ChromeSession session, SkraprDevTools devTools, bool isDebugEnabled = false)
         {
             m_logger = logger ?? throw new ArgumentNullException(nameof(logger));
             m_logger = logger;
@@ -38,6 +39,8 @@
             m_devTools = devTools ?? throw new ArgumentNullException(nameof(devTools));
             m_session = session;
             m_definition = definition;
+
+            m_isDebugEnabled = isDebugEnabled;
         }
 
         public SkraprDefinition Definition
@@ -48,6 +51,11 @@
         public SkraprDevTools DevTools
         {
             get { return m_devTools; }
+        }
+
+        public bool IsDebugEnabled
+        {
+            get { return m_isDebugEnabled; }
         }
 
         public ILogger Logger
@@ -89,8 +97,8 @@
         public IEnumerable<SkraprRule> GetMatchingRules(SkraprTarget target)
         {
             if (!String.IsNullOrWhiteSpace(target.Rule))
-                return Definition.Rules.Where(r => r.Name == target.Rule);
-            return Definition.Rules.Where(r => Regex.IsMatch(target.Url, r.UrlPattern, RegexOptions.IgnoreCase));
+                return Definition.Rules.Where(r => r.Name == target.Rule && r.Isolated == false);
+            return Definition.Rules.Where(r => r.Isolated == false && Regex.IsMatch(target.Url, r.UrlPattern, RegexOptions.IgnoreCase));
         }
 
         private async Task ProcessSkraprTarget(SkraprTarget target)
@@ -121,7 +129,7 @@
                 }
                 catch(Exception ex)
                 {
-                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
+                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
                 }
             }
         }
@@ -141,7 +149,7 @@
         }
         #endregion
 
-        public static SkraprWorker Create(IServiceProvider serviceProvider, string pathToSkraprDefinition, ChromeSession session, SkraprDevTools devTools)
+        public static SkraprWorker Create(IServiceProvider serviceProvider, string pathToSkraprDefinition, ChromeSession session, SkraprDevTools devTools, bool debugMode = false)
         {
             if (!File.Exists(pathToSkraprDefinition))
                 throw new FileNotFoundException($"The specified skrapr definition ({pathToSkraprDefinition}) could not be found. Please check that the skrapr definition exists.");
@@ -153,7 +161,7 @@
                 .CreateLogger<SkraprWorker>();
 
             var skraprDefinition = JsonConvert.DeserializeObject<SkraprDefinition>(skraprDefinitionJson);
-            return new SkraprWorker(skraprLogger, skraprDefinition, session, devTools);
+            return new SkraprWorker(skraprLogger, skraprDefinition, session, devTools, debugMode);
         }
     }
 }

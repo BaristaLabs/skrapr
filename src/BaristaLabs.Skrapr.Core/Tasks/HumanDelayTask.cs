@@ -2,7 +2,6 @@
 {
     using Microsoft.Extensions.Logging;
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using Troschuetz.Random;
 
@@ -29,6 +28,12 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
+            if (worker.IsDebugEnabled)
+            {
+                worker.Logger.LogDebug("{taskName} Skipping; currently in debug mode.", Name);
+                return;
+            }
+
             //For a random period of time, move the mouse around, scroll up and down, hover over anchor tags, etc.
 
             //Set defaults.
@@ -44,7 +49,7 @@
             var delay = m_random.Next(MinDelay.Value, MaxDelay.Value);
 
             worker.Logger.LogDebug("{taskName} delaying for {delay}ms", Name, delay);
-            await Task.Run(() => Thread.Sleep(delay));
+            await Task.Delay(delay);
 
             //TODO: Improve this by scrolling and stuff.
         }

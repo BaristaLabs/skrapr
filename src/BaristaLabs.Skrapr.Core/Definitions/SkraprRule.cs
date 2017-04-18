@@ -5,6 +5,9 @@
     using System.Collections.Generic;
     using System.ComponentModel;
 
+    /// <summary>
+    /// Represents a rule that contains tasks that is run when a set of preconditions apply.
+    /// </summary>
     public class SkraprRule
     {
         /// <summary>
@@ -22,6 +25,17 @@
         /// </summary>
         [JsonProperty("urlPattern")]
         public string UrlPattern
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates if the rule is isolated. That is, the rule must be used by name from a task in order for the rule to be applied.
+        /// </summary>
+        [JsonProperty("isolated")]
+        [DefaultValue(false)]
+        public bool Isolated
         {
             get;
             set;

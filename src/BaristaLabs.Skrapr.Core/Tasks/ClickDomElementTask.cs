@@ -4,7 +4,6 @@
     using Microsoft.Extensions.Logging;
     using System;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
     using Troschuetz.Random;
     using Dom = ChromeDevTools.DOM;
@@ -109,6 +108,70 @@
             //Get a random point within the click area
             var target = targetClickRect.GetRandomSpotWithinRect();
 
+            //If we're in debug mode, illustrate where we're going to click.
+            if (worker.IsDebugEnabled)
+            {
+                //TODO: Make this better... javascript based even.
+                //var scaleFactor = await worker.DevTools.GetPageScaleFactor();
+                //var xScaleFactor = scaleFactor.Item1;
+                //var yScaleFactor = scaleFactor.Item2;
+
+                //var highlightRect = new Dom.Rect
+                //{
+                //    X = contentPathPoints[0] / xScaleFactor,
+                //    Y = contentPathPoints[1] / yScaleFactor,
+                //    Width = highlightObject.ElementInfo.NodeWidth / xScaleFactor,
+                //    Height = highlightObject.ElementInfo.NodeHeight / yScaleFactor //2.2
+                //};
+
+                //await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
+                //{
+                //    X = (long)(highlightRect.X),
+                //    Y = (long)(highlightRect.Y),
+                //    Width = (long)(highlightRect.Width),
+                //    Height = (long)(highlightRect.Height),
+                //    Color = new Dom.RGBA
+                //    {
+                //        R = 0,
+                //        G = 0,
+                //        B = 255,
+                //        A = 0.7
+                //    },
+                //    OutlineColor = new Dom.RGBA
+                //    {
+                //        R = 255,
+                //        G = 0,
+                //        B = 0,
+                //        A = 1
+                //    },
+                //});
+
+                //await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
+                //{
+                //    X = (long)target.X,
+                //    Y = (long)target.Y,
+                //    Width = 1,
+                //    Height = 1,
+                //    Color = new Dom.RGBA
+                //    {
+                //        R = 255,
+                //        G = 255,
+                //        B = 0,
+                //        A = 1
+                //    },
+                //    OutlineColor = new Dom.RGBA
+                //    {
+                //        R = 255,
+                //        G = 255,
+                //        B = 0,
+                //        A = 1
+                //    },
+                //});
+
+                ////Wait 5 seconds.
+                //await Task.Delay(5000);
+            }
+
             //Click the random point, with a random delay between the down and up mouse events.
             var clickDelay = TRandom.New().Next(100, 1000);
 
@@ -123,7 +186,7 @@
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
             });
 
-            await Task.Run(() => Thread.Sleep(clickDelay));
+            await Task.Delay(clickDelay);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {

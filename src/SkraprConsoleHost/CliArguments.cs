@@ -19,6 +19,14 @@
             set;
         }
 
+        [Option(ShortName: 'd', LongName: "debug")]
+        [Help("Indicates that the skrapr is in debug mode. Tasks marked as skipInDebug: true will be skipped.")]
+        public bool Debug
+        {
+            get;
+            set;
+        }
+
         [OptionParameter(LongName: "remote-debugging-host")]
         [Help("Specifies the host of the remote debugger. Default is localhost.")]
         public string RemoteDebuggingHost

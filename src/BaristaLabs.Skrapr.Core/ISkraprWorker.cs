@@ -26,6 +26,17 @@
         }
 
         /// <summary>
+        /// Gets a value that indicates if the worker is running in debug mode.
+        /// </summary>
+        /// <remarks>
+        /// Tasks can implement behavior to perform additional functions, such as logging or skipping delays in debug mode.
+        /// </remarks>
+        bool IsDebugEnabled
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets a logger associated with the worker.
         /// </summary>
         ILogger Logger

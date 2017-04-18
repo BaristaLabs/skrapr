@@ -60,8 +60,13 @@
             var devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
             logger.LogDebug($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
 
-            var worker = SkraprWorker.Create(serviceProvider, cliArguments.SkraprDefinitionPath, devTools.Session, devTools);
+            var worker = SkraprWorker.Create(serviceProvider, cliArguments.SkraprDefinitionPath, devTools.Session, devTools, debugMode: cliArguments.Debug);
 
+            if (cliArguments.Debug)
+            {
+                logger.LogDebug($"Operating in debug mode. Tasks marked with 'skipInDebug' will be skipped.");
+            }
+            
             if (cliArguments.Attach == true)
             {
                 var targetInfo = devTools.Session.Target.GetTargetInfo(session.Id).GetAwaiter().GetResult();
