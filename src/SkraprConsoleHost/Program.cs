@@ -13,6 +13,7 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Threading;
 
     class Program
     {
@@ -93,16 +94,32 @@
             }
 
             logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
-            Task.WaitAny(worker.Completion, Task.Run(() =>
-            {
-                Console.ReadKey();
-                logger.LogDebug("Stop requested. Shutting down.");
-                //TODO: dispose of session, worker.
-                worker.Dispose();
-            }));
+
+            var cancelKeyTokenSource = new CancellationTokenSource();
+
+            var workerCompletion = worker.Completion
+                .ContinueWith((t) => cancelKeyTokenSource.Cancel());
+
+            var keyCompletion = Utility.ReadKeyAsync(ConsoleKey.Enter, cancelKeyTokenSource.Token)
+                .ContinueWith(async (t) =>
+                {
+                    if (!t.IsCanceled)
+                    {
+                        logger.LogDebug("Stop requested at the console, cancelling...");
+                        worker.Dispose();
+                        await worker.Completion;
+                    }
+
+                });
+
+            Task.WaitAny(workerCompletion, keyCompletion);
+
+            //Cleanup.
+            worker.Dispose();
+            devTools.Dispose();
 
             Console.WriteLine("All Done!");
-            Console.ReadLine();
+            Console.ReadKey();
         }
     }
 }

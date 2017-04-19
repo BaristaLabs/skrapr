@@ -13,15 +13,6 @@
             get { return "AddCurrentPageAsTarget"; }
         }
 
-        /// <summary>
-        /// Gets or sets the name of the rule that the target will be added to.
-        /// </summary>
-        public string Rule
-        {
-            get;
-            set;
-        }
-
         public override async Task PerformTask(ISkraprWorker worker)
         {
             var targetInfoResponse = await worker.Session.Target.GetTargetInfo(new Target.GetTargetInfoCommand

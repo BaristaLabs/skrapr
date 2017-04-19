@@ -7,6 +7,9 @@
     /// <summary>
     /// Represents a task that can be used to add a number of anchors as targets.
     /// </summary>
+    /// <remarks>
+    /// Commonly used after a page navigation event.
+    /// </remarks>
     public class AddAnchorsAsTargetsTask : SkraprTask
     {
         public override string Name
@@ -34,22 +37,21 @@
 
             foreach(var nodeId in selectorResponse.NodeIds)
             {
-                if (worker.DevTools.ChildNodes.ContainsKey(nodeId))
-                {
-                    var node = worker.DevTools.ChildNodes[nodeId];
-                    var attributes = node.GetAttributes();
-                    if (attributes.ContainsKey("href"))
-                    {
-                        worker.AddTask(new NavigateTask
-                        {
-                            Url = attributes["href"]
-                        });
-                        worker.Logger.LogDebug("{taskName} Added {href} to the main flow.", Name, attributes["href"]);
-                    }
-                }
-                else
+                if (!worker.DevTools.ChildNodes.ContainsKey(nodeId))
                 {
                     worker.Logger.LogError("{taskName} Expected that a node with an id of {id} would be in the child node dictionary.", Name, nodeId);
+                    continue;
+                }
+
+                var node = worker.DevTools.ChildNodes[nodeId];
+                var attributes = node.GetAttributes();
+                if (attributes.ContainsKey("href"))
+                {
+                    worker.AddTask(new NavigateTask
+                    {
+                        Url = attributes["href"]
+                    });
+                    worker.Logger.LogDebug("{taskName} Added {href} to the main flow.", Name, attributes["href"]);
                 }
             }
         }

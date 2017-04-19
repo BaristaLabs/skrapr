@@ -7,6 +7,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -124,6 +125,9 @@
             if (task == null)
                 throw new ArgumentNullException(nameof(task));
 
+            if (m_disposed)
+                return;
+
             Logger.LogDebug("{functionName} Added task {taskName} to the main flow. ({details})", nameof(AddTask), task.Name, task.ToString());
             m_mainFlow.Post(task);
         }
@@ -145,6 +149,16 @@
             }
 
             return matchingRules;
+        }
+
+        /// <summary>
+        /// Immediately processes the specified task.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        public async Task ProcessSkraprTask(ISkraprTask task)
+        {
+            await ProcessSkraprTask(task, false);
         }
 
         /// <summary>
@@ -175,7 +189,13 @@
             }
         }
 
-        public async Task ProcessSkraprTask(ISkraprTask task, bool processRules = false)
+        /// <summary>
+        /// Processes the specified ISkraprTask
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="processRules"></param>
+        /// <returns></returns>
+        private async Task ProcessSkraprTask(ISkraprTask task, bool processRules = false)
         {
             m_logger.LogDebug("{functionName} performing task {taskName}", nameof(ProcessSkraprTask), task.Name);
 
@@ -194,6 +214,7 @@
                     m_logger.LogDebug("{functionName} Condition result was false - skipping task {taskName}.", nameof(ProcessSkraprTask), task.Name);
                     return;
                 }
+                m_logger.LogDebug("{functionName} Condition result was true - processing task {taskName}.", nameof(ProcessSkraprTask), task.Name);
             }
 
             //Perform the task
@@ -226,16 +247,23 @@
         }
 
         #region IDisposable
+        private bool m_disposed;
         private void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!m_disposed)
             {
-                m_mainFlow.Complete();
+                if (disposing)
+                {
+                    m_mainFlow.Complete();
+                    Session.Dispose();
+                }
+
+                m_disposed = true;
             }
         }
 
         /// <summary>
-        /// Disposes of the worker freeing resources marking it as complete.
+        /// Disposes of the worker, freeing resources and marking it as complete.
         /// </summary>
         public void Dispose()
         {
@@ -257,13 +285,29 @@
             if (!File.Exists(pathToSkraprDefinition))
                 throw new FileNotFoundException($"The specified skrapr definition ({pathToSkraprDefinition}) could not be found. Please check that the skrapr definition exists.");
 
-            var skraprDefinitionJson = File.ReadAllText(pathToSkraprDefinition);
-
             var skraprLogger = serviceProvider
                 .GetService<ILoggerFactory>()
                 .CreateLogger<SkraprWorker>();
 
-            var skraprDefinition = JsonConvert.DeserializeObject<SkraprDefinition>(skraprDefinitionJson);
+            JToken skraprDefinitionJson;
+
+            //The pyramid of json reading.
+            using (var fs = File.OpenRead(pathToSkraprDefinition))
+            {
+                using (var textReader = new StreamReader(fs))
+                {
+                    using (var jsonReader = new JsonTextReader(textReader))
+                    {
+                        skraprDefinitionJson = JToken.ReadFrom(jsonReader, new JsonLoadSettings
+                        {
+                            CommentHandling = CommentHandling.Ignore,
+                            LineInfoHandling = LineInfoHandling.Load
+                        });
+                    }
+                }
+            }
+
+            var skraprDefinition = skraprDefinitionJson.ToObject<SkraprDefinition>();
             return new SkraprWorker(skraprLogger, skraprDefinition, session, devTools, debugMode);
         }
     }

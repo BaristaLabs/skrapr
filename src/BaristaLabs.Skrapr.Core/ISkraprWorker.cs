@@ -3,6 +3,7 @@
     using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Definitions;
     using Microsoft.Extensions.Logging;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Represents a worker that processes a skrapr definition.
@@ -53,9 +54,16 @@
         }
 
         /// <summary>
-        /// Adds a SkraprTask to the tasks being processed by the worker.
+        /// Adds a SkraprTask to the tasks that will be processed by the worker.
         /// </summary>
         /// <param name="target"></param>
         void AddTask(ISkraprTask task);
+
+        /// <summary>
+        /// Immediately processes the specified task.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        Task ProcessSkraprTask(ISkraprTask task);
     }
 }

@@ -22,7 +22,7 @@
     /// <summary>
     /// Represents a controller, or facade, over a ChromeSession to abstract away the intrincies of common operations.
     /// </summary>
-    public class SkraprDevTools
+    public class SkraprDevTools : IDisposable
     {
         #region Fields
         private readonly ILogger m_logger;
@@ -360,7 +360,7 @@ new Promise(function (resolve, reject) {{
         /// Saves an image of the entire contents of the current page.
         /// </summary>
         /// <returns></returns>
-        public async Task TakeFullPageScreenshot(string outputFileName)
+        public async Task TakeFullPageScreenshot(string outputFileName, int millisecondsTimeout = 60000)
         {
             if (String.IsNullOrWhiteSpace(outputFileName))
                 throw new ArgumentNullException(nameof(outputFileName));
@@ -370,7 +370,9 @@ new Promise(function (resolve, reject) {{
             m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), (long)dimensions.fullWidth, (long)dimensions.fullHeight);
 
             //TODO: This needs to be improved -- it appears that the max visible size in any dimension
-            //is around 8192px - pages greater than 8192px will be clipped.
+            //is around 8192px - pages greater than 8192px will be clipped. This method should limit size
+            // to 8192 (or the actual max) take multiple shots of this size and stich the resulting images
+            // together.
 
             //Set the visible size to the full page size.
             await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
@@ -379,7 +381,7 @@ new Promise(function (resolve, reject) {{
                 Height = (long)dimensions.fullHeight
             });
 
-            var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: 60000);
+            var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: millisecondsTimeout);
             var imageBytes = Convert.FromBase64String(result.Data);
             m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
             File.WriteAllBytes(outputFileName, imageBytes);
@@ -423,6 +425,7 @@ new Promise(function (resolve, reject) {{
 
             return IsLoading;
         }
+
         #region Private Methods
 
         private async Task Initialize()
@@ -487,6 +490,35 @@ new Promise(function (resolve, reject) {{
             {
                 m_nodeDictionary.AddOrUpdate(node.NodeId, node, (id, previousNode) => node);
             }
+        }
+        #endregion
+
+        #region IDisposable
+        private bool m_disposed;
+
+        private void Dispose(bool disposing)
+        {
+            if (!m_disposed)
+            {
+                if (disposing)
+                {
+                    m_session.Dispose();
+
+                    m_frameStoppedLoading.Dispose();
+                    m_childNodeEvent.Dispose();
+                    m_nodeDictionary.Clear();
+                }
+
+                m_disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Disposes of the DevTools, freeing resources and marking it as complete.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
         }
         #endregion
 
