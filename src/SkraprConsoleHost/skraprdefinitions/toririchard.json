@@ -50,7 +50,7 @@
         {
           "name": "ClickDomElement",
           "selector": ".viewall-link",
-          "condition": "document.getElementsByClassName('someClass').length > 0",
+          "condition": "document.getElementsByClassName('viewall-link').length > 0",
           "isNavigation": true
         },
         {

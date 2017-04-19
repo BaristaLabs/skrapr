@@ -18,7 +18,6 @@
     {
         //Launch chrome with
         //"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223
-        //Consider using PM2 to launch both chrome and SkraprCLI (is there a .net equiv?)
 
         static void Main(string[] args)
         {
