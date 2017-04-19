@@ -2,6 +2,7 @@
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Definitions;
+    using BaristaLabs.Skrapr.Extensions;
     using BaristaLabs.Skrapr.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@
     using System.Threading.Tasks.Dataflow;
 
     /// <summary>
-    /// Represents a class that processes a Skrapr Definition.
+    /// Represents a concrete implementation of a local worker that processes a Skrapr Definition.
     /// </summary>
     public sealed class SkraprWorker : ISkraprWorker, IDisposable
     {
@@ -130,7 +131,6 @@
         /// <summary>
         /// Gets the rules that match the current state of the session.
         /// </summary>
-        /// <param name="url"></param>
         /// <returns></returns>
         public async Task<IEnumerable<ISkraprRule>> GetMatchingRules()
         {
@@ -154,42 +154,12 @@
         /// <returns></returns>
         private async Task ProcessMainSkraprTask(ISkraprTask task)
         {
-            if (task.Disabled)
-            {
-                m_logger.LogDebug("{functionName} Task {taskName} was marked as disabled. Skipping.", nameof(ProcessMainSkraprTask), task.Name);
-                return;
-            }
+            await ProcessSkraprTask(task, true);
 
-            m_logger.LogDebug("{functionName} performing task {taskName} (main)", nameof(ProcessMainSkraprTask), task.Name);
-            //Perform the task
-            try
-            {
-                await task.PerformTask(this);
-            }
-            catch (Exception ex)
-            {
-                m_logger.LogError("{functionName} An error occurred while performing task {taskName} (main): {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
-            }
-
-            //Get matching rules for the state of the session.
-            var matchingRules = await GetMatchingRules();
-            foreach (var rule in matchingRules)
-            {
-                m_logger.LogDebug("{functionName} Found rule that matches current frame state: ({ruleType} - {details})", nameof(ProcessMainSkraprTask), rule.Type, rule.ToString());
-                await ProcessSkraprRule(rule);
-            }
-
-            if (matchingRules.Count() == 0)
-            {
-                m_logger.LogError("{functionName} A rule was not found that matches the current frame state for task {taskName}: ()", nameof(ProcessMainSkraprTask), task.Name, task.ToString());
-            }
-
-            m_logger.LogDebug("{functionName} Completed task {url} (main)", nameof(ProcessMainSkraprTask), task.Name);
-            
             //If there are no more tasks in the main flow, mark as complete.
             if (m_mainFlow.InputCount == 0)
             {
-                m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessMainSkraprTask));
+                m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessSkraprTask));
                 m_mainFlow.Complete();
             }
         }
@@ -201,22 +171,58 @@
 
             foreach(var task in rule.Tasks)
             {
-                if (task.Disabled)
-                {
-                    m_logger.LogDebug("{functionName} Task {taskName} was marked as disabled. Skipping.", nameof(ProcessSkraprRule), task.Name);
-                    continue;
-                }
+                await ProcessSkraprTask(task);
+            }
+        }
 
-                m_logger.LogDebug("{functionName} Performing task {taskName}", nameof(ProcessSkraprRule), task.Name);
-                try
+        public async Task ProcessSkraprTask(ISkraprTask task, bool processRules = false)
+        {
+            m_logger.LogDebug("{functionName} performing task {taskName}", nameof(ProcessSkraprTask), task.Name);
+
+            if (task.Disabled)
+            {
+                m_logger.LogDebug("{functionName} Task {taskName} was marked as disabled. Skipping.", nameof(ProcessSkraprTask), task.Name);
+                return;
+            }
+
+            if (task is IConditionalExpressionTask conditionalExpressionTask && !String.IsNullOrWhiteSpace(conditionalExpressionTask.Condition))
+            {
+                m_logger.LogDebug("{functionName} Task {taskName} is a conditional task. Evaluating expression {expression}.", nameof(ProcessSkraprTask), task.Name, conditionalExpressionTask.Condition);
+                var conditionResponse = await Session.Runtime.EvaluateCondition(conditionalExpressionTask.Condition, contextId: DevTools.CurrentFrameContext.Id);
+                if (conditionResponse == false)
                 {
-                    await task.PerformTask(this);
-                }
-                catch(Exception ex)
-                {
-                    m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
+                    m_logger.LogDebug("{functionName} Condition result was false - skipping task {taskName}.", nameof(ProcessSkraprTask), task.Name);
+                    return;
                 }
             }
+
+            //Perform the task
+            try
+            {
+                await task.PerformTask(this);
+            }
+            catch (Exception ex)
+            {
+                m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
+            }
+
+            if (processRules == true)
+            {
+                //Get matching rules for the state of the session.
+                var matchingRules = await GetMatchingRules();
+                foreach (var rule in matchingRules)
+                {
+                    m_logger.LogDebug("{functionName} Found rule that matches current frame state: ({ruleType} - {details})", nameof(ProcessSkraprTask), rule.Type, rule.ToString());
+                    await ProcessSkraprRule(rule);
+                }
+
+                if (matchingRules.Count() == 0)
+                {
+                    m_logger.LogError("{functionName} A rule was not found that matches the current frame state for task {taskName}: ({details})", nameof(ProcessSkraprTask), task.Name, task.ToString());
+                }
+            }
+
+            m_logger.LogDebug("{functionName} Completed task {url}", nameof(ProcessSkraprTask), task.Name);
         }
 
         #region IDisposable

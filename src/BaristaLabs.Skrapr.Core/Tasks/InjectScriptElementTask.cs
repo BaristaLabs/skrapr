@@ -5,7 +5,7 @@
     /// <summary>
     /// Represents a task that can be used to inject a script tag to content or an external JS resource.
     /// </summary>
-    public class InjectScriptElementTask : SkraprTask
+    public class InjectScriptElementTask : SkraprTask, IConditionalExpressionTask
     {
         public override string Name
         {
@@ -19,6 +19,15 @@
         /// If the condition is truthy, the script tag will be injected.
         /// </remarks>
         public string Condition
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the async attribute on the script tag.
+        /// </summary>
+        public bool Async
         {
             get;
             set;
@@ -61,7 +70,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.DevTools.InjectScriptElement(ScriptUrl, contents: Contents, type: Type, condition: Condition);
+            await worker.DevTools.InjectScriptElement(ScriptUrl, contents: Contents, type: Type, async: Async);
         }
     }
 }

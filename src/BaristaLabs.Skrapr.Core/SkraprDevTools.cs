@@ -240,20 +240,8 @@
         /// </summary>
         /// <param name="scriptUrl"></param>
         /// <returns>The nodeId of the injected element.</returns>
-        public async Task<long> InjectScriptElement(string scriptUrl, string contents = null, string type = "text/javascript", bool async = true, string condition = null)
+        public async Task<long> InjectScriptElement(string scriptUrl, string contents = null, string type = "text/javascript", bool async = true)
         {
-            if (!String.IsNullOrWhiteSpace(condition))
-            {
-                m_logger.LogDebug("{functionName} Condition parameter has been specified - determining if script should be injected.", nameof(InjectScriptElement));
-
-                var shouldInjectJsResponse = await Session.Runtime.EvaluateCondition(condition, contextId: CurrentFrameContext.Id);
-                if (!shouldInjectJsResponse)
-                {
-                    m_logger.LogDebug("{functionName} condition result was false - skipping script injection.", nameof(InjectScriptElement));
-                    return -1;
-                }
-            }
-
             m_logger.LogDebug("{functionName} injecting script tag with src={scriptUrl} type={type}", nameof(InjectScriptElement), scriptUrl, type);
 
             var result = await Session.Runtime.Evaluate($@"
@@ -275,8 +263,6 @@ new Promise(function (resolve, reject) {{
     document.body.appendChild(s);
 }});
             ", contextId: CurrentFrameContext.Id, awaitPromise: true);
-
-            
 
             var nodeResponse = await Session.DOM.RequestNode(new Dom.RequestNodeCommand
             {

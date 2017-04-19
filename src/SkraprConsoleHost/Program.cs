@@ -66,7 +66,7 @@
 
             if (cliArguments.Debug)
             {
-                logger.LogDebug($"Operating in debug mode. Tasks marked with 'skipInDebug' will be skipped.");
+                logger.LogDebug($"Operating in debug mode. Tasks may perform additional behavior or may skip themselves.");
             }
             
             if (cliArguments.Attach == true)

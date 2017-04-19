@@ -35,10 +35,13 @@
     }
 
     /// <summary>
-    /// Represents a Skrapr task that contains a condition.
+    /// Represents a Skrapr task that contains a conditional expression that is evaluated to determine if the task is run.
     /// </summary>
-    public interface IConditionalSkraprTask : ISkraprTask
+    public interface IConditionalExpressionTask : ISkraprTask
     {
+        /// <summary>
+        /// Gets the conditional expression that is evaluated.
+        /// </summary>
         string Condition
         {
             get;
