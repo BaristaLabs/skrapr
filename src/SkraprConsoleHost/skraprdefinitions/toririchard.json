@@ -45,7 +45,8 @@
         {
           "name": "InjectStyleElement",
           "description": "Highlight the shirts just because we can",
-          "styles": ".thumb-grid { background-color: rgba(0,0,255, 0.5); border: 2px solid red;}"
+          "styles": ".thumb-grid { background-color: rgba(0,0,255, 0.5); border: 2px solid red;}",
+          "disabled": true
         },
         {
           "name": "ClickDomElement",
@@ -57,7 +58,8 @@
           "name": "InjectScriptElement",
           "description": "We don't really need URI.js but demonstrating it's possible",
           "condition": "window['URI'] === undefined;",
-          "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js"
+          "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js",
+          "disabled": true
         },
         {
           "name": "ScrollToAbsoluteBottom",
@@ -67,6 +69,35 @@
           "name": "AddAnchorsAsTargets",
           "selector": ".thumb-grid a.name",
           "disabled": true
+        },
+        {
+          "name": "TemplatedSubFlow",
+          "selector": ".thumb-grid a.name",
+          "shuffle":  true,
+          //Click each shirt image and go back.
+          "taskTemplates": [
+            {
+              "name": "ScrollTo",
+              "selector": ".thumb-grid:nth-of-type({{$oneBasedindex}}) a.img"
+            },
+            {
+              "name": "ClickDomElement",
+              "selector": ".thumb-grid:nth-of-type({{$oneBasedindex}}) a.img",
+              "isNavigation": true
+            },
+            {
+              "name": "HumanDelay"
+            },
+            {
+              "name": "GoBack"
+            },
+            //Wait for the images to load.
+            {
+              "name": "Delay",
+              "minDelay": 3000,
+              "maxDelay":  5000
+            }
+          ]
         }
       ]
     }

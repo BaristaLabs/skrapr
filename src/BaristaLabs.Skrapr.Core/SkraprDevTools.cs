@@ -12,10 +12,11 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-
+    using Troschuetz.Random;
     using Css = ChromeDevTools.CSS;
     using Dom = ChromeDevTools.DOM;
     using Emulation = ChromeDevTools.Emulation;
+    using Input = ChromeDevTools.Input;
     using Page = ChromeDevTools.Page;
     using Runtime = ChromeDevTools.Runtime;
 
@@ -34,6 +35,7 @@
         private readonly ManualResetEventSlim m_frameStoppedLoading = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
         private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
+        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
         #endregion
 
         #region Properties
@@ -117,46 +119,52 @@
             };
         }
 
-        public async Task<bool> GetChildNodeData(long nodeId, long depth = 1, bool pierce = false)
-        {
-            //TODO: Implement this.
-            throw new NotImplementedException();
-
-            //m_childNodeEvent.Reset();
-            //await m_session.SendCommand(new Dom.RequestChildNodesCommand
-            //{
-            //    NodeId = nodeId,
-            //    Depth = depth,
-            //    Pierce = pierce
-            //});
-            //await Task.Run(() => m_childNodeEvent.Wait());
-            //return false;
-        }
-
         /// <summary>
-        /// Determine the scale factor for the current page by comparing the BoxModel of the document to the ViewPort Client Info
+        /// Returns an object that contains the css page dimensions comparing the BoxModel to the LayoutMetrics
         /// </summary>
         /// <returns></returns>
-        public async Task<Tuple<double, double>> GetPageScaleFactor()
+        public async Task<PageDimensions> GetPageDimensions(Dom.GetBoxModelCommandResponse documentBoxModel = null, Page.GetLayoutMetricsCommandResponse layoutMetrics = null)
         {
-            var documentNode = await Session.DOM.GetDocument();
-            var documentBoxModel = await Session.DOM.GetBoxModel(new Dom.GetBoxModelCommand
+            if (documentBoxModel == null || layoutMetrics == null)
             {
-                NodeId = documentNode.NodeId
-            });
+                var documentNode = await Session.DOM.GetDocument();
+                if (documentBoxModel == null)
+                {
+                    documentBoxModel = await Session.DOM.GetBoxModel(new Dom.GetBoxModelCommand
+                    {
+                        NodeId = documentNode.NodeId
+                    });
+                }
 
-            var documentLayoutMetrics = await Session.Page.GetLayoutMetrics();
+                if (layoutMetrics == null)
+                {
+                    layoutMetrics = await Session.Page.GetLayoutMetrics();
+                }
+            }
 
-            double scaleX = documentLayoutMetrics.LayoutViewport.ClientWidth / documentBoxModel.Model.Width;
-            double scaleY = documentLayoutMetrics.LayoutViewport.ClientHeight / documentBoxModel.Model.Height;
-            return new Tuple<double, double>(scaleX, scaleY);
+            double scaleX = layoutMetrics.LayoutViewport.ClientWidth / documentBoxModel.Model.Width;
+            double scaleY = layoutMetrics.LayoutViewport.ClientHeight / documentBoxModel.Model.Height;
+            if (scaleX != scaleY)
+                throw new InvalidOperationException($"Did not expect a non-proportional scale factor: scaleX:{scaleX} scaleY: {scaleY}");
+
+            return new PageDimensions
+            {
+                DevicePixelRatio = scaleX,
+                FullHeight = (long)Math.Round((layoutMetrics.LayoutViewport.PageY / scaleY) + (layoutMetrics.LayoutViewport.ClientHeight / scaleY)),
+                FullWidth = (long)Math.Round((layoutMetrics.LayoutViewport.PageX / scaleX) + (layoutMetrics.LayoutViewport.ClientWidth / scaleX)),
+                OriginalOverflowStyle = "",
+                ScrollX = (long)layoutMetrics.VisualViewport.PageX,
+                ScrollY = (long)layoutMetrics.VisualViewport.PageY,
+                WindowHeight = (long)(layoutMetrics.VisualViewport.ClientHeight / scaleY),
+                WindowWidth = (long)(layoutMetrics.VisualViewport.ClientWidth / scaleY)
+            };
         }
 
         /// <summary>
-        /// Returns an object that represents the actual page dimentions as returned by the JavaScript object model.
+        /// Returns an object that contains the css page dimensions as returned by the JavaScript object model.
         /// </summary>
         /// <returns></returns>
-        public async Task<JObject> GetPageDimensions()
+        public async Task<PageDimensions> GetReportedPageDimensions()
         {
             var result = await Session.Runtime.Evaluate(@"
 (function() {
@@ -166,24 +174,18 @@
         return Math.max.apply(Math, nums.filter(function(x) { return x; }));
     };
 
-    var body = document.body;
-
-    var originalOverflowStyle = document.documentElement.style.overflow;
-
-    document.documentElement.style.overflow = 'hidden';
-
     var widths = [
         document.documentElement.clientWidth,
-        body.scrollWidth,
+        document.body.scrollWidth,
         document.documentElement.scrollWidth,
-        body.offsetWidth,
+        document.body.offsetWidth,
         document.documentElement.offsetWidth
     ];
     var heights = [
         document.documentElement.clientHeight,
-        body.scrollHeight,
+        document.body.scrollHeight,
         document.documentElement.scrollHeight,
-        body.offsetHeight,
+        document.body.offsetHeight,
         document.documentElement.offsetHeight
     ];
 
@@ -195,44 +197,51 @@
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
         devicePixelRatio: window.devicePixelRatio,
-        originalOverflowStyle: originalOverflowStyle
+        originalOverflowStyle: document.documentElement.style.overflow
     };
 
-    document.documentElement.style.overflow = originalOverflowStyle;
     return JSON.stringify(result);
 })();
 ", contextId: CurrentFrameContext.Id);
 
             var resultObject = JObject.Parse(result.Value as string);
-            return resultObject;
+            return resultObject.ToObject<PageDimensions>();
         }
 
         /// <summary>
-        /// Gets the layout tree node for the dom element corresponding to the specified selector.
+        /// Gets the Css bounding box for the specified node.
         /// </summary>
         /// <remarks>
-        /// If the selector doesn't correspond to a dom element or the dom element is not visible, null will be returned.
+        /// If the nodeId doesn't correspond to a dom element or the dom element is not visible, null will be returned.
+        /// 
+        /// Um, not sure what determines if the node is within the returned objects. Document(-1) doesn't seems to get all nodes either.
         /// </remarks>
         /// <param name="cssSelector"></param>
         /// <returns></returns>
-        public async Task<Css.LayoutTreeNode> GetLayoutTreeNodeForDomElement(string cssSelector)
+        public async Task<Dom.Rect> GetBoundingBoxForNode(long nodeId, double devicePixelRatio = 2)
         {
-            var document = await Session.DOM.GetDocument();
-            var domElement = await m_session.SendCommand<Dom.QuerySelectorCommand, Dom.QuerySelectorCommandResponse>(new Dom.QuerySelectorCommand
+            //Ensure the node is pushed.
+            await m_session.DOM.RequestChildNodes(new Dom.RequestChildNodesCommand
             {
-                NodeId = document.NodeId, //Document node id is probably most likely always 1.
-                Selector = cssSelector
+                NodeId = nodeId
             });
 
-            if (domElement.NodeId <= 0)
-                return null;
-
-            var elementCssComputedStyle = await m_session.SendCommand<Css.GetLayoutTreeAndStylesCommand, Css.GetLayoutTreeAndStylesCommandResponse>(new Css.GetLayoutTreeAndStylesCommand
+            var layoutTree = await m_session.CSS.GetLayoutTreeAndStyles(new Css.GetLayoutTreeAndStylesCommand
             {
                 ComputedStyleWhitelist = new string[0]
             });
 
-            return elementCssComputedStyle.LayoutTreeNodes.FirstOrDefault(e => e.NodeId == domElement.NodeId);
+            var layoutTreeNode = layoutTree.LayoutTreeNodes.FirstOrDefault(e => e.NodeId == nodeId);
+            if (layoutTreeNode == null)
+                return null;
+
+            return new Dom.Rect
+            {
+                Height = layoutTreeNode.BoundingBox.Height / devicePixelRatio,
+                Width = layoutTreeNode.BoundingBox.Width / devicePixelRatio,
+                X = layoutTreeNode.BoundingBox.X / devicePixelRatio,
+                Y = layoutTreeNode.BoundingBox.Y / devicePixelRatio
+            };
         }
 
         /// <summary>
@@ -324,13 +333,75 @@ new Promise(function (resolve, reject) {{
             {
                 Url = url
             });
+            m_currentFrameId = navigateResponse.FrameId;
 
             await WaitForCurrentNavigation(millisecondsTimeout: millisecondsTimeout);
-            m_currentFrameId = navigateResponse.FrameId;
             m_logger.LogDebug("{functionName} Completed navigation to {url} (New frame id: {frameId})", nameof(Navigate), url, m_currentFrameId);
         }
 
+        public async Task ScrollTo(string selector, bool isHuman = true, int maxScrolls = 10)
+        {
+            var documentNode = await Session.DOM.GetDocument(1);
 
+            //Get the node to scroll to.
+            var nodeIds = await Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
+            {
+                NodeId = documentNode.NodeId,
+                Selector = selector
+            });
+
+            if (nodeIds.NodeIds.Length == 0)
+            {
+                m_logger.LogError("{functionName} Did not find any nodes corresponding to selector {selector}, skipping.", nameof(ScrollTo), selector);
+                return;
+            }
+
+            var nodeId = nodeIds.NodeIds.First();
+            if (nodeId < 1)
+                return;
+
+            var scrollsLeft = maxScrolls;
+            Tuple<double, double> delta;
+            do
+            {
+                //Get the scroll delta.
+                var pageDimensions = await GetPageDimensions();
+                var highlightObject = await Session.DOM.GetHighlightObjectForTest(nodeId);
+                delta = highlightObject.GetOnscreenDelta(pageDimensions);
+
+                //If the element is already on screen, well, we're done.
+                if (delta.Item1 == 0 && delta.Item2 == 0)
+                {
+                    m_logger.LogDebug("{functionName} Target element is already within the boundries of the current viewport.", nameof(ScrollTo));
+                    return;
+                }
+
+                if (isHuman)
+                {
+                    var scrollPoint = new Point(
+                        s_random.NextUInt(10, (uint)pageDimensions.WindowWidth - 20),
+                        s_random.NextUInt(10, (uint)pageDimensions.WindowHeight - 20)
+                        );
+
+                    var targetInfoResponse = await Session.Input.SynthesizeScrollGesture(new Input.SynthesizeScrollGestureCommand
+                    {
+                        X = (long)scrollPoint.X,
+                        Y = (long)scrollPoint.Y,
+                        XDistance = (long)delta.Item1,
+                        YDistance = (long)delta.Item2,
+                        Speed = s_random.Next(400, 1200)
+                    }, millisecondsTimeout: 120000);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                scrollsLeft--;
+            } while (scrollsLeft > 0);
+
+            m_logger.LogError("{functionName} exceeded the maximum number of scrolls: {maxScrolls}", nameof(ScrollTo), maxScrolls);
+        }
         /// <summary>
         /// Keeps scrolling to the bottom of the page until the scroll position stablizes
         /// </summary>
@@ -339,22 +410,24 @@ new Promise(function (resolve, reject) {{
         public async Task ScrollToAbsoluteBottom(int maxScrolls = 10, int iterateDelayMS = 1000)
         {
             long lastScrollY = -1, scrollY = -1, yPos;
+            var scrollsLeft = maxScrolls;
             do
             {
-                dynamic pageDimensions = await GetPageDimensions();
+                var pageDimensions = await GetReportedPageDimensions();
                 lastScrollY = scrollY;
-                scrollY = (long)pageDimensions.scrollY;
+                scrollY = pageDimensions.ScrollY;
 
                 if (lastScrollY == scrollY)
                     return;
 
-                yPos = (long)pageDimensions.fullHeight;
+                yPos = pageDimensions.FullHeight;
                 await Session.Runtime.Evaluate($"window.scrollTo(0, {yPos});", m_currentFrameContext.Id);
-                maxScrolls--;
+                scrollsLeft--;
                 await Task.Delay(iterateDelayMS);
-            } while (maxScrolls > 0);
-        }
+            } while (scrollsLeft > 0);
 
+            m_logger.LogError("{functionName} exceeded the maximum number of scrolls: {maxScrolls}", nameof(ScrollToAbsoluteBottom), maxScrolls);
+        }
 
         /// <summary>
         /// Saves an image of the entire contents of the current page.
@@ -366,8 +439,8 @@ new Promise(function (resolve, reject) {{
                 throw new ArgumentNullException(nameof(outputFileName));
 
             
-            dynamic dimensions = await GetPageDimensions();
-            m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), (long)dimensions.fullWidth, (long)dimensions.fullHeight);
+            var dimensions = await GetReportedPageDimensions();
+            m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), dimensions.FullWidth, dimensions.FullHeight);
 
             //TODO: This needs to be improved -- it appears that the max visible size in any dimension
             //is around 8192px - pages greater than 8192px will be clipped. This method should limit size
@@ -377,8 +450,8 @@ new Promise(function (resolve, reject) {{
             //Set the visible size to the full page size.
             await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
             {
-                Width = (long)dimensions.fullWidth,
-                Height = (long)dimensions.fullHeight
+                Width = dimensions.FullWidth,
+                Height = dimensions.FullHeight
             });
 
             var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: millisecondsTimeout);
@@ -392,8 +465,8 @@ new Promise(function (resolve, reject) {{
             //Set the visible size back to the original size.
             await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
             {
-                Width = (long)dimensions.windowWidth,
-                Height = (long)dimensions.windowHeight
+                Width = dimensions.WindowWidth,
+                Height = dimensions.WindowHeight
             });
         }
 
@@ -403,7 +476,7 @@ new Promise(function (resolve, reject) {{
         /// <returns></returns>
         public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
         {
-            m_logger.LogDebug("{functionName} Waiting for current navigation to complete.", nameof(WaitForCurrentNavigation));
+            m_logger.LogDebug("{functionName} Waiting for current navigation to complete. FrameId: {frameId}", nameof(WaitForCurrentNavigation), m_currentFrameId);
             await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
 
             return IsLoading;

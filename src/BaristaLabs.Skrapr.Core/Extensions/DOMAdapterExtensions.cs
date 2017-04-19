@@ -4,6 +4,7 @@
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
@@ -32,7 +33,7 @@
         }
 
         /// <summary>
-        /// Gets 
+        /// Returns the document node.
         /// </summary>
         /// <param name="domAdapter"></param>
         /// <param name="depth"></param>
@@ -49,14 +50,23 @@
             return response.Root;
         }
 
+        /// <summary>
+        /// Gets the highlight object corresponding to the node id
+        /// </summary>
+        /// <remarks>
+        /// It doesn't appear that this api is all that reliable -- often an error is returned indicating that it cannot find a node that corresponds to the node id.
+        /// </remarks>
+        /// <param name="domAdapter"></param>
+        /// <param name="nodeId"></param>
+        /// <returns></returns>
         public static async Task<HighlightObject> GetHighlightObjectForTest(this Dom.DOMAdapter domAdapter, long nodeId)
         {
-            var result = await domAdapter.Session.SendCommand<Dom.GetHighlightObjectForTestCommand, Dom.GetHighlightObjectForTestCommandResponse>(new Dom.GetHighlightObjectForTestCommand
+            var highlightNode = await domAdapter.Session.DOM.GetHighlightObjectForTest(new Dom.GetHighlightObjectForTestCommand
             {
                 NodeId = nodeId
             });
 
-            var data = result.Highlight as JObject;
+            var data = highlightNode.Highlight as JObject;
             if (data == null)
                 throw new InvalidOperationException($"No Highlight Object was returned for nodeId {nodeId}");
 
@@ -116,6 +126,50 @@
         {
             get;
             set;
+        }
+
+
+        /// <summary>
+        /// Gets the delta between this object being onscreen.
+        /// </summary>
+        /// <param name="pageDimensions"></param>
+        /// <returns></returns>
+        public Tuple<double, double> GetOnscreenDelta(PageDimensions pageDimensions)
+        {
+            var contentPath = Paths.FirstOrDefault(p => p.Name == "content");
+            var contentPathPoints = contentPath.GetQuad();
+
+            var targetClickRect = new Dom.Rect
+            {
+                X = contentPathPoints[0], // Relative X
+                Y = contentPathPoints[1], // Relative Y.
+                Width = ElementInfo.NodeWidth,
+                Height = ElementInfo.NodeHeight
+            };
+
+            var currentViewPort = new Dom.Rect
+            {
+                X = pageDimensions.ScrollX,
+                Y = pageDimensions.ScrollY,
+                Width = pageDimensions.WindowWidth,
+                Height = pageDimensions.WindowHeight
+            };
+
+            double deltaX, deltaY;
+
+            if (Math.Abs(targetClickRect.X) > pageDimensions.ScrollX &&
+                ((Math.Abs(targetClickRect.X) + targetClickRect.Width) < (pageDimensions.ScrollX + pageDimensions.WindowWidth)))
+                deltaX = 0;
+            else
+                deltaX = targetClickRect.X;
+
+            if (Math.Abs(targetClickRect.Y) > pageDimensions.ScrollY &&
+                ((Math.Abs(targetClickRect.Y) + targetClickRect.Height) < (pageDimensions.ScrollY + pageDimensions.WindowHeight)))
+                deltaY = 0;
+            else
+                deltaY = -(targetClickRect.Y);
+
+            return new Tuple<double, double>(deltaX, deltaY);
         }
     }
 
@@ -191,7 +245,7 @@
         {
             var result = new List<double>();
 
-            foreach(var item in Path)
+            foreach (var item in Path)
             {
                 //Ignore the "M/L/Z" tokens for now..?
                 if (double.TryParse(item, out double itemDouble))

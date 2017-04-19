@@ -44,6 +44,15 @@
             set;
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates if the selectors should be processed in random order.
+        /// </summary>
+        public bool Shuffle
+        {
+            get;
+            set;
+        }
+
         public override async Task PerformTask(ISkraprWorker worker)
         {
             //Compile the task templates
@@ -63,6 +72,7 @@
             jsonSerializerSettings.Converters.Add(new TaskConverter());
 
             //For each selector, bind the data to the template, get the tasks for each node.
+            int currentIndex = 0;
             foreach (var nodeId in selectorResponse.NodeIds)
             {
                 if (!worker.DevTools.ChildNodes.ContainsKey(nodeId))
@@ -73,6 +83,12 @@
 
                 var node = worker.DevTools.ChildNodes[nodeId];
                 var attributes = node.GetAttributes();
+
+                //Add some additional metadata that templates can use.
+                attributes.Add("$index", currentIndex.ToString());
+                attributes.Add("$oneBasedindex", (currentIndex + 1).ToString());
+                attributes.Add("$zeroBasedindex", (currentIndex).ToString());
+
                 var subTasksString = template(attributes);
 
                 try
@@ -84,19 +100,25 @@
                 {
                     worker.Logger.LogError("{taskName} Encountered an error when deserializing tasks for nodeId {nodeId}: {ex}", Name, nodeId, ex);
                 }
+                currentIndex++;
+            }
+
+            if (Shuffle)
+            {
+                nodeTasks.Shuffle();
             }
 
             //Execute tasks for each node.
             foreach(var nodeTask in nodeTasks)
             {
-                worker.Logger.LogInformation("{taskName} Started processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
+                worker.Logger.LogDebug("{taskName} Started processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
 
                 foreach(var task in nodeTask.Item2)
                 {
                     await worker.ProcessSkraprTask(task);
                 }
 
-                worker.Logger.LogInformation("{taskName} Completed processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
+                worker.Logger.LogDebug("{taskName} Completed processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
             }
         }
     }

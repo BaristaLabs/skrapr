@@ -14,6 +14,8 @@
     /// </summary>
     public class ClickDomElementTask : SkraprTask, IConditionalExpressionTask
     {
+        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
+
         public override string Name
         {
             get { return "ClickDomElement"; }
@@ -73,6 +75,12 @@
                 NodeId = documentNode.NodeId,
                 Selector = Selector
             });
+
+            if (nodeIds.NodeIds.Length == 0)
+            {
+                worker.Logger.LogError("{taskName} Did not find any nodes corresponding to selector {selector}, skipping.", Name, Selector);
+                return;
+            }
 
             var nodeId = nodeIds.NodeIds.First();
             if (nodeId < 1)
@@ -134,34 +142,36 @@
                 //    },
                 //});
 
-                //await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
-                //{
-                //    X = (long)target.X,
-                //    Y = (long)target.Y,
-                //    Width = 1,
-                //    Height = 1,
-                //    Color = new Dom.RGBA
-                //    {
-                //        R = 255,
-                //        G = 255,
-                //        B = 0,
-                //        A = 1
-                //    },
-                //    OutlineColor = new Dom.RGBA
-                //    {
-                //        R = 255,
-                //        G = 255,
-                //        B = 0,
-                //        A = 1
-                //    },
-                //});
+                await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
+                {
+                    X = (long)target.X / 2,
+                    Y = (long)target.Y / 2,
+                    Width = 1,
+                    Height = 1,
+                    Color = new Dom.RGBA
+                    {
+                        R = 255,
+                        G = 255,
+                        B = 0,
+                        A = 1
+                    },
+                    OutlineColor = new Dom.RGBA
+                    {
+                        R = 255,
+                        G = 0,
+                        B = 0,
+                        A = 1
+                    },
+                });
 
-                ////Wait 5 seconds.
-                //await Task.Delay(5000);
+                //Wait 3 seconds.
+                await Task.Delay(3000);
+
+                await worker.Session.DOM.HideHighlight(new Dom.HideHighlightCommand());
             }
 
             //Click the random point, with a random delay between the down and up mouse events.
-            var clickDelay = TRandom.New().Next(100, 1000);
+            var clickDelay = s_random.Next(100, 1000);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {

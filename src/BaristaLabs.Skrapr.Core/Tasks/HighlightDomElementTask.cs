@@ -60,9 +60,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            var scaleFactor = await worker.DevTools.GetPageScaleFactor();
-            var xScaleFactor = scaleFactor.Item1;
-            var yScaleFactor = scaleFactor.Item2;
+            var pageDimensions = await worker.DevTools.GetReportedPageDimensions();
 
             var documentNode = await worker.Session.DOM.GetDocument(1);
 
@@ -83,10 +81,10 @@
 
                 var targetRect = new Dom.Rect
                 {
-                    X = contentPathPoints[0] / xScaleFactor,
-                    Y = contentPathPoints[1] / yScaleFactor,
-                    Width = highlightObject.ElementInfo.NodeWidth / xScaleFactor,
-                    Height = highlightObject.ElementInfo.NodeHeight / yScaleFactor //2.2
+                    X = contentPathPoints[0] / pageDimensions.DevicePixelRatio,
+                    Y = contentPathPoints[1] / pageDimensions.DevicePixelRatio,
+                    Width = highlightObject.ElementInfo.NodeWidth / pageDimensions.DevicePixelRatio,
+                    Height = highlightObject.ElementInfo.NodeHeight / pageDimensions.DevicePixelRatio //2.2
                 };
 
                 await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand

@@ -6,7 +6,7 @@
 
     public static class RectExtensions
     {
-        private static TRandom m_random = new TRandom();
+        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
 
         public static Point GetMiddleOfRect(this Dom.Rect rect)
         {
@@ -23,7 +23,7 @@
 
             if (border == 0)
             {
-                return new Point(m_random.NextDouble(rect.X, rect.X + rect.Width), m_random.NextDouble(rect.Y, rect.Y + rect.Height));
+                return new Point(s_random.NextDouble(rect.X, rect.X + rect.Width), s_random.NextDouble(rect.Y, rect.Y + rect.Height));
             }
 
             return GetRandomSpotWithinRect(new Dom.Rect
