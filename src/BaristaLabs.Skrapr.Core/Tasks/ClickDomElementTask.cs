@@ -12,7 +12,7 @@
     /// <summary>
     /// Represents a task that clicks a specified element on the page by selector.
     /// </summary>
-    public class ClickDomElementTask : SkraprTask
+    public class ClickDomElementTask : SkraprTask, IConditionalExpressionTask
     {
         public override string Name
         {
@@ -66,18 +66,6 @@
         public override async Task PerformTask(ISkraprWorker worker)
         {
             var documentNode = await worker.Session.DOM.GetDocument(1);
-
-            if (!String.IsNullOrWhiteSpace(Condition))
-            {
-                worker.Logger.LogDebug("{taskName} Condition parameter has been specified - determining if element should be clicked.", Name);
-
-                var shouldClickElement = await worker.Session.Runtime.EvaluateCondition(Condition, contextId: worker.DevTools.CurrentFrameContext.Id);
-                if (!shouldClickElement)
-                {
-                    worker.Logger.LogDebug("{taskName} condition result was false - skipping click.", Name);
-                    return;
-                }
-            }
 
             //Get the node to click.
             var nodeIds = await worker.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
