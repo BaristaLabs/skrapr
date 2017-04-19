@@ -93,19 +93,6 @@
                 worker.AddStartUrls();
             }
 
-            //Setup Hangfire
-            //GlobalConfiguration.Configuration.UseStorage(new MemoryStorage());
-
-            //using (new BackgroundJobServer())
-            //{
-            //    Console.WriteLine("Skrapr started. Press ENTER to exit...");
-
-            //    Console.WriteLine("Executing initial Skrape...");
-            //    var definitionJobId = BackgroundJob.Enqueue(() => SkraprDefinitionProcessor.Start(cliArguments.SkraprDefinitionPath, devTools));
-            //    BackgroundJob.Enqueue(() => Console.WriteLine("Fire-and-forget"));
-            //    Console.ReadKey();
-            //}
-
             logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
             Task.WaitAny(worker.Completion, Task.Run(() =>
             {
@@ -113,7 +100,10 @@
                 logger.LogDebug("Stop requested. Shutting down.");
                 //TODO: dispose of session, worker.
                 worker.Dispose();
-            }));           
+            }));
+
+            Console.WriteLine("All Done!");
+            Console.ReadLine();
         }
     }
 }
