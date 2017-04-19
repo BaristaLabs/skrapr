@@ -18,6 +18,12 @@
             set;
         }
 
+        public bool Disabled
+        {
+            get;
+            set;
+        }
+
         public abstract Task PerformTask(ISkraprWorker worker);
 
         public override string ToString()

@@ -29,7 +29,10 @@
                 TargetId = worker.DevTools.TargetId,
             });
 
-            worker.AddTarget(new SkraprTarget(targetInfoResponse.TargetInfo.Url, Rule));
+            worker.AddTask(new NavigateTask
+            {
+                Url = targetInfoResponse.TargetInfo.Url
+            });
         }
     }
 }

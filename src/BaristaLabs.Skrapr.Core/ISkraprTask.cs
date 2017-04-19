@@ -23,6 +23,14 @@
             get;
         }
 
+        /// <summary>
+        /// Gets a value that indicates if the task is disabled.
+        /// </summary>
+        bool Disabled
+        {
+            get;
+        }
+
         Task PerformTask(ISkraprWorker worker);
     }
 

@@ -40,7 +40,7 @@
         /// </summary>
         /// <param name="chromeUrl"></param>
         /// <returns></returns>
-        public async Task<ICollection<ChromeSessionInfo>> GetSessions()
+        public async Task<IList<ChromeSessionInfo>> GetSessions()
         {
             return await GetChromeSessions(m_chromeHost, m_chromeDebuggingPort);
         }
@@ -148,12 +148,12 @@
         /// </summary>
         /// <param name="chromeUrl"></param>
         /// <returns></returns>
-        public static async Task<ICollection<ChromeSessionInfo>> GetChromeSessions(string host = "localhost", int remoteDebuggingPort = 9222)
+        public static async Task<IList<ChromeSessionInfo>> GetChromeSessions(string host = "localhost", int remoteDebuggingPort = 9222)
         {
             using (var chromeDebuggerClient = GetDebuggerClient(host, remoteDebuggingPort))
             {
                 var sessions = await chromeDebuggerClient.GetStringAsync("/json");
-                return JsonConvert.DeserializeObject<ICollection<ChromeSessionInfo>>(sessions);
+                return JsonConvert.DeserializeObject<IList<ChromeSessionInfo>>(sessions);
             }
         }
         //TODO: Additional commands

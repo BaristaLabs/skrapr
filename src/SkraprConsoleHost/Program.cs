@@ -2,6 +2,7 @@
 {
     using BaristaLabs.Skrapr;
     using BaristaLabs.Skrapr.Extensions;
+    using BaristaLabs.Skrapr.Tasks;
     using EntryPoint;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@
     using System;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
 
     class Program
     {
@@ -70,16 +72,18 @@
             if (cliArguments.Attach == true)
             {
                 var targetInfo = devTools.Session.Target.GetTargetInfo(session.Id).GetAwaiter().GetResult();
-                var target = new SkraprTarget(targetInfo.Url, null);
-                var matchingRuleCount = worker.GetMatchingRules(target).Count();
+                var matchingRuleCount = worker.GetMatchingRules().GetAwaiter().GetResult().Count();
                 if (matchingRuleCount > 0)
                 {
-                    logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's url; Continuing.");
-                    worker.AddTarget(target);
+                    logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's state; Continuing.");
+                    worker.AddTask(new NavigateTask
+                    {
+                        Url = targetInfo.Url
+                    });
                 }
                 else
                 {
-                    logger.LogDebug($"Attach specified but no rules matched the current session's url; Adding start urls.");
+                    logger.LogDebug($"Attach specified but no rules matched the current session's state; Adding start urls.");
                     worker.AddStartUrls();
                 }
             }
@@ -103,11 +107,13 @@
             //}
 
             logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
-            Console.ReadKey();
-
-            logger.LogDebug("Stop requested. Shutting down.");
-            //TODO: session, worker.
-            worker.Dispose();
+            Task.WaitAny(worker.Completion, Task.Run(() =>
+            {
+                Console.ReadKey();
+                logger.LogDebug("Stop requested. Shutting down.");
+                //TODO: dispose of session, worker.
+                worker.Dispose();
+            }));           
         }
     }
 }

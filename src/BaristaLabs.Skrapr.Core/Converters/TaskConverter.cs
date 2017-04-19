@@ -1,6 +1,5 @@
 ﻿namespace BaristaLabs.Skrapr.Converters
 {
-    using BaristaLabs.Skrapr.Tasks;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
@@ -50,12 +49,19 @@
             JObject task = JObject.Load(reader);
             object target = null;
 
-            var taskName = task["name"].Value<String>();
-            if (s_taskTypes.Value.ContainsKey(taskName))
-                target = Activator.CreateInstance(s_taskTypes.Value[taskName]);
+            if (task.TryGetValue("name", out JToken value))
+            {
+                var taskName = value.Value<string>();
+                if (s_taskTypes.Value.ContainsKey(taskName))
+                    target = Activator.CreateInstance(s_taskTypes.Value[taskName]);
+                else
+                    throw new ArgumentException($"Invalid task type: { taskName }");
+            }
             else
-                throw new ArgumentException($"Invalid task type: { taskName }");
-            
+            {
+                throw new InvalidOperationException("The specified task did not indicate a name:" + task.ToString());
+            }
+
             serializer.Populate(task.CreateReader(), target);
 
             return target;

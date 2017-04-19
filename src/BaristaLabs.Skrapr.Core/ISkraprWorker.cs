@@ -53,9 +53,9 @@
         }
 
         /// <summary>
-        /// Adds a SkraprTarget to the targets being processed by the worker.
+        /// Adds a SkraprTask to the tasks being processed by the worker.
         /// </summary>
         /// <param name="target"></param>
-        void AddTarget(SkraprTarget target);
+        void AddTask(ISkraprTask task);
     }
 }

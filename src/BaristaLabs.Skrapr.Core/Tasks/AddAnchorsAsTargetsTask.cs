@@ -23,15 +23,6 @@
             set;
         }
 
-        /// <summary>
-        /// Gets or sets the name of the rule that the target will be added to.
-        /// </summary>
-        public string Rule
-        {
-            get;
-            set;
-        }
-
         public override async Task PerformTask(ISkraprWorker worker)
         {
             var documentNode = await worker.Session.DOM.GetDocument(1);
@@ -49,8 +40,11 @@
                     var attributes = node.GetAttributes();
                     if (attributes.ContainsKey("href"))
                     {
-                        worker.AddTarget(new SkraprTarget(attributes["href"], Rule));
-                        worker.Logger.LogDebug("{taskName} Added {href} to the target queue. Rule: {rule}", Name, attributes["href"], Rule);
+                        worker.AddTask(new NavigateTask
+                        {
+                            Url = attributes["href"]
+                        });
+                        worker.Logger.LogDebug("{taskName} Added {href} to the main flow.", Name, attributes["href"]);
                     }
                 }
                 else

@@ -5,6 +5,7 @@
   ],
   "rules": [
     {
+      "type":  "UrlPattern",
       "urlPattern": "^http://www.toririchard.com/?$",
       "tasks": [
         {
@@ -21,6 +22,7 @@
       ]
     },
     {
+      "type": "UrlPattern",
       "urlPattern": "^http://www.toririchard.com/mens$",
       "tasks": [
         {
@@ -37,11 +39,12 @@
       ]
     },
     {
+      "type": "UrlPattern",
       "urlPattern": "^http://www.toririchard.com/mens-shirts.*$",
       "tasks": [
         {
           "name": "InjectStyleElement",
-          "description":  "Highlight the shirts just because we can",
+          "description": "Highlight the shirts just because we can",
           "styles": ".thumb-grid { background-color: rgba(0,0,255, 0.5); border: 2px solid red;}"
         },
         {
@@ -58,20 +61,13 @@
         },
         {
           "name": "ScrollToAbsoluteBottom",
-          "description":  "Ensure that all shirt elements have been loaded."
+          "description": "Ensure that all shirt elements have been loaded."
         },
         {
           "name": "AddAnchorsAsTargets",
           "selector": ".thumb-grid a.name",
-          "rule": "IndividualShirt"
+          "disabled": true
         }
-      ]
-    },
-    {
-      "name": "IndividualShirt",
-      "isolated": true,
-      "tasks": [
-
       ]
     }
   ],

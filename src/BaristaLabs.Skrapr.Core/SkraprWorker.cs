@@ -2,6 +2,7 @@
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Definitions;
+    using BaristaLabs.Skrapr.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -9,7 +10,6 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Threading.Tasks.Dataflow;
 
@@ -19,7 +19,7 @@
     public sealed class SkraprWorker : ISkraprWorker, IDisposable
     {
         private readonly ILogger m_logger;
-        private readonly ActionBlock<SkraprTarget> m_mainFlow;
+        private readonly ActionBlock<ISkraprTask> m_mainFlow;
 
         private readonly SkraprDefinition m_definition;
         private readonly SkraprDevTools m_devTools;
@@ -30,7 +30,7 @@
         {
             m_logger = logger ?? throw new ArgumentNullException(nameof(logger));
             m_logger = logger;
-            m_mainFlow = new ActionBlock<SkraprTarget>(ProcessSkraprTarget, new ExecutionDataflowBlockOptions
+            m_mainFlow = new ActionBlock<ISkraprTask>(ProcessMainSkraprTask, new ExecutionDataflowBlockOptions
             {
                 EnsureOrdered = true,
                 MaxDegreeOfParallelism = 1
@@ -43,29 +43,60 @@
             m_isDebugEnabled = isDebugEnabled;
         }
 
+        /// <summary>
+        /// Gets a task that represents the asynchronous operation and completion of the Worker.
+        /// </summary>
+        public Task Completion
+        {
+            get { return m_mainFlow.Completion; }
+        }
+
+        /// <summary>
+        /// Gets the Skrapr Definition that the worker is processing.
+        /// </summary>
         public SkraprDefinition Definition
         {
             get { return m_definition; }
         }
 
+        /// <summary>
+        /// Gets the SkraprDevTools that are associated with the worker.
+        /// </summary>
         public SkraprDevTools DevTools
         {
             get { return m_devTools; }
         }
 
+        /// <summary>
+        /// Gets a value that indicates if debug is enabled on the worker.
+        /// </summary>
         public bool IsDebugEnabled
         {
             get { return m_isDebugEnabled; }
         }
 
+        /// <summary>
+        /// Gets the logger associated with the worker.
+        /// </summary>
         public ILogger Logger
         {
             get { return m_logger; }
         }
 
+        /// <summary>
+        /// Gets the Chrome Session associated with the worker.
+        /// </summary>
         public ChromeSession Session
         {
             get { return m_session; }
+        }
+
+        /// <summary>
+        /// Gets the number of tasks waiting to be processed by the worker.
+        /// </summary>
+        public int TaskCount
+        {
+            get { return m_mainFlow.InputCount; }
         }
 
         /// <summary>
@@ -76,7 +107,10 @@
             //Enqueue the start urls associated with the definition.
             foreach (var url in m_definition.StartUrls)
             {
-                m_mainFlow.Post(new SkraprTarget(url, null));
+                m_mainFlow.Post(new NavigateTask
+                {
+                    Url = url
+                });
             }
         }
 
@@ -84,44 +118,95 @@
         /// Adds the specified target to the queue.
         /// </summary>
         /// <param name="target"></param>
-        public void AddTarget(SkraprTarget target)
+        public void AddTask(ISkraprTask task)
         {
-            m_mainFlow.Post(target);
+            if (task == null)
+                throw new ArgumentNullException(nameof(task));
+
+            Logger.LogDebug("{functionName} Added task {taskName} to the main flow. ({details})", nameof(AddTask), task.Name, task.ToString());
+            m_mainFlow.Post(task);
         }
 
         /// <summary>
-        /// Gets the rules that match the specified target.
+        /// Gets the rules that match the current state of the session.
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public IEnumerable<SkraprRule> GetMatchingRules(SkraprTarget target)
+        public async Task<IEnumerable<ISkraprRule>> GetMatchingRules()
         {
-            if (!String.IsNullOrWhiteSpace(target.Rule))
-                return Definition.Rules.Where(r => r.Name == target.Rule && r.Isolated == false);
-            return Definition.Rules.Where(r => r.Isolated == false && Regex.IsMatch(target.Url, r.UrlPattern, RegexOptions.IgnoreCase));
+            var frameState = await DevTools.GetCurrentFrameState();
+            var matchingRules = new List<ISkraprRule>();
+
+            foreach(var rule in Definition.Rules)
+            {
+                var ruleResult = await rule.IsMatch(frameState);
+                if (ruleResult == true)
+                    matchingRules.Add(rule);
+            }
+
+            return matchingRules;
         }
 
-        private async Task ProcessSkraprTarget(SkraprTarget target)
+        /// <summary>
+        /// Processes the specified task on the main skrapr flow.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        private async Task ProcessMainSkraprTask(ISkraprTask task)
         {
-            m_logger.LogDebug("{functionName} Started Processing {url}", nameof(ProcessSkraprTarget), target.Url);
-            //Navigate to the URL.
-            await DevTools.Navigate(target.Url);
-            var matchingRules = GetMatchingRules(target);
+            if (task.Disabled)
+            {
+                m_logger.LogDebug("{functionName} Task {taskName} was marked as disabled. Skipping.", nameof(ProcessMainSkraprTask), task.Name);
+                return;
+            }
+
+            m_logger.LogDebug("{functionName} performing task {taskName} (main)", nameof(ProcessMainSkraprTask), task.Name);
+            //Perform the task
+            try
+            {
+                await task.PerformTask(this);
+            }
+            catch (Exception ex)
+            {
+                m_logger.LogError("{functionName} An error occurred while performing task {taskName} (main): {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
+            }
+
+            //Get matching rules for the state of the session.
+            var matchingRules = await GetMatchingRules();
             foreach (var rule in matchingRules)
             {
-                m_logger.LogDebug("{functionName} Found rule that matches current url: {url} ({ruleName} - {urlPattern})", nameof(ProcessSkraprTarget), target.Url, rule.Name, rule.UrlPattern);
+                m_logger.LogDebug("{functionName} Found rule that matches current frame state: ({ruleType} - {details})", nameof(ProcessMainSkraprTask), rule.Type, rule.ToString());
                 await ProcessSkraprRule(rule);
             }
-            m_logger.LogDebug("{functionName} Completed Processing {url}", nameof(ProcessSkraprTarget), target.Url);
+
+            if (matchingRules.Count() == 0)
+            {
+                m_logger.LogError("{functionName} A rule was not found that matches the current frame state for task {taskName}: ()", nameof(ProcessMainSkraprTask), task.Name, task.ToString());
+            }
+
+            m_logger.LogDebug("{functionName} Completed task {url} (main)", nameof(ProcessMainSkraprTask), task.Name);
+            
+            //If there are no more tasks in the main flow, mark as complete.
+            if (m_mainFlow.InputCount == 0)
+            {
+                m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessMainSkraprTask));
+                m_mainFlow.Complete();
+            }
         }
 
-        private async Task ProcessSkraprRule(SkraprRule rule)
+        private async Task ProcessSkraprRule(ISkraprRule rule)
         {
             if (rule == null)
                 throw new ArgumentNullException(nameof(rule));
 
             foreach(var task in rule.Tasks)
             {
+                if (task.Disabled)
+                {
+                    m_logger.LogDebug("{functionName} Task {taskName} was marked as disabled. Skipping.", nameof(ProcessSkraprRule), task.Name);
+                    continue;
+                }
+
                 m_logger.LogDebug("{functionName} Performing task {taskName}", nameof(ProcessSkraprRule), task.Name);
                 try
                 {
@@ -135,7 +220,7 @@
         }
 
         #region IDisposable
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -143,12 +228,24 @@
             }
         }
 
+        /// <summary>
+        /// Disposes of the worker freeing resources marking it as complete.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
         }
         #endregion
 
+        /// <summary>
+        /// Creates a new SkraprWorker that can be processes the specified definition through tasks.
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="pathToSkraprDefinition"></param>
+        /// <param name="session"></param>
+        /// <param name="devTools"></param>
+        /// <param name="debugMode"></param>
+        /// <returns></returns>
         public static SkraprWorker Create(IServiceProvider serviceProvider, string pathToSkraprDefinition, ChromeSession session, SkraprDevTools devTools, bool debugMode = false)
         {
             if (!File.Exists(pathToSkraprDefinition))

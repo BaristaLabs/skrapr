@@ -37,7 +37,7 @@
         /// Use this to prevent tracking or heavy resources from loading.
         /// </remarks>
         [JsonProperty("blockedUrls")]
-        public ICollection<string> BlockedUrls
+        public IList<string> BlockedUrls
         {
             get;
             set;
@@ -47,7 +47,7 @@
         /// Gets or sets a collection of urls that will be used as the start point for skraping.
         /// </summary>
         [JsonProperty("startUrls")]
-        public ICollection<string> StartUrls
+        public IList<string> StartUrls
         {
             get;
             set;
@@ -56,8 +56,8 @@
         /// <summary>
         /// Gets or sets a collection of rules.
         /// </summary>
-        [JsonProperty("rules")]
-        public ICollection<SkraprRule> Rules
+        [JsonProperty("rules", ItemConverterType = typeof(RuleConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public IList<ISkraprRule> Rules
         {
             get;
             set;
@@ -66,8 +66,8 @@
         /// <summary>
         /// Gets or sets a collection of interceptors that can save downloaded resources.
         /// </summary>
-        [JsonProperty("resourceInterceptors")]
-        public ICollection<string> ResourceInterceptors
+        [JsonProperty("resourceRules", ItemConverterType = typeof(RuleConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public IList<string> ResourceRules
         {
             get;
             set;

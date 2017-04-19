@@ -1,23 +1,21 @@
-﻿namespace BaristaLabs.Skrapr.Definitions
+﻿namespace BaristaLabs.Skrapr.Rules
 {
     using BaristaLabs.Skrapr.Converters;
     using Newtonsoft.Json;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
 
     /// <summary>
-    /// Represents a rule that contains tasks that is run when a set of preconditions apply.
+    /// Represents a rule that contains tasks that are run when the current frame matches a url pattern.
     /// </summary>
-    public class SkraprRule
+    public class UrlPatternRule : ISkraprRule
     {
-        /// <summary>
-        /// Gets or sets a name for the rule
-        /// </summary>
-        [JsonProperty("name")]
-        public string Name
+        [JsonProperty("type")]
+        public string Type
         {
-            get;
-            set;
+            get { return "UrlPattern"; }
         }
 
         /// <summary>
@@ -25,17 +23,6 @@
         /// </summary>
         [JsonProperty("urlPattern")]
         public string UrlPattern
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets a value that indicates if the rule is isolated. That is, the rule must be used by name from a task in order for the rule to be applied.
-        /// </summary>
-        [JsonProperty("isolated")]
-        [DefaultValue(false)]
-        public bool Isolated
         {
             get;
             set;
@@ -53,10 +40,20 @@
         }
 
         [JsonProperty("tasks", ItemConverterType = typeof(TaskConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public ICollection<ISkraprTask> Tasks
+        public IList<ISkraprTask> Tasks
         {
             get;
             set;
+        }
+
+        public Task<bool> IsMatch(SkraprFrameState frameState)
+        {
+            return Task.FromResult(Regex.IsMatch(frameState.Url, UrlPattern, RegexOptions.IgnoreCase));
+        }
+
+        public override string ToString()
+        {
+            return UrlPattern;
         }
     }
 }

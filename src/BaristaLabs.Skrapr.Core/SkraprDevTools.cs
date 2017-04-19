@@ -98,6 +98,25 @@
             m_targetId = targetId;
         }
 
+        /// <summary>
+        /// Gets information about the current frame.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<SkraprFrameState> GetCurrentFrameState()
+        {
+            var targetInfo = await Session.Target.GetTargetInfo(TargetId);
+            var frameResourceTree = await Session.Page.GetResourceTree(new Page.GetResourceTreeCommand());
+
+            //TODO: add things like current javascript global vars.
+
+            return new SkraprFrameState
+            {
+                Title = targetInfo.Title,
+                Url = targetInfo.Url,
+                FrameTree = frameResourceTree.FrameTree
+            };
+        }
+
         public async Task<bool> GetChildNodeData(long nodeId, long depth = 1, bool pierce = false)
         {
             //TODO: Implement this.

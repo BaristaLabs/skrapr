@@ -44,5 +44,10 @@
             Console.WriteLine($"Navigating to {Url}");
             await worker.DevTools.Navigate(Url);
         }
+
+        public override string ToString()
+        {
+            return Url;
+        }
     }
 }

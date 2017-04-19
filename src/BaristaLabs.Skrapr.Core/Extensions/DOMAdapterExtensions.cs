@@ -98,7 +98,7 @@
         }
 
         [JsonProperty("paths")]
-        public ICollection<HighlightObjectPath> Paths
+        public IList<HighlightObjectPath> Paths
         {
             get;
             set;
