@@ -4,6 +4,9 @@
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
+    /// <summary>
+    /// Represents a task that sets the specified attributes of the element matching the selector to the specified value.
+    /// </summary>
     public class SetAttributeValueTask : SkraprTask
     {
         public override string Name

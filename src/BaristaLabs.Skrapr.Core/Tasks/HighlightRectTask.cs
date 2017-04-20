@@ -4,6 +4,9 @@
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
+    /// <summary>
+    /// Highlights a rectangle shaped area.
+    /// </summary>
     public class HighlightRectTask : SkraprTask
     {
         public override string Name

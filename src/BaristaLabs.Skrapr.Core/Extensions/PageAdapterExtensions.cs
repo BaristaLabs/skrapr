@@ -101,7 +101,10 @@
                 Height = (long)dimensions.FullHeight
             });
 
-            var result = await pageAdapter.Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: millisecondsTimeout);
+            var result = await pageAdapter.Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand
+            {
+                Format = "png"
+            }, millisecondsTimeout: millisecondsTimeout);
             var imageBytes = Convert.FromBase64String(result.Data);
             //m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
             File.WriteAllBytes(outputFileName, imageBytes);

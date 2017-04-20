@@ -12,7 +12,7 @@
     using System.Threading.Tasks.Dataflow;
 
     /// <summary>
-    /// Represents a task that contains one or more handlebars-based templates that are populated with data based on the selector
+    /// Represents a task that contains one or more handlebars-based templates that are populated with data from attributes defined on elements matching the selector
     /// </summary>
     /// <remarks>
     /// For instance, given a selector: "a" and taskTemplates: [{ name: "navigate", url: "{{href}}" }]
@@ -145,8 +145,6 @@
                 {
                     await worker.ProcessSkraprTask(task);
                 }
-
-                worker.Logger.LogDebug("{taskName} Completed processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
             }
             catch (Exception ex) when (ex is AssertionFailedException || ex is NavigationFailedException)
             {

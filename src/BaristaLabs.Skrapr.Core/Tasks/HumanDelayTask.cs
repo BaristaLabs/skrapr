@@ -5,6 +5,9 @@
     using System.Threading.Tasks;
     using Troschuetz.Random;
 
+    /// <summary>
+    /// Performs a Humanesque delay, moving the mouse and scrolling while waiting.
+    /// </summary>
     public class HumanDelayTask : SkraprTask
     {
         private static TRandom m_random = new TRandom();

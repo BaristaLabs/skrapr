@@ -1,8 +1,5 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
-    using BaristaLabs.Skrapr.Converters;
-    using Newtonsoft.Json;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using System;
     using Newtonsoft.Json.Linq;

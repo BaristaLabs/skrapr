@@ -6,6 +6,12 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Represents a task that prints the current contents of the page to a PDF.
+    /// </summary>
+    /// <remarks>
+    /// As of Chrome 58, invoking the associated command throws a not implemented message.
+    /// </remarks>
     public class PrintToPDFTask : SkraprTask
     {
         public override string Name

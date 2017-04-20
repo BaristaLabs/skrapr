@@ -6,13 +6,13 @@
     using Dom = ChromeDevTools.DOM;
 
     /// <summary>
-    /// Represents a task that highlights the specified dom element based on a css selector.
+    /// Represents a task that highlights the specified dom elements based on a css selector.
     /// </summary>
-    public class HighlightDomElementTask : SkraprTask
+    public class HighlightDomElementsTask : SkraprTask
     {
         public override string Name
         {
-            get { return "HighlightDomElement"; }
+            get { return "HighlightDomElements"; }
         }
 
         public string Selector
@@ -39,7 +39,7 @@
             set;
         }
 
-        public HighlightDomElementTask()
+        public HighlightDomElementsTask()
         {
             Color = new Dom.RGBA
             {
@@ -69,9 +69,6 @@
                 Selector = Selector
             });
 
-            //var nodeId = nodeIds.NodeIds.First();
-            //if (nodeId < 1)
-            //    return;
             foreach (var nodeId in nodeIds.NodeIds)
             {
                 var highlightObject = await worker.Session.DOM.GetHighlightObjectForTest(nodeId);

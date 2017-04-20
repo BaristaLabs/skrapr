@@ -4,6 +4,9 @@
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
 
+    /// <summary>
+    /// Represents a task that removes the element matching the selector from the DOM of the current page.
+    /// </summary>
     public class RemoveDomElementTask : SkraprTask
     {
         public override string Name

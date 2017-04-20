@@ -6,37 +6,37 @@
     using Page = ChromeDevTools.Page;
 
     /// <summary>
-    /// Represents a task that instructs the browser to go back
+    /// Represents a task that instructs the browser to go forward
     /// </summary>
-    public class GoBackTask : SkraprTask
+    public class GoForwardTask : SkraprTask
     {
         public override string Name
         {
-            get { return "GoBack"; }
+            get { return "GoForward"; }
         }
 
         /// <summary>
         /// Gets the number of steps to go back. Default: 1
         /// </summary>
         [DefaultValue(1)]
-        public uint StepsBack
+        public uint StepsForward
         {
             get;
             set;
         }
 
-        public GoBackTask()
+        public GoForwardTask()
         {
-            StepsBack = 1;
+            StepsForward = 1;
         }
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
             var navigationHistory = await worker.Session.Page.GetNavigationHistory(new Page.GetNavigationHistoryCommand());
 
-            var targetIndex = navigationHistory.CurrentIndex - StepsBack;
-            if (targetIndex < 0)
-                throw new InvalidOperationException($"Cannot go back {StepsBack} steps, the navigation history doesn't go that far.");
+            var targetIndex = navigationHistory.CurrentIndex + StepsForward;
+            if (targetIndex > navigationHistory.Entries.Length - 1)
+                throw new InvalidOperationException($"Cannot go forward {StepsForward} steps, the navigation history doesn't go that far.");
 
             var targetNavigationEntry = navigationHistory.Entries[targetIndex];
             await worker.Session.Page.NavigateToHistoryEntry(new Page.NavigateToHistoryEntryCommand
