@@ -191,26 +191,22 @@
             {
                 await ProcessSkraprTask(task, true);
             }
+            catch (Exception ex) when (ex is AssertionFailedException || ex is NavigationFailedException)
+            {
+                //Add it back into the queue.
+                m_mainFlow.Post(task);
+            }
+            catch (Exception ex) when (ex is OperationCanceledException || ex is TaskCanceledException)
+            {
+                m_logger.LogWarning("{functionName} is terminating due to a cancellation request.", nameof(ProcessSkraprRule));
+                throw;
+            }
             catch (Exception ex)
             {
-                if (ex is AssertionFailedException || ex is NavigationFailedException)
-                {
-                    //Add it back into the queue.
-                    m_mainFlow.Post(task);
-                }
-                else if (ex is OperationCanceledException || ex is TaskCanceledException)
-                {
-                    m_logger.LogWarning("{functionName} is terminating due to a cancellation request.", nameof(ProcessSkraprRule));
-                    throw;
-                }
-                else
-                {
-                    m_logger.LogError("{functionName} An unhandled error occurred while performing task {taskName} on frame {frameId}: {exception}", nameof(ProcessSkraprRule), task.Name, DevTools.CurrentFrameId, ex);
-                    throw;
-                }
+                m_logger.LogError("{functionName} An unhandled error occurred while performing task {taskName} on frame {frameId}: {exception}", nameof(ProcessSkraprRule), task.Name, DevTools.CurrentFrameId, ex);
+                throw;
             }
-
-
+            
             //If there are no more tasks in the main flow, mark as complete.
             if (m_mainFlow.InputCount == 0)
             {
