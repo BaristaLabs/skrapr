@@ -29,7 +29,7 @@
         {
             var result = await worker.Session.Runtime.EvaluateCondition(Assertion, worker.DevTools.CurrentFrameContext.Id);
             if (result == false)
-                throw new SkraprAssertionFailedException(Message);
+                throw new AssertionFailedException(Message);
         }
     }
 }

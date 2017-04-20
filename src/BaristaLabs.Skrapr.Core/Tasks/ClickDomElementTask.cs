@@ -119,7 +119,7 @@
                 });
 
                 //Wait 3 seconds.
-                await Task.Delay(3000);
+                await Task.Delay(3000, worker.CancellationToken);
 
                 await worker.Session.DOM.HideHighlight(new Dom.HideHighlightCommand());
             }
@@ -138,7 +138,7 @@
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
             });
 
-            await Task.Delay(clickDelay);
+            await Task.Delay(clickDelay, worker.CancellationToken);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {

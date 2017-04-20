@@ -3,6 +3,7 @@
     using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Definitions;
     using Microsoft.Extensions.Logging;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -14,6 +15,14 @@
         /// Gets the definition that the worker works on.
         /// </summary>
         SkraprDefinition Definition
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the default cancellation token for the worker.
+        /// </summary>
+        CancellationToken CancellationToken
         {
             get;
         }
@@ -58,6 +67,11 @@
         /// </summary>
         /// <param name="target"></param>
         void AddTask(ISkraprTask task);
+
+        /// <summary>
+        /// Instructs the worker to cancel processing further work.
+        /// </summary>
+        void Cancel();
 
         /// <summary>
         /// Immediately processes the specified task.

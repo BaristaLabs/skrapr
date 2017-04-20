@@ -14,7 +14,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.DevTools.ScrollToAbsoluteBottom();
+            await worker.DevTools.ScrollToAbsoluteBottom(cancellationToken: worker.CancellationToken);
         }
     }
 }

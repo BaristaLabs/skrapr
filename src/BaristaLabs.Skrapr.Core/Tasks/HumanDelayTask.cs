@@ -49,7 +49,7 @@
             var delay = m_random.Next(MinDelay.Value, MaxDelay.Value);
 
             worker.Logger.LogDebug("{taskName} delaying for {delay}ms", Name, delay);
-            await Task.Delay(delay);
+            await Task.Delay(delay, worker.CancellationToken);
 
             //TODO: Improve this by scrolling and stuff.
         }

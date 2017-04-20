@@ -12,6 +12,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Threading.Tasks.Dataflow;
 
@@ -27,13 +28,18 @@
         private readonly SkraprDevTools m_devTools;
         private readonly ChromeSession m_session;
         private readonly bool m_isDebugEnabled;
+        private readonly CancellationTokenSource m_cts;
+        private bool m_disposed;
 
         public SkraprWorker(ILogger logger, SkraprDefinition definition, ChromeSession session, SkraprDevTools devTools, bool isDebugEnabled = false)
         {
             m_logger = logger ?? throw new ArgumentNullException(nameof(logger));
             m_logger = logger;
+            m_cts = new CancellationTokenSource();
+
             m_mainFlow = new ActionBlock<ISkraprTask>(ProcessMainSkraprTask, new ExecutionDataflowBlockOptions
             {
+                CancellationToken = m_cts.Token,
                 EnsureOrdered = true,
                 MaxDegreeOfParallelism = 1
             });
@@ -43,6 +49,14 @@
             m_definition = definition;
 
             m_isDebugEnabled = isDebugEnabled;
+        }
+
+        /// <summary>
+        /// Gets the default cancellation token for the worker.
+        /// </summary>
+        public CancellationToken CancellationToken
+        {
+            get { return m_cts.Token; }
         }
 
         /// <summary>
@@ -132,6 +146,11 @@
             m_mainFlow.Post(task);
         }
 
+        public void Cancel()
+        {
+            m_cts.Cancel();
+        }
+
         /// <summary>
         /// Gets the rules that match the current state of the session.
         /// </summary>
@@ -168,7 +187,29 @@
         /// <returns></returns>
         private async Task ProcessMainSkraprTask(ISkraprTask task)
         {
-            await ProcessSkraprTask(task, true);
+            try
+            {
+                await ProcessSkraprTask(task, true);
+            }
+            catch (Exception ex)
+            {
+                if (ex is AssertionFailedException || ex is NavigationFailedException)
+                {
+                    //Add it back into the queue.
+                    m_mainFlow.Post(task);
+                }
+                else if (ex is OperationCanceledException || ex is TaskCanceledException)
+                {
+                    m_logger.LogWarning("{functionName} is terminating due to a cancellation request.", nameof(ProcessSkraprRule));
+                    throw;
+                }
+                else
+                {
+                    m_logger.LogError("{functionName} An unhandled error occurred while performing task {taskName} on frame {frameId}: {exception}", nameof(ProcessSkraprRule), task.Name, DevTools.CurrentFrameId, ex);
+                    throw;
+                }
+            }
+
 
             //If there are no more tasks in the main flow, mark as complete.
             if (m_mainFlow.InputCount == 0)
@@ -197,6 +238,12 @@
         /// <returns></returns>
         private async Task ProcessSkraprTask(ISkraprTask task, bool processRules = false)
         {
+            if (CancellationToken.IsCancellationRequested)
+            {
+                m_logger.LogDebug("{functionName} Cancellation requested. Skipping task {taskName}", nameof(ProcessSkraprTask), task.Name);
+                return;
+            }
+
             m_logger.LogDebug("{functionName} performing task {taskName}", nameof(ProcessSkraprTask), task.Name);
 
             if (task.Disabled)
@@ -218,15 +265,7 @@
             }
 
             //Perform the task
-            try
-            {
-                await task.PerformTask(this);
-            }
-            catch (Exception ex)
-            {
-                m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
-                throw;
-            }
+            await task.PerformTask(this);
 
             if (processRules == true)
             {
@@ -244,11 +283,10 @@
                 }
             }
 
-            m_logger.LogDebug("{functionName} Completed task {url}", nameof(ProcessSkraprTask), task.Name);
+            m_logger.LogDebug("{functionName} Completed task {taskName}", nameof(ProcessSkraprTask), task.Name);
         }
 
         #region IDisposable
-        private bool m_disposed;
         private void Dispose(bool disposing)
         {
             if (!m_disposed)
@@ -257,6 +295,7 @@
                 {
                     m_mainFlow.Complete();
                     Session.Dispose();
+                    m_cts.Dispose();
                 }
 
                 m_disposed = true;
@@ -273,7 +312,7 @@
         #endregion
 
         /// <summary>
-        /// Creates a new SkraprWorker that can be processes the specified definition through tasks.
+        /// Creates a new SkraprWorker that processes the specified definition through tasks.
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="pathToSkraprDefinition"></param>

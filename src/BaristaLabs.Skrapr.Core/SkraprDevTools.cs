@@ -8,7 +8,6 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -374,7 +373,7 @@ new Promise(function (resolve, reject) {{
         /// <param name="maxScrolls"></param>
         /// <param name="postScrollDelayMs">Occassionally on pages there will be post-scroll pop-in (usually of images) which will reposition the elements on screen. This delay waits for the specified number of sections after a scroll.</param>
         /// <returns></returns>
-        public async Task ScrollTo(string selector, bool isHuman = true, int maxScrolls = 10, int postScrollDelayMs = 1500)
+        public async Task ScrollTo(string selector, bool isHuman = true, int maxScrolls = 10, int postScrollDelayMs = 1500, CancellationToken cancellationToken = default(CancellationToken))
         {
             var documentNode = await Session.DOM.GetDocument(1);
 
@@ -417,6 +416,8 @@ new Promise(function (resolve, reject) {{
             Tuple<double, double> delta;
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 //Get the scroll delta.)
                 pageDimensions = await Session.Runtime.GetReportedPageDimensions(contextId: m_currentFrameContext.Id);
                 var targetObject = await GetOffset(nodeId);
@@ -452,7 +453,7 @@ new Promise(function (resolve, reject) {{
                 }
 
                 scrollsLeft--;
-                Thread.Sleep(postScrollDelayMs);
+                await Task.Delay(postScrollDelayMs, cancellationToken);
             } while (scrollsLeft > 0);
 
             m_logger.LogError("{functionName} exceeded the maximum number of scrolls: {maxScrolls}", nameof(ScrollTo), maxScrolls);
@@ -462,12 +463,14 @@ new Promise(function (resolve, reject) {{
         /// </summary>
         /// <param name="maxScrolls"></param>
         /// <returns></returns>
-        public async Task ScrollToAbsoluteBottom(int maxScrolls = 10, int iterateDelayMS = 1000)
+        public async Task ScrollToAbsoluteBottom(int maxScrolls = 10, int iterateDelayMS = 1000, CancellationToken cancellationToken = default(CancellationToken))
         {
             long lastScrollY = -1, scrollY = -1, yPos;
             var scrollsLeft = maxScrolls;
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var pageDimensions = await Session.Page.GetPageDimensions();
                 lastScrollY = scrollY;
                 scrollY = (long)pageDimensions.ScrollY;
@@ -478,7 +481,7 @@ new Promise(function (resolve, reject) {{
                 yPos = (long)pageDimensions.FullHeight;
                 await Session.Runtime.Evaluate($"window.scrollTo(0, {yPos});", m_currentFrameContext.Id);
                 scrollsLeft--;
-                await Task.Delay(iterateDelayMS);
+                await Task.Delay(iterateDelayMS, cancellationToken);
             } while (scrollsLeft > 0);
 
             m_logger.LogError("{functionName} exceeded the maximum number of scrolls: {maxScrolls}", nameof(ScrollToAbsoluteBottom), maxScrolls);

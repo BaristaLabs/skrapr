@@ -106,14 +106,20 @@
                     if (!t.IsCanceled)
                     {
                         logger.LogDebug("Stop requested at the console, cancelling...");
-                        worker.Dispose();
+                        worker.Cancel();
                         await worker.Completion;
                     }
 
                 });
-
-            Task.WaitAny(workerCompletion, keyCompletion);
-
+            try
+            {
+                Task.WaitAll(workerCompletion, keyCompletion);
+            }
+            catch(TaskCanceledException)
+            {
+                //Do Nothing.
+            }
+            
             //Cleanup.
             worker.Dispose();
             devTools.Dispose();

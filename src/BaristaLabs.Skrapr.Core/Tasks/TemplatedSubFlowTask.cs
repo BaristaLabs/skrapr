@@ -103,6 +103,7 @@
                 catch(JsonSerializationException ex)
                 {
                     worker.Logger.LogError("{taskName} Encountered an error when deserializing tasks for nodeId {nodeId}: {ex}", Name, nodeId, ex);
+                    throw;
                 }
                 currentIndex++;
             }
@@ -116,6 +117,7 @@
 
             subTaskFlow = new ActionBlock<Tuple<long, IList<ISkraprTask>>>(async (nodeTask) => await ProcessNodeTask(nodeTask, worker, subTaskFlow), new ExecutionDataflowBlockOptions
             {
+                CancellationToken = worker.CancellationToken,
                 EnsureOrdered = true,
                 MaxDegreeOfParallelism = 1
             });
@@ -148,10 +150,21 @@
             }
             catch(Exception ex)
             {
-                worker.Logger.LogError("{taskName} An exception occurred processing subtasks for nodeId {nodeId}: {message}", Name, nodeTask.Item1, ex.Message);
-
-                //requeue.
-                subTaskFlow.Post(nodeTask);
+                if (ex is AssertionFailedException || ex is NavigationFailedException)
+                {
+                    //Add it back into the queue.
+                    subTaskFlow.Post(nodeTask);
+                }
+                else if (ex is OperationCanceledException || ex is TaskCanceledException)
+                {
+                    worker.Logger.LogWarning("{taskName} is terminating due to a cancellation request.", Name);
+                    throw;
+                }
+                else
+                {
+                    worker.Logger.LogError("{taskName} An unhandled exception occurred processing subtasks for nodeId {nodeId}: {exception}", Name, nodeTask.Item1, ex);
+                    throw;
+                }
             }
 
             worker.Logger.LogDebug("{taskName} Completed processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
