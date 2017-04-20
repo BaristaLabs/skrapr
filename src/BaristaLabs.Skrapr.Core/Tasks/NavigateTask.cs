@@ -16,15 +16,31 @@
             get { return "Navigate"; }
         }
 
-        [JsonProperty("userAgent")]
-        public string UserAgent
+        /// <summary>
+        /// Gets or sets the referrer URL
+        /// </summary>
+        [JsonProperty("referrer")]
+        public string Referrer
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the URL to navigate to.
+        /// </summary>
         [JsonProperty("url")]
         public string Url
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the useragent that will be used.
+        /// </summary>
+        [JsonProperty("userAgent")]
+        public string UserAgent
         {
             get;
             set;
@@ -42,7 +58,7 @@
             }
 
             Console.WriteLine($"Navigating to {Url}");
-            await worker.DevTools.Navigate(Url);
+            await worker.DevTools.Navigate(Url, referrer: Referrer);
         }
 
         public override string ToString()

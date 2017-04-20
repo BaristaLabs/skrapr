@@ -81,6 +81,7 @@
                     continue;
                 }
 
+                var frameState = await worker.DevTools.GetCurrentFrameState();
                 var node = worker.DevTools.ChildNodes[nodeId];
                 var attributes = node.GetAttributes();
 
@@ -88,6 +89,8 @@
                 attributes.Add("$index", currentIndex.ToString());
                 attributes.Add("$oneBasedindex", (currentIndex + 1).ToString());
                 attributes.Add("$zeroBasedindex", (currentIndex).ToString());
+                attributes.Add("$title", frameState.Title);
+                attributes.Add("$url", frameState.Url);
 
                 var subTasksString = template(attributes);
 

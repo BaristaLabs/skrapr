@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Represents a task that asserts the condition is true, and if not...
+    /// Represents a task that asserts the condition is true, and if not throws an exception.
     /// </summary>
     public class AssertTask : SkraprTask
     {

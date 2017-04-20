@@ -171,7 +171,7 @@
             }
 
             //Click the random point, with a random delay between the down and up mouse events.
-            var clickDelay = s_random.Next(100, 1000);
+            var clickDelay = s_random.Next(100, 1500);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {

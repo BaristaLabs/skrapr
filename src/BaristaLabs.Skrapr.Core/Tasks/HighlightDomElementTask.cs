@@ -60,9 +60,8 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            var pageDimensions = await worker.DevTools.GetReportedPageDimensions();
-
             var documentNode = await worker.Session.DOM.GetDocument(1);
+            var pageDimensions = await worker.Session.Page.GetPageDimensions(documentNodeId: documentNode.NodeId);
 
             var nodeIds = await worker.Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
             {

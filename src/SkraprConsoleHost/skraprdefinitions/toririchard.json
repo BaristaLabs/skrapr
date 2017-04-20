@@ -55,6 +55,11 @@
           "isNavigation": true
         },
         {
+          //Currently not implemented by Chrome 58
+          "name": "PrintToPDF",
+          "disabled": true
+        },
+        {
           "name": "InjectScriptElement",
           "description": "We don't really need URI.js but demonstrating it's possible",
           "condition": "window['URI'] === undefined;",
@@ -73,7 +78,7 @@
         {
           "name": "TemplatedSubFlow",
           "selector": ".thumb-grid a.name",
-          "shuffle":  true,
+          "shuffle": true,
           //Click each shirt image and go back.
           "taskTemplates": [
             {
@@ -100,7 +105,7 @@
             {
               "name": "Delay",
               "minDelay": 3000,
-              "maxDelay":  5000
+              "maxDelay": 5000
             }
           ]
         }
