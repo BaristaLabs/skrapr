@@ -23,5 +23,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
         [EnumMember(Value = "invalid")]
         Invalid,
     
+        [EnumMember(Value = "keyshortcuts")]
+        Keyshortcuts,
+    
+        [EnumMember(Value = "roledescription")]
+        Roledescription,
+    
     }
 }

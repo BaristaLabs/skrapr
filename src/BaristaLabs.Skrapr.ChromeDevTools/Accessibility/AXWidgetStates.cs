@@ -17,6 +17,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
         [EnumMember(Value = "expanded")]
         Expanded,
     
+        [EnumMember(Value = "modal")]
+        Modal,
+    
         [EnumMember(Value = "pressed")]
         Pressed,
     

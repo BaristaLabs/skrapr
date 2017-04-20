@@ -14,14 +14,20 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
         [EnumMember(Value = "activedescendant")]
         Activedescendant,
     
-        [EnumMember(Value = "flowto")]
-        Flowto,
-    
         [EnumMember(Value = "controls")]
         Controls,
     
         [EnumMember(Value = "describedby")]
         Describedby,
+    
+        [EnumMember(Value = "details")]
+        Details,
+    
+        [EnumMember(Value = "errormessage")]
+        Errormessage,
+    
+        [EnumMember(Value = "flowto")]
+        Flowto,
     
         [EnumMember(Value = "labelledby")]
         Labelledby,
