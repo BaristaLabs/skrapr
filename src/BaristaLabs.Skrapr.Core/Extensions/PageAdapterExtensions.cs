@@ -1,8 +1,10 @@
 ﻿namespace BaristaLabs.Skrapr.Extensions
 {
     using System;
+    using System.IO;
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
+    using Emulation = ChromeDevTools.Emulation;
     using Page = ChromeDevTools.Page;
 
     public static class PageAdapterExtensions
@@ -72,5 +74,48 @@
                 WindowWidth = (long)(layoutMetrics.VisualViewport.ClientWidth / scaleY)
             };
         }
+
+
+        /// <summary>
+        /// Saves an image of the entire contents of the current page.
+        /// </summary>
+        /// <returns></returns>
+        public static async Task TakeFullPageScreenshot(this Page.PageAdapter pageAdapter, string outputFileName, int millisecondsTimeout = 60000)
+        {
+            if (String.IsNullOrWhiteSpace(outputFileName))
+                throw new ArgumentNullException(nameof(outputFileName));
+
+
+            var dimensions = await pageAdapter.Session.Page.GetPageDimensions();
+            //m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), dimensions.FullWidth, dimensions.FullHeight);
+
+            //TODO: This needs to be improved -- it appears that the max visible size in any dimension
+            //is around 8192px - pages greater than 8192px will be clipped. This method should limit size
+            // to 8192 (or the actual max) take multiple shots of this size and stich the resulting images
+            // together.
+
+            //Set the visible size to the full page size.
+            await pageAdapter.Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
+            {
+                Width = (long)dimensions.FullWidth,
+                Height = (long)dimensions.FullHeight
+            });
+
+            var result = await pageAdapter.Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: millisecondsTimeout);
+            var imageBytes = Convert.FromBase64String(result.Data);
+            //m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
+            File.WriteAllBytes(outputFileName, imageBytes);
+            //m_logger.LogDebug("{functionName} wrote {bytes} bytes to {fileName}", nameof(TakeFullPageScreenshot), imageBytes.LongCount(), outputFileName);
+            imageBytes = null;
+            result = null;
+
+            //Set the visible size back to the original size.
+            await pageAdapter.Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
+            {
+                Width = (long)dimensions.WindowWidth,
+                Height = (long)dimensions.WindowHeight
+            });
+        }
+
     }
 }

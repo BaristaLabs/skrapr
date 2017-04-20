@@ -88,60 +88,14 @@
 
             //TODO: Position the viewport so the element is on screen if isn't already.
 
-            //Get the highlight object and create a rectangle representing the click area.
-            var highlightObject = await worker.Session.DOM.GetHighlightObjectForTest(nodeId);
-            var contentPath = highlightObject.Paths.FirstOrDefault(p => p.Name == "content");
-            var contentPathPoints = contentPath.GetQuad();
-
-            var targetClickRect = new Dom.Rect
-            {
-                X = contentPathPoints[0],
-                Y = contentPathPoints[1],
-                Width = highlightObject.ElementInfo.NodeWidth,
-                Height = highlightObject.ElementInfo.NodeHeight
-            };
+            var targetBoundingBox = await worker.DevTools.GetBoundingClientRect(nodeId);
 
             //Get a random point within the click area
-            var target = targetClickRect.GetRandomSpotWithinRect();
+            var target = targetBoundingBox.GetRandomSpotWithinBox();
 
             //If we're in debug mode, illustrate where we're going to click.
             if (worker.IsDebugEnabled)
             {
-                //TODO: Make this better... javascript based even.
-                //var scaleFactor = await worker.DevTools.GetPageScaleFactor();
-                //var xScaleFactor = scaleFactor.Item1;
-                //var yScaleFactor = scaleFactor.Item2;
-
-                //var highlightRect = new Dom.Rect
-                //{
-                //    X = contentPathPoints[0] / xScaleFactor,
-                //    Y = contentPathPoints[1] / yScaleFactor,
-                //    Width = highlightObject.ElementInfo.NodeWidth / xScaleFactor,
-                //    Height = highlightObject.ElementInfo.NodeHeight / yScaleFactor //2.2
-                //};
-
-                //await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
-                //{
-                //    X = (long)(highlightRect.X),
-                //    Y = (long)(highlightRect.Y),
-                //    Width = (long)(highlightRect.Width),
-                //    Height = (long)(highlightRect.Height),
-                //    Color = new Dom.RGBA
-                //    {
-                //        R = 0,
-                //        G = 0,
-                //        B = 255,
-                //        A = 0.7
-                //    },
-                //    OutlineColor = new Dom.RGBA
-                //    {
-                //        R = 255,
-                //        G = 0,
-                //        B = 0,
-                //        A = 1
-                //    },
-                //});
-
                 await worker.Session.DOM.HighlightRect(new Dom.HighlightRectCommand
                 {
                     X = (long)target.X / 2,

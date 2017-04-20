@@ -1,5 +1,6 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
+    using BaristaLabs.Skrapr.Extensions;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -25,7 +26,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.DevTools.TakeFullPageScreenshot(OutputFilename);
+            await worker.Session.Page.TakeFullPageScreenshot(OutputFilename);
         }
     }
 }

@@ -225,6 +225,7 @@
             catch (Exception ex)
             {
                 m_logger.LogError("{functionName} An error occurred while performing task {taskName}: {exceptionMessage} FrameId: {currentFrameId}", nameof(ProcessSkraprRule), task.Name, ex.Message, DevTools.CurrentFrameId);
+                throw;
             }
 
             if (processRules == true)

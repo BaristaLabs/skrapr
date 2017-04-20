@@ -54,7 +54,8 @@
         /// Gets the highlight object corresponding to the node id
         /// </summary>
         /// <remarks>
-        /// It doesn't appear that this api is all that reliable -- often an error is returned indicating that it cannot find a node that corresponds to the node id.
+        /// It doesn't appear that this api is all that reliable. Often it reports nodeids cannot be found, also
+        /// the objects that it returns are 1 px in width/height.
         /// </remarks>
         /// <param name="domAdapter"></param>
         /// <param name="nodeId"></param>

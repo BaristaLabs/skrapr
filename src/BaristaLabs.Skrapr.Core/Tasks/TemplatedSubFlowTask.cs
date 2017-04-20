@@ -9,6 +9,7 @@
     using Newtonsoft.Json.Linq;
     using Microsoft.Extensions.Logging;
     using System;
+    using System.Threading.Tasks.Dataflow;
 
     /// <summary>
     /// Represents a task that contains one or more handlebars-based templates that are populated with data based on the selector
@@ -111,18 +112,56 @@
                 nodeTasks.Shuffle();
             }
 
+            ActionBlock<Tuple<long, IList<ISkraprTask>>> subTaskFlow = null;
+
+            subTaskFlow = new ActionBlock<Tuple<long, IList<ISkraprTask>>>(async (nodeTask) => await ProcessNodeTask(nodeTask, worker, subTaskFlow), new ExecutionDataflowBlockOptions
+            {
+                EnsureOrdered = true,
+                MaxDegreeOfParallelism = 1
+            });
+
             //Execute tasks for each node.
             foreach(var nodeTask in nodeTasks)
             {
-                worker.Logger.LogDebug("{taskName} Started processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
+                subTaskFlow.Post(nodeTask);
+            }
 
-                foreach(var task in nodeTask.Item2)
+            worker.Logger.LogDebug("{taskName} Processing {0} nodes in subflow", Name, subTaskFlow.InputCount);
+
+            await subTaskFlow.Completion;
+
+            worker.Logger.LogDebug("{taskName} Completed processing all nodes in subflow.", Name);
+        }
+
+        private async Task ProcessNodeTask(Tuple<long, IList<ISkraprTask>> nodeTask, ISkraprWorker worker, ActionBlock<Tuple<long, IList<ISkraprTask>>> subTaskFlow)
+        {
+            worker.Logger.LogDebug("{taskName} Started processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
+
+            try
+            {
+                foreach (var task in nodeTask.Item2)
                 {
                     await worker.ProcessSkraprTask(task);
                 }
 
                 worker.Logger.LogDebug("{taskName} Completed processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
             }
+            catch(Exception ex)
+            {
+                worker.Logger.LogError("{taskName} An exception occurred processing subtasks for nodeId {nodeId}: {message}", Name, nodeTask.Item1, ex.Message);
+
+                //requeue.
+                subTaskFlow.Post(nodeTask);
+            }
+
+            worker.Logger.LogDebug("{taskName} Completed processing subtasks for nodeId {nodeId}", Name, nodeTask.Item1);
+
+            if (subTaskFlow.InputCount == 0)
+            {
+                subTaskFlow.Complete();
+            }
+
+            worker.Logger.LogDebug("{taskName} {count} nodes remaining", Name, subTaskFlow.InputCount);
         }
     }
 }

@@ -5,37 +5,37 @@
     /// </summary>
     public class PageDimensions
     {
-        public long ScrollX
+        public double ScrollX
         {
             get;
             set;
         }
 
-        public long ScrollY
+        public double ScrollY
         {
             get;
             set;
         }
 
-        public long FullWidth
+        public double FullWidth
         {
             get;
             set;
         }
 
-        public long FullHeight
+        public double FullHeight
         {
             get;
             set;
         }
 
-        public long WindowWidth
+        public double WindowWidth
         {
             get;
             set;
         }
 
-        public long WindowHeight
+        public double WindowHeight
         {
             get;
             set;

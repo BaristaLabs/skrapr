@@ -119,6 +119,49 @@
             };
         }
 
+        public async Task<BoundingClientRect> GetBoundingClientRect(long nodeId)
+        {
+            var resolveNodeResponse = await Session.DOM.ResolveNode(new Dom.ResolveNodeCommand
+            {
+                NodeId = nodeId,
+                ObjectGroup = "Skrapr"
+            });
+
+            var boundingClientRectResponse = await m_session.Runtime.CallFunctionOn(new Runtime.CallFunctionOnCommand
+            {
+                ObjectId = resolveNodeResponse.Object.ObjectId,
+                FunctionDeclaration = "function() { return this.getBoundingClientRect(); }",
+                Silent = true,
+                UserGesture = false
+            });
+
+            if (boundingClientRectResponse.Result.Subtype == "error")
+                return null;
+
+            var propertiesResponse = await m_session.Runtime.GetProperties(new Runtime.GetPropertiesCommand
+            {
+                ObjectId = boundingClientRectResponse.Result.ObjectId
+            });
+
+            var properties = propertiesResponse.Result;
+            var result = new BoundingClientRect()
+            {
+                Top = double.Parse(properties.First(p => p.Name == "top").Value.Description),
+                Right = double.Parse(properties.First(p => p.Name == "right").Value.Description),
+                Bottom = double.Parse(properties.First(p => p.Name == "bottom").Value.Description),
+                Left = double.Parse(properties.First(p => p.Name == "left").Value.Description),
+                Width = double.Parse(properties.First(p => p.Name == "width").Value.Description),
+                Height = double.Parse(properties.First(p => p.Name == "height").Value.Description)
+            };
+
+            //Cleanup.
+            var releaseResponse = await m_session.Runtime.ReleaseObject(new Runtime.ReleaseObjectCommand
+            {
+                ObjectId = boundingClientRectResponse.Result.ObjectId
+            });
+            return result;
+        }
+
         /// <summary>
         /// Gets the Css bounding box for the specified node.
         /// </summary>
@@ -154,6 +197,77 @@
                 X = layoutTreeNode.BoundingBox.X / devicePixelRatio,
                 Y = layoutTreeNode.BoundingBox.Y / devicePixelRatio
             };
+        }
+
+
+        /// <summary>
+        /// Retrieves the position of the element relative to the document.
+        /// </summary>
+        /// <param name="nodeId"></param>
+        /// <returns></returns>
+        public async Task<BoundingClientRect> GetOffset(long nodeId)
+        {
+            var resolveNodeResponse = await Session.DOM.ResolveNode(new Dom.ResolveNodeCommand
+            {
+                NodeId = nodeId,
+                ObjectGroup = "Skrapr"
+            });
+
+            var boundingClientRectResponse = await m_session.Runtime.CallFunctionOn(new Runtime.CallFunctionOnCommand
+            {
+                ObjectId = resolveNodeResponse.Object.ObjectId,
+                FunctionDeclaration = @"function() {
+    var doc, docElem, rect, win, elem = this;
+
+    if ( !elem.getClientRects().length ) {
+	    return { top: 0, bottom: 0, left: 0, right: 0, height: 0, width: 0 };
+    }
+
+    rect = elem.getBoundingClientRect();
+
+    doc = elem.ownerDocument;
+    docElem = doc.documentElement;
+    win = doc.defaultView;
+
+    return {
+	    top: rect.top + win.pageYOffset - docElem.clientTop,
+        bottom: rect.bottom + win.pageYOffset - docElem.clientTop,
+	    left: rect.left + win.pageXOffset - docElem.clientLeft,
+        right: rect.right + win.pageXOffset - docElem.clientLeft,
+        height: rect.height,
+        width: rect.width
+    };
+}",
+                Silent = true,
+                UserGesture = false
+            });
+
+            if (boundingClientRectResponse.Result.Subtype == "error")
+                return null;
+
+            var propertiesResponse = await m_session.Runtime.GetProperties(new Runtime.GetPropertiesCommand
+            {
+                ObjectId = boundingClientRectResponse.Result.ObjectId
+            });
+
+            var properties = propertiesResponse.Result;
+            var result = new BoundingClientRect()
+            {
+                Top = double.Parse(properties.First(p => p.Name == "top").Value.Description),
+                Right = double.Parse(properties.First(p => p.Name == "right").Value.Description),
+                Bottom = double.Parse(properties.First(p => p.Name == "bottom").Value.Description),
+                Left = double.Parse(properties.First(p => p.Name == "left").Value.Description),
+                Width = double.Parse(properties.First(p => p.Name == "width").Value.Description),
+                Height = double.Parse(properties.First(p => p.Name == "height").Value.Description)
+            };
+
+            //Cleanup.
+            var releaseResponse = await m_session.Runtime.ReleaseObject(new Runtime.ReleaseObjectCommand
+            {
+                ObjectId = boundingClientRectResponse.Result.ObjectId
+            });
+
+            return result;
         }
 
         /// <summary>
@@ -252,12 +366,20 @@ new Promise(function (resolve, reject) {{
             m_logger.LogDebug("{functionName} Completed navigation to {url} (New frame id: {frameId})", nameof(Navigate), url, m_currentFrameId);
         }
 
-        public async Task ScrollTo(string selector, bool isHuman = true, int maxScrolls = 10)
+        /// <summary>
+        /// Scrolls to the specified selector
+        /// </summary>
+        /// <param name="selector"></param>
+        /// <param name="isHuman"></param>
+        /// <param name="maxScrolls"></param>
+        /// <param name="postScrollDelayMs">Occassionally on pages there will be post-scroll pop-in (usually of images) which will reposition the elements on screen. This delay waits for the specified number of sections after a scroll.</param>
+        /// <returns></returns>
+        public async Task ScrollTo(string selector, bool isHuman = true, int maxScrolls = 10, int postScrollDelayMs = 1500)
         {
             var documentNode = await Session.DOM.GetDocument(1);
 
             //Obtaining the page dimensions prior to getting the selector
-            var pageDimensions = await Session.Page.GetPageDimensions(documentNodeId: documentNode.NodeId);
+            var pageDimensions = await Session.Runtime.GetReportedPageDimensions(contextId: m_currentFrameContext.Id);
 
             //Get the node to scroll to.
             var nodeIds = await Session.DOM.QuerySelectorAll(new Dom.QuerySelectorAllCommand
@@ -295,10 +417,10 @@ new Promise(function (resolve, reject) {{
             Tuple<double, double> delta;
             do
             {
-                //Get the scroll delta.
-                pageDimensions = await Session.Page.GetPageDimensions(documentNodeId: documentNode.NodeId);
-                var highlightObject = await Session.DOM.GetHighlightObjectForTest(nodeId);
-                delta = highlightObject.GetOnscreenDelta(pageDimensions);
+                //Get the scroll delta.)
+                pageDimensions = await Session.Runtime.GetReportedPageDimensions(contextId: m_currentFrameContext.Id);
+                var targetObject = await GetOffset(nodeId);
+                delta = targetObject.GetOnscreenDelta(pageDimensions);
 
                 //If the element is already on screen, well, we're done.
                 if (delta.Item1 >= -1 && delta.Item1 <= 1 &&
@@ -319,8 +441,8 @@ new Promise(function (resolve, reject) {{
                     {
                         X = (long)scrollPoint.X,
                         Y = (long)scrollPoint.Y,
-                        XDistance = (long)delta.Item1,
-                        YDistance = (long)delta.Item2,
+                        XDistance = (long)Math.Ceiling(delta.Item1),
+                        YDistance = (long)Math.Ceiling(delta.Item2),
                         Speed = s_random.Next(400, 1200)
                     }, millisecondsTimeout: 120000);
                 }
@@ -330,6 +452,7 @@ new Promise(function (resolve, reject) {{
                 }
 
                 scrollsLeft--;
+                Thread.Sleep(postScrollDelayMs);
             } while (scrollsLeft > 0);
 
             m_logger.LogError("{functionName} exceeded the maximum number of scrolls: {maxScrolls}", nameof(ScrollTo), maxScrolls);
@@ -347,12 +470,12 @@ new Promise(function (resolve, reject) {{
             {
                 var pageDimensions = await Session.Page.GetPageDimensions();
                 lastScrollY = scrollY;
-                scrollY = pageDimensions.ScrollY;
+                scrollY = (long)pageDimensions.ScrollY;
 
                 if (lastScrollY == scrollY)
                     return;
 
-                yPos = pageDimensions.FullHeight;
+                yPos = (long)pageDimensions.FullHeight;
                 await Session.Runtime.Evaluate($"window.scrollTo(0, {yPos});", m_currentFrameContext.Id);
                 scrollsLeft--;
                 await Task.Delay(iterateDelayMS);
@@ -361,46 +484,6 @@ new Promise(function (resolve, reject) {{
             m_logger.LogError("{functionName} exceeded the maximum number of scrolls: {maxScrolls}", nameof(ScrollToAbsoluteBottom), maxScrolls);
         }
 
-        /// <summary>
-        /// Saves an image of the entire contents of the current page.
-        /// </summary>
-        /// <returns></returns>
-        public async Task TakeFullPageScreenshot(string outputFileName, int millisecondsTimeout = 60000)
-        {
-            if (String.IsNullOrWhiteSpace(outputFileName))
-                throw new ArgumentNullException(nameof(outputFileName));
-
-            
-            var dimensions = await Session.Page.GetPageDimensions();
-            m_logger.LogDebug("{functionName} taking full page screenshot ({width}x{height})", nameof(TakeFullPageScreenshot), dimensions.FullWidth, dimensions.FullHeight);
-
-            //TODO: This needs to be improved -- it appears that the max visible size in any dimension
-            //is around 8192px - pages greater than 8192px will be clipped. This method should limit size
-            // to 8192 (or the actual max) take multiple shots of this size and stich the resulting images
-            // together.
-
-            //Set the visible size to the full page size.
-            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
-            {
-                Width = dimensions.FullWidth,
-                Height = dimensions.FullHeight
-            });
-
-            var result = await Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand(), millisecondsTimeout: millisecondsTimeout);
-            var imageBytes = Convert.FromBase64String(result.Data);
-            m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
-            File.WriteAllBytes(outputFileName, imageBytes);
-            m_logger.LogDebug("{functionName} wrote {bytes} bytes to {fileName}", nameof(TakeFullPageScreenshot), imageBytes.LongCount(), outputFileName);
-            imageBytes = null;
-            result = null;
-
-            //Set the visible size back to the original size.
-            await Session.Emulation.SetVisibleSize(new Emulation.SetVisibleSizeCommand
-            {
-                Width = dimensions.WindowWidth,
-                Height = dimensions.WindowHeight
-            });
-        }
 
         /// <summary>
         /// Waits until the current navigation to stop loading.
