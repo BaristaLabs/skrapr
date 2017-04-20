@@ -477,7 +477,9 @@ new Promise(function (resolve, reject) {{
         public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
         {
             m_logger.LogDebug("{functionName} Waiting for current navigation to complete. FrameId: {frameId}", nameof(WaitForCurrentNavigation), m_currentFrameId);
-            await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
+            var completed = await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
+            if (!completed)
+                throw new NavigationFailedException("Navigation timed out while waiting for current navigation to complete.");
 
             return IsLoading;
         }
@@ -494,7 +496,9 @@ new Promise(function (resolve, reject) {{
             if (!IsLoading)
                 m_frameStoppedLoading.Reset();
 
-            await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
+            var completed = await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
+            if (!completed)
+                throw new NavigationFailedException("Navigation timed out while waiting for next navigation to complete.");
 
             return IsLoading;
         }

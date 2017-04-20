@@ -86,6 +86,11 @@
               "isNavigation": true
             },
             {
+              "name": "Assert",
+              "assertion": "document.location.toString() === '{{href}}'",
+              "message": "Expected current url to be {{href}}"
+            },
+            {
               "name": "HumanDelay"
             },
             {

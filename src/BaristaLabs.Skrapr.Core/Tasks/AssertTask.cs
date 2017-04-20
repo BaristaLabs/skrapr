@@ -1,7 +1,7 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
+    using BaristaLabs.Skrapr.Extensions;
     using System.Threading.Tasks;
-    using Target = ChromeDevTools.Target;
 
     /// <summary>
     /// Represents a task that asserts the condition is true, and if not...
@@ -19,17 +19,17 @@
             set;
         }
 
+        public string Message
+        {
+            get;
+            set;
+        }
+
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            var targetInfoResponse = await worker.Session.Target.GetTargetInfo(new Target.GetTargetInfoCommand
-            {
-                TargetId = worker.DevTools.TargetId,
-            });
-
-            worker.AddTask(new NavigateTask
-            {
-                Url = targetInfoResponse.TargetInfo.Url
-            });
+            var result = await worker.Session.Runtime.EvaluateCondition(Assertion, worker.DevTools.CurrentFrameContext.Id);
+            if (result == false)
+                throw new SkraprAssertionFailedException(Message);
         }
     }
 }
