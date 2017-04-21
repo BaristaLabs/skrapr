@@ -129,7 +129,7 @@
         }
 
         /// <summary>
-        /// Gets or sets a value that indicates when the Skrapr was last updated.
+        /// Gets or sets a value that indicates when the Skrapr Definition was last updated.
         /// </summary>
         [JsonProperty("lastUpdated")]
         public DateTime? LastUpdated
