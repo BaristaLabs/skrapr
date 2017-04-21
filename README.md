@@ -1,7 +1,7 @@
 Skrapr
 ---
 
-Declarative browser automation
+Declarative browser automation. [Documentation](https://github.com/BaristaLabs/skrapr/wiki)
 
 ##### Launching Skrapr:
 
