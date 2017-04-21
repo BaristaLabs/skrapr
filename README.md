@@ -15,7 +15,7 @@ Windows:
 macOS:
 
 ``` bash
-sudo "/Applications/Google Chontents/MacOS/Google Chrome" --bwsi --remote-debugging-port=9223
+sudo "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9223
 ```
 
 2. Launch Skrapr
