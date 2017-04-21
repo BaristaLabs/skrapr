@@ -19,6 +19,14 @@
             set;
         }
 
+        [Option(ShortName: 'l', LongName: "launch")]
+        [Help("Indicates that the skrapr should launch a new instance at the specified debugging port.")]
+        public bool Launch
+        {
+            get;
+            set;
+        }
+
         [Option(ShortName: 'd', LongName: "debug")]
         [Help("Indicates that the skrapr is in debug mode. Tasks marked as skipInDebug: true will be skipped.")]
         public bool Debug

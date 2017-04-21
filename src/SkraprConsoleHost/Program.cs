@@ -50,82 +50,122 @@
                 .AddSerilog()
                 .CreateLogger<Program>();
 
-            logger.LogDebug($"Connecting to a Chrome session on {cliArguments.RemoteDebuggingHost}:{cliArguments.RemoteDebuggingPort}...");
+            ChromeBrowser browser = null;
+            SkraprDevTools devTools = null;
+            SkraprWorker worker = null;
 
-            var sessions = ChromeBrowser.GetChromeSessions(cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort).GetAwaiter().GetResult();
-            var session = sessions.FirstOrDefault(s => s.Type == "page" && !String.IsNullOrWhiteSpace(s.WebSocketDebuggerUrl));
-
-            //TODO: Create a new session if one doesn't exist.
-            if (session == null)
-                throw new InvalidOperationException("Unable to locate a suitable session. Ensure that the Developer Tools window is closed on an existing session or create a new chrome instance, specifying the debugger port as a command line argument.");
-
-            var devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
-            logger.LogDebug($"Using session {session.Id}: {session.Title} - {session.WebSocketDebuggerUrl}");
-
-            var worker = SkraprWorker.Create(serviceProvider, cliArguments.SkraprDefinitionPath, devTools.Session, devTools, debugMode: cliArguments.Debug);
-
-            if (cliArguments.Debug)
+            try
             {
-                logger.LogDebug($"Operating in debug mode. Tasks may perform additional behavior or may skip themselves.");
-            }
-            
-            if (cliArguments.Attach == true)
-            {
-                var targetInfo = devTools.Session.Target.GetTargetInfo(session.Id).GetAwaiter().GetResult();
-                var matchingRuleCount = worker.GetMatchingRules().GetAwaiter().GetResult().Count();
-                if (matchingRuleCount > 0)
+                if (cliArguments.Launch)
                 {
-                    logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's state; Continuing.");
-                    worker.AddTask(new NavigateTask
+                    browser = ChromeBrowser.Launch(cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort);
+                }
+
+                logger.LogDebug("Connecting to a Chrome session on {chromeHost}:{chromeRemoteDebuggingPort}...", cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort);
+
+                ChromeSessionInfo session = null;
+                try
+                {
+                    var sessions = ChromeBrowser.GetChromeSessions(cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort).GetAwaiter().GetResult();
+                    session = sessions.FirstOrDefault(s => s.Type == "page" && !String.IsNullOrWhiteSpace(s.WebSocketDebuggerUrl));
+                }
+                catch (System.Net.Http.HttpRequestException)
+                {
+                    logger.LogWarning("Unable to connect to a Chrome session on {chromeHost}:{chromeRemoteDebuggingPort}.", cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort);
+                    logger.LogWarning("Please ensure that a chrome session has been launched with the --remote-debugging-port={chromeRemoteDebuggingPort} command line argument", cliArguments.RemoteDebuggingPort);
+                    logger.LogWarning("Or, launch SkraprConsoleHost with -l");
+                    return;
+                }
+
+                //TODO: Create a new session if one doesn't exist.
+                if (session == null)
+                {
+                    logger.LogWarning("Unable to locate a suitable session. Ensure that the Developer Tools window is closed on an existing session or create a new chrome instance with the --remote-debugging-port={chromeRemoteDebuggingPort) command line argument", cliArguments.RemoteDebuggingPort);
+                    return;
+                }
+
+                devTools = SkraprDevTools.Connect(serviceProvider, session).GetAwaiter().GetResult();
+                logger.LogDebug("Using session {sessionId}: {sessionTitle} - {webSocketDebuggerUrl}", session.Id, session.Title, session.WebSocketDebuggerUrl);
+
+                worker = SkraprWorker.Create(serviceProvider, cliArguments.SkraprDefinitionPath, devTools.Session, devTools, debugMode: cliArguments.Debug);
+
+                if (cliArguments.Debug)
+                {
+                    logger.LogDebug($"Operating in debug mode. Tasks may perform additional behavior or may skip themselves.");
+                }
+
+                if (cliArguments.Attach == true)
+                {
+                    var targetInfo = devTools.Session.Target.GetTargetInfo(session.Id).GetAwaiter().GetResult();
+                    var matchingRuleCount = worker.GetMatchingRules().GetAwaiter().GetResult().Count();
+                    if (matchingRuleCount > 0)
                     {
-                        Url = targetInfo.Url
-                    });
+                        logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's state; Continuing.", matchingRuleCount);
+                        worker.AddTask(new NavigateTask
+                        {
+                            Url = targetInfo.Url
+                        });
+                    }
+                    else
+                    {
+                        logger.LogDebug($"Attach specified but no rules matched the current session's state; Adding start urls.");
+                        worker.AddStartUrls();
+                    }
                 }
                 else
                 {
-                    logger.LogDebug($"Attach specified but no rules matched the current session's state; Adding start urls.");
+                    logger.LogDebug($"Adding start urls.");
                     worker.AddStartUrls();
                 }
-            }
-            else
-            {
-                logger.LogDebug($"Adding start urls.");
-                worker.AddStartUrls();
-            }
 
-            logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
+                logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
 
-            var cancelKeyTokenSource = new CancellationTokenSource();
+                var cancelKeyTokenSource = new CancellationTokenSource();
 
-            var workerCompletion = worker.Completion
-                .ContinueWith((t) => cancelKeyTokenSource.Cancel());
+                var workerCompletion = worker.Completion
+                    .ContinueWith((t) => cancelKeyTokenSource.Cancel());
 
-            var keyCompletion = Utility.ReadKeyAsync(ConsoleKey.Enter, cancelKeyTokenSource.Token)
-                .ContinueWith(async (t) =>
-                {
-                    if (!t.IsCanceled)
+                var keyCompletion = Utility.ReadKeyAsync(ConsoleKey.Enter, cancelKeyTokenSource.Token)
+                    .ContinueWith(async (t) =>
                     {
-                        logger.LogDebug("Stop requested at the console, cancelling...");
-                        worker.Cancel();
-                        await worker.Completion;
-                    }
+                        if (!t.IsCanceled)
+                        {
+                            logger.LogDebug("Stop requested at the console, cancelling...");
+                            worker.Cancel();
+                            await worker.Completion;
+                        }
 
-                });
-            try
-            {
-                Task.WaitAll(workerCompletion, keyCompletion);
+                    });
+                try
+                {
+                    Task.WaitAll(workerCompletion, keyCompletion);
+                }
+                catch (TaskCanceledException)
+                {
+                    //Do Nothing.
+                }
             }
-            catch(TaskCanceledException)
+            finally
             {
-                //Do Nothing.
-            }
-            
-            //Cleanup.
-            worker.Dispose();
-            devTools.Dispose();
+                //Cleanup.
+                if (worker != null)
+                {
+                    worker.Dispose();
+                    worker = null;
+                }
 
-            Console.WriteLine("All Done!");
-            Console.ReadKey();
+                if (devTools != null)
+                {
+                    devTools.Dispose();
+                    devTools = null;
+                }
+
+                if (browser != null)
+                {
+                    browser.Dispose();
+                    browser = null;
+                }
+            }
         }
     }
 }
