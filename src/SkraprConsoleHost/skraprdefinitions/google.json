@@ -1,0 +1,19 @@
+﻿{
+  "name": "Google",
+  "startUrls": [
+    "https://www.google.com"
+  ],
+  "rules": [
+    {
+      "type": "UrlPattern",
+      "urlPattern": "^https://www.google.com/?$",
+      "tasks": [
+        {
+          "name": "HumanTypeTask",
+          "selector": "input.gsfi",
+          "text": "Hello, world!{Enter}"
+        }
+      ]
+    }
+  ]
+}

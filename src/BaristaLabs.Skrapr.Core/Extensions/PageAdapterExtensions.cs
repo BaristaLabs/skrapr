@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
     using Emulation = ChromeDevTools.Emulation;
@@ -80,7 +81,7 @@
         /// Saves an image of the entire contents of the current page.
         /// </summary>
         /// <returns></returns>
-        public static async Task TakeFullPageScreenshot(this Page.PageAdapter pageAdapter, string outputFileName, int millisecondsTimeout = 60000)
+        public static async Task TakeFullPageScreenshot(this Page.PageAdapter pageAdapter, string outputFileName, CancellationToken cancellationToken = default(CancellationToken), int millisecondsTimeout = 60000)
         {
             if (String.IsNullOrWhiteSpace(outputFileName))
                 throw new ArgumentNullException(nameof(outputFileName));
@@ -99,12 +100,12 @@
             {
                 Width = (long)dimensions.FullWidth,
                 Height = (long)dimensions.FullHeight
-            });
+            }, cancellationToken: cancellationToken);
 
             var result = await pageAdapter.Session.SendCommand<Page.CaptureScreenshotCommand, Page.CaptureScreenshotCommandResponse>(new Page.CaptureScreenshotCommand
             {
                 Format = "png"
-            }, millisecondsTimeout: millisecondsTimeout);
+            }, cancellationToken: cancellationToken, millisecondsTimeout: millisecondsTimeout);
             var imageBytes = Convert.FromBase64String(result.Data);
             //m_logger.LogDebug("{functionName} Saving screenshot to {fileName}", nameof(TakeFullPageScreenshot), outputFileName);
             File.WriteAllBytes(outputFileName, imageBytes);
@@ -117,7 +118,7 @@
             {
                 Width = (long)dimensions.WindowWidth,
                 Height = (long)dimensions.WindowHeight
-            });
+            }, cancellationToken: cancellationToken);
         }
 
     }

@@ -26,7 +26,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.Session.Page.TakeFullPageScreenshot(OutputFilename);
+            await worker.Session.Page.TakeFullPageScreenshot(OutputFilename, cancellationToken: worker.CancellationToken);
         }
     }
 }

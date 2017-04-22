@@ -1,6 +1,6 @@
 ﻿namespace BaristaLabs.Skrapr.Converters
 {
-    using BaristaLabs.Skrapr.Definitions;
+    using BaristaLabs.Skrapr.Schedules;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System.Reflection;
@@ -14,7 +14,7 @@
 
         public override bool CanConvert(System.Type objectType)
         {
-            return typeof(ISchedule).IsAssignableFrom(objectType);
+            return typeof(ISkraprSchedule).IsAssignableFrom(objectType);
         }
 
         public override object ReadJson(JsonReader reader, System.Type objectType, object existingValue, JsonSerializer serializer)
@@ -22,7 +22,7 @@
             var jsonObject = JObject.Load(reader);
             var typeName = jsonObject["type"].ToString();
 
-            ISchedule schedule;
+            ISkraprSchedule schedule;
             switch (typeName)
             {
                 case "cron":

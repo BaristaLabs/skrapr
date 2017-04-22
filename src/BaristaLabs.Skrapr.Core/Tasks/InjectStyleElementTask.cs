@@ -34,7 +34,7 @@
         }
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.DevTools.InjectStyleElement(Styles);
+            await worker.DevTools.InjectStyleElement(Styles, cancellationToken: worker.CancellationToken);
         }
     }
 }

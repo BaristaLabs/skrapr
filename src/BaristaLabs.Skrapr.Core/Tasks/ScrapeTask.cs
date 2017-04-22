@@ -54,7 +54,7 @@
             set;
         }
 
-        public override async Task PerformTask(ISkraprWorker worker)
+        public override Task PerformTask(ISkraprWorker worker)
         {
             throw new NotImplementedException();
         }

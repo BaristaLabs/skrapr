@@ -274,7 +274,7 @@
         /// </summary>
         /// <param name="scriptUrl"></param>
         /// <returns>The nodeId of the injected element.</returns>
-        public async Task<long> InjectScriptElement(string scriptUrl, string contents = null, string type = "text/javascript", bool async = true)
+        public async Task<long> InjectScriptElement(string scriptUrl, string contents = null, string type = "text/javascript", bool async = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             m_logger.LogDebug("{functionName} injecting script tag with src={scriptUrl} type={type}", nameof(InjectScriptElement), scriptUrl, type);
 
@@ -311,7 +311,7 @@ new Promise(function (resolve, reject) {{
         /// </summary>
         /// <param name="scriptUrl"></param>
         /// <returns>The nodeId of the injected element.</returns>
-        public async Task<long> InjectStyleElement(string styles, string type = "text/css")
+        public async Task<long> InjectStyleElement(string styles, string type = "text/css", CancellationToken cancellationToken = default(CancellationToken))
         {
             m_logger.LogDebug("{functionName} injecting style tag.", nameof(InjectStyleElement));
 
@@ -340,7 +340,7 @@ new Promise(function (resolve, reject) {{
         /// <param name="url"></param>
         /// <param name="forceNavigate"></param>
         /// <returns></returns>
-        public async Task Navigate(string url, string referrer = null, bool forceNavigate = false, int millisecondsTimeout = 15000)
+        public async Task Navigate(string url, string referrer = null, bool forceNavigate = false, CancellationToken cancellationToken = default(CancellationToken), int millisecondsTimeout = 15000)
         {
             m_logger.LogDebug("{functionName} Navigating to {url}", nameof(Navigate), url);
             if (!forceNavigate)
@@ -361,7 +361,7 @@ new Promise(function (resolve, reject) {{
             });
             m_currentFrameId = navigateResponse.FrameId;
 
-            await WaitForCurrentNavigation(millisecondsTimeout: millisecondsTimeout);
+            await WaitForCurrentNavigation(cancellationToken: cancellationToken, millisecondsTimeout: millisecondsTimeout);
             m_logger.LogDebug("{functionName} Completed navigation to {url} (New frame id: {frameId})", nameof(Navigate), url, m_currentFrameId);
         }
 
@@ -445,7 +445,7 @@ new Promise(function (resolve, reject) {{
                         XDistance = (long)Math.Ceiling(delta.Item1),
                         YDistance = (long)Math.Ceiling(delta.Item2),
                         Speed = s_random.Next(400, 1200)
-                    }, millisecondsTimeout: 120000);
+                    }, cancellationToken: cancellationToken, millisecondsTimeout: 120000);
                 }
                 else
                 {
@@ -492,10 +492,10 @@ new Promise(function (resolve, reject) {{
         /// Waits until the current navigation to stop loading.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> WaitForCurrentNavigation(int millisecondsTimeout = 15000)
+        public async Task<bool> WaitForCurrentNavigation(CancellationToken cancellationToken = default(CancellationToken), int millisecondsTimeout = 15000)
         {
             m_logger.LogDebug("{functionName} Waiting for current navigation to complete. FrameId: {frameId}", nameof(WaitForCurrentNavigation), m_currentFrameId);
-            var completed = await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
+            var completed = await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout), cancellationToken);
             if (!completed)
                 throw new NavigationFailedException("Navigation timed out while waiting for current navigation to complete.");
 
@@ -507,14 +507,14 @@ new Promise(function (resolve, reject) {{
         /// </summary>
         /// <param name="millisecondsTimeout"></param>
         /// <returns></returns>
-        public async Task<bool> WaitForNextNavigation(int millisecondsTimeout = 15000)
+        public async Task<bool> WaitForNextNavigation(CancellationToken cancellationToken = default(CancellationToken), int millisecondsTimeout = 15000)
         {
             m_logger.LogDebug("{functionName} Waiting for next navigation.", nameof(WaitForNextNavigation));
 
             if (!IsLoading)
                 m_frameStoppedLoading.Reset();
 
-            var completed = await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout));
+            var completed = await Task.Run(() => m_frameStoppedLoading.Wait(millisecondsTimeout), cancellationToken);
             if (!completed)
                 throw new NavigationFailedException("Navigation timed out while waiting for next navigation to complete.");
 

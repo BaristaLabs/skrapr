@@ -1,4 +1,4 @@
-﻿namespace BaristaLabs.Skrapr.Definitions
+﻿namespace BaristaLabs.Skrapr
 {
     using BaristaLabs.Skrapr.Converters;
     using Newtonsoft.Json;
@@ -112,7 +112,7 @@
         /// </summary>
         [JsonProperty("schedule", ItemConverterType = typeof(ScheduleConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(null)]
-        public IList<ISchedule> Schedule
+        public IList<ISkraprSchedule> Schedule
         {
             get;
             set;

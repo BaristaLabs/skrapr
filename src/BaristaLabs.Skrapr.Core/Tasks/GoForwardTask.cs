@@ -43,7 +43,7 @@
             {
                 EntryId = targetNavigationEntry.Id
             });
-            await worker.DevTools.WaitForNextNavigation();
+            await worker.DevTools.WaitForNextNavigation(cancellationToken: worker.CancellationToken);
         }
     }
 }

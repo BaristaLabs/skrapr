@@ -2,6 +2,7 @@
 {
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Runtime = ChromeDevTools.Runtime;
 
@@ -14,7 +15,7 @@
         /// <param name="script"></param>
         /// <param name="isPromise"></param>
         /// <returns></returns>
-        public static async Task<Runtime.RemoteObject> Evaluate(this Runtime.RuntimeAdapter runtimeAdapter, string script, long? contextId = null, bool returnByValue = false, bool awaitPromise = false, bool silent = false, bool userGesture = true)
+        public static async Task<Runtime.RemoteObject> Evaluate(this Runtime.RuntimeAdapter runtimeAdapter, string script, long? contextId = null, bool returnByValue = false, bool awaitPromise = false, bool silent = false, bool userGesture = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             var evaluateResponse = await runtimeAdapter.Session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
             {
@@ -27,7 +28,7 @@
                 ReturnByValue = returnByValue,
                 Silent = silent,
                 UserGesture = userGesture
-            });
+            }, cancellationToken: cancellationToken);
 
             if (evaluateResponse.ExceptionDetails != null)
                 throw new JavaScriptException(evaluateResponse.ExceptionDetails);
@@ -38,7 +39,7 @@
         /// <summary>
         /// Evaluates an expression that returns true or false.
         /// </summary>
-        public static async Task<bool> EvaluateCondition(this Runtime.RuntimeAdapter runtimeAdapter, string condition, long? contextId = null)
+        public static async Task<bool> EvaluateCondition(this Runtime.RuntimeAdapter runtimeAdapter, string condition, long? contextId = null, CancellationToken cancellationToken = default(CancellationToken))
         {
 
             var evaluateResponse = await runtimeAdapter.Session.SendCommand<Runtime.EvaluateCommand, Runtime.EvaluateCommandResponse>(new Runtime.EvaluateCommand
@@ -56,7 +57,7 @@
                 ReturnByValue = false,
                 Silent = true,
                 UserGesture = false,
-            });
+            }, cancellationToken: cancellationToken);
 
             if (evaluateResponse.ExceptionDetails != null)
                 throw new JavaScriptException(evaluateResponse.ExceptionDetails);

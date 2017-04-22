@@ -1,8 +1,8 @@
-﻿namespace BaristaLabs.Skrapr.Definitions
+﻿namespace BaristaLabs.Skrapr
 {
     using Newtonsoft.Json;
 
-    public interface ISchedule
+    public interface ISkraprSchedule
     {
         /// <summary>
         /// Gets the type of the schedule

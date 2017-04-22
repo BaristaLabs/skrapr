@@ -23,7 +23,7 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            await worker.DevTools.ScrollTo(Selector);
+            await worker.DevTools.ScrollTo(Selector, cancellationToken: worker.CancellationToken);
         }
     }
 }

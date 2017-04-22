@@ -136,7 +136,7 @@
                 X = (long)target.X,
                 Y = (long)target.Y,
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
-            });
+            }, cancellationToken: worker.CancellationToken);
 
             await Task.Delay(clickDelay, worker.CancellationToken);
 
@@ -149,11 +149,11 @@
                 X = (long)target.X,
                 Y = (long)target.Y,
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
-            });
+            }, cancellationToken: worker.CancellationToken);
 
             //If navigation is specified, wait for navigation.
             if (IsNavigation)
-                await worker.DevTools.WaitForNextNavigation();
+                await worker.DevTools.WaitForNextNavigation(cancellationToken: worker.CancellationToken);
         }
     }
 }

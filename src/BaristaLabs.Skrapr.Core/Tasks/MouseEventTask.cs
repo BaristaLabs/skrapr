@@ -166,7 +166,7 @@
                 X = (long)target.X,
                 Y = (long)target.Y,
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
-            });
+            }, cancellationToken: worker.CancellationToken);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {
@@ -177,10 +177,10 @@
                 X = (long)target.X,
                 Y = (long)target.Y,
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds()
-            });
+            }, cancellationToken: worker.CancellationToken);
 
             if (IsNavigation)
-                await worker.DevTools.WaitForNextNavigation();
+                await worker.DevTools.WaitForNextNavigation(cancellationToken: worker.CancellationToken);
         }
     }
 }

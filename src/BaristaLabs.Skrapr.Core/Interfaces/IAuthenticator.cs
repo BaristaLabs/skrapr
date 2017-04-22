@@ -1,4 +1,4 @@
-﻿namespace BaristaLabs.Skrapr.Definitions
+﻿namespace BaristaLabs.Skrapr
 {
     using Newtonsoft.Json;
 

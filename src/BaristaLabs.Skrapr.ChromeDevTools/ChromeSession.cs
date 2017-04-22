@@ -76,8 +76,10 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                     MaxDegreeOfParallelism = 1,
                 });
 
-            m_sessionSocket = new WebSocket(m_endpointAddress);
-            m_sessionSocket.EnableAutoSendPing = false;
+            m_sessionSocket = new WebSocket(m_endpointAddress)
+            {
+                EnableAutoSendPing = false
+            };
             m_sessionSocket.MessageReceived += Ws_MessageReceived;
             m_sessionSocket.Error += Ws_Error;
             m_sessionSocket.Opened += Ws_Opened;
@@ -88,23 +90,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// </summary>
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
-        /// <param name="throwExceptionIfResponseNotReceived"></param>
-        /// <returns></returns>
-        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
-            where TCommand : ICommand
-        {
-            return await SendCommand(command, CancellationToken.None, millisecondsTimeout, throwExceptionIfResponseNotReceived);
-        }
-
-        /// <summary>
-        /// Sends the specified command and returns the associated command response.
-        /// </summary>
-        /// <typeparam name="TCommand"></typeparam>
-        /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="millisecondsTimeout"></param>
         /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
-        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, CancellationToken cancellationToken, int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
+        public async Task<ICommandResponse<TCommand>> SendCommand<TCommand>(TCommand command, CancellationToken cancellationToken = default(CancellationToken), int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
         {
             if (command == null)
@@ -124,27 +114,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <summary>
         /// Sends the specified command and returns the associated command response.
         /// </summary>
-        /// <typeparam name="TCommand"></typeparam>
-        /// <param name="command"></param>
-        /// <param name="throwExceptionIfResponseNotReceived"></param>
-        /// <returns></returns>
-        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
-            where TCommand : ICommand
-            where TCommandResponse : ICommandResponse<TCommand>
-        {
-            return await SendCommand<TCommand, TCommandResponse>(command, CancellationToken.None, millisecondsTimeout, throwExceptionIfResponseNotReceived);
-        }
-
-        /// <summary>
-        /// Sends the specified command and returns the associated command response.
-        /// </summary>
         /// <typeparam name="TCommand"></typeparam
         /// <typeparam name="TCommandResponse"></typeparam>
         /// <param name="command"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="millisecondsTimeout"></param>
         /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
-        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, CancellationToken cancellationToken, int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
+        public async Task<TCommandResponse> SendCommand<TCommand, TCommandResponse>(TCommand command, CancellationToken cancellationToken = default(CancellationToken), int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
             where TCommand : ICommand
             where TCommandResponse : ICommandResponse<TCommand>
         {
@@ -165,10 +142,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
         /// <param name="commandName"></param>
         /// <param name="params"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="millisecondsTimeout"></param>
         /// <param name="throwExceptionIfResponseNotReceived"></param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public async Task<JToken> SendCommand(string commandName, JToken @params, CancellationToken cancellationToken, int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
+        public async Task<JToken> SendCommand(string commandName, JToken @params, CancellationToken cancellationToken = default(CancellationToken), int? millisecondsTimeout = null, bool throwExceptionIfResponseNotReceived = true)
         {
             var message = new
             {
@@ -180,7 +158,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             if (millisecondsTimeout.HasValue == false)
                 millisecondsTimeout = CommandTimeout;
 
-            await OpenSessionConnection();
+            await OpenSessionConnection(cancellationToken);
 
             LogTrace("Sending {id} {method}: {params}", message.id, message.method, @params.ToString());
             
@@ -189,7 +167,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
             m_responseReceived.Reset();
             m_sessionSocket.Send(contents);
 
-            var responseWasReceived = await Task.Run(() => m_responseReceived.Wait(millisecondsTimeout.Value), cancellationToken);
+            var responseWasReceived = await Task.Run(() => m_responseReceived.Wait(millisecondsTimeout.Value, cancellationToken));
 
             if (!responseWasReceived && throwExceptionIfResponseNotReceived)
                 throw new InvalidOperationException($"A command response was not received: {commandName}");
@@ -243,13 +221,13 @@ namespace BaristaLabs.Skrapr.ChromeDevTools
                 });
         }
 
-        private async Task OpenSessionConnection()
+        private async Task OpenSessionConnection(CancellationToken cancellationToken)
         {
             if (m_sessionSocket.State != WebSocketState.Open)
             {
                 m_sessionSocket.Open();
 
-                await Task.Run(() => m_openEvent.Wait());
+                await Task.Run(() => m_openEvent.Wait(cancellationToken));
             }
         }
 

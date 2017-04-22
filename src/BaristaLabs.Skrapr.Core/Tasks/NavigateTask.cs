@@ -2,6 +2,7 @@
 {
     using Newtonsoft.Json;
     using System;
+    using System.ComponentModel;
     using System.Threading.Tasks;
 
     using Network = ChromeDevTools.Network;
@@ -14,6 +15,26 @@
         public override string Name
         {
             get { return "Navigate"; }
+        }
+
+        /// <summary>
+        /// Forces the page to reload if the current page is already at the specified url.
+        /// </summary>
+        public bool Force
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the number of milliseconds to wait before the navigation times out. (Optional, default: 15000)
+        /// </summary>
+        [JsonProperty("millisecondsTimeout", NullValueHandling = NullValueHandling.Ignore)]
+        [DefaultValue(15000)]
+        public int? MillisecondsTimeout
+        {
+            get;
+            set;
         }
 
         /// <summary>
@@ -57,8 +78,11 @@
                 });
             }
 
+            if (MillisecondsTimeout.HasValue == false)
+                MillisecondsTimeout = 15000;
+
             Console.WriteLine($"Navigating to {Url}");
-            await worker.DevTools.Navigate(Url, referrer: Referrer);
+            await worker.DevTools.Navigate(Url, referrer: Referrer, forceNavigate: Force, cancellationToken: worker.CancellationToken, millisecondsTimeout: MillisecondsTimeout.Value);
         }
 
         public override string ToString()
