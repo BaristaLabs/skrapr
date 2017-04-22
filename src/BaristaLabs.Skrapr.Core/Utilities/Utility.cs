@@ -41,7 +41,11 @@
                 {
                     if (Console.KeyAvailable)
                     {
-                        if (Console.ReadKey().Key == keyToWaitFor)
+                        var cki = Console.ReadKey();
+                        if (cki.Key == keyToWaitFor)
+                            return;
+
+                        if ((cki.Modifiers & ConsoleModifiers.Control) != 0 && cki.Key == ConsoleKey.C)
                             return;
                     }
 
@@ -52,7 +56,7 @@
 
                 if (cancelPressed)
                 {
-                    throw new TaskCanceledException("Cancelled by user input.");
+                    throw new TaskCanceledException();
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

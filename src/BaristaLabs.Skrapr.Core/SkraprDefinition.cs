@@ -43,11 +43,11 @@
             set;
         }
 
-        // <summary>
-        /// Gets or sets a collection of urls that will be used as the start point for skraping.
+        /// <summary>
+        /// Gets or sets a collection of Skrapr tasks that will be initially added to the main flow.
         /// </summary>
-        [JsonProperty("startUrls")]
-        public IList<string> StartUrls
+        [JsonProperty("startup", ItemConverterType = typeof(TaskConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public IList<ISkraprTask> Startup
         {
             get;
             set;
@@ -58,6 +58,16 @@
         /// </summary>
         [JsonProperty("rules", ItemConverterType = typeof(RuleConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public IList<ISkraprRule> Rules
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets a collection of Skrapr tasks that will be processed after all tasks on the main flow have completed.
+        /// </summary>
+        [JsonProperty("shutdown", ItemConverterType = typeof(TaskConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public IList<ISkraprTask> Shutdown
         {
             get;
             set;

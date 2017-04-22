@@ -102,7 +102,7 @@
                     if (matchingRuleCount > 0)
                     {
                         logger.LogDebug($"Attach specified and {matchingRuleCount} rules match the current session's state; Continuing.", matchingRuleCount);
-                        worker.AddTask(new NavigateTask
+                        worker.Post(new NavigateTask
                         {
                             Url = targetInfo.Url
                         });
@@ -119,6 +119,7 @@
                     worker.AddStartUrls();
                 }
 
+                Console.TreatControlCAsInput = true;
                 logger.LogDebug("Skrapr is currently processing. Press ENTER to exit...");
 
                 var cancelKeyTokenSource = new CancellationTokenSource();

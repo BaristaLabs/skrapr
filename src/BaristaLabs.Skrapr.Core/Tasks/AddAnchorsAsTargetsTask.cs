@@ -47,7 +47,7 @@
                 var attributes = node.GetAttributes();
                 if (attributes.ContainsKey("href"))
                 {
-                    worker.AddTask(new NavigateTask
+                    worker.Post(new NavigateTask
                     {
                         Url = attributes["href"]
                     });

@@ -1,9 +1,7 @@
 ﻿namespace BaristaLabs.Skrapr
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
-    using BaristaLabs.Skrapr.Definitions;
     using BaristaLabs.Skrapr.Extensions;
-    using BaristaLabs.Skrapr.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -121,12 +119,9 @@
         public void AddStartUrls()
         {
             //Enqueue the start urls associated with the definition.
-            foreach (var url in m_definition.StartUrls)
+            foreach (var task in m_definition.Startup)
             {
-                m_mainFlow.Post(new NavigateTask
-                {
-                    Url = url
-                });
+                m_mainFlow.Post(task);
             }
         }
 
@@ -134,7 +129,7 @@
         /// Adds the specified target to the queue.
         /// </summary>
         /// <param name="target"></param>
-        public void AddTask(ISkraprTask task)
+        public void Post(ISkraprTask task)
         {
             if (task == null)
                 throw new ArgumentNullException(nameof(task));
@@ -142,13 +137,24 @@
             if (m_disposed)
                 return;
 
-            Logger.LogDebug("{functionName} Added task {taskName} to the main flow. ({details})", nameof(AddTask), task.Name, task.ToString());
+            Logger.LogDebug("{functionName} Added task {taskName} to the main flow. ({details})", nameof(Post), task.Name, task.ToString());
             m_mainFlow.Post(task);
         }
 
+        /// <summary>
+        /// Instructs the worker to cancel processing further work.
+        /// </summary>
         public void Cancel()
         {
             m_cts.Cancel();
+        }
+
+        /// <summary>
+        /// Signals the Skrapr Worker that it should not accept any more tasks.
+        /// </summary>
+        public void Complete()
+        {
+            m_mainFlow.Complete();
         }
 
         /// <summary>
@@ -180,6 +186,16 @@
             await ProcessSkraprTask(task, false);
         }
 
+        void IDataflowBlock.Fault(Exception exception)
+        {
+            ((IDataflowBlock)m_mainFlow).Fault(exception);
+        }
+
+        DataflowMessageStatus ITargetBlock<ISkraprTask>.OfferMessage(DataflowMessageHeader messageHeader, ISkraprTask messageValue, ISourceBlock<ISkraprTask> source, bool consumeToAccept)
+        {
+            return ((ITargetBlock<ISkraprTask>)m_mainFlow).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
+        }
+
         /// <summary>
         /// Processes the specified task on the main skrapr flow.
         /// </summary>
@@ -207,11 +223,25 @@
                 throw;
             }
             
-            //If there are no more tasks in the main flow, mark as complete.
+            //If there are no more tasks in the main flow...
             if (m_mainFlow.InputCount == 0)
             {
-                m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessSkraprTask));
-                m_mainFlow.Complete();
+                //and there are no more shutdown tasks, complete.
+                if (m_definition.Shutdown.Count == 0)
+                {
+                    m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessSkraprTask));
+                    m_mainFlow.Complete();
+                }
+                //add any shutdown tasks to the flow.
+                else
+                {
+                    m_logger.LogDebug("{functionName} Adding shutdown tasks to the main flow.", nameof(ProcessSkraprTask));
+                    foreach (var shutdownTask in m_definition.Shutdown)
+                    {
+                        m_mainFlow.Post(shutdownTask);
+                    }
+                    m_definition.Shutdown.Clear();
+                }
             }
         }
 

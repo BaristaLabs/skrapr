@@ -1,7 +1,10 @@
 ﻿{
   "name": "Google",
-  "startUrls": [
-    "https://www.google.com"
+  "startup": [
+    {
+      "name": "Navigate",
+      "url": "http://www.toririchard.com"
+    }
   ],
   "rules": [
     {

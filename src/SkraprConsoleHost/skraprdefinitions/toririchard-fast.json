@@ -1,7 +1,10 @@
 ﻿{
   "name": "Tori Richard Shirts",
-  "startUrls": [
-    "http://www.toririchard.com"
+  "startup": [
+    {
+      "name": "Navigate",
+      "url": "http://www.toririchard.com"
+    }
   ],
   "rules": [
     {

@@ -20,7 +20,7 @@
                 TargetId = worker.DevTools.TargetId,
             });
 
-            worker.AddTask(new NavigateTask
+            worker.Post(new NavigateTask
             {
                 Url = targetInfoResponse.TargetInfo.Url
             });

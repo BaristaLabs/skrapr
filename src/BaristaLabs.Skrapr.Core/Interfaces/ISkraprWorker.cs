@@ -5,11 +5,12 @@
     using Microsoft.Extensions.Logging;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Threading.Tasks.Dataflow;
 
     /// <summary>
     /// Represents a worker that processes a skrapr definition.
     /// </summary>
-    public interface ISkraprWorker
+    public interface ISkraprWorker : ITargetBlock<ISkraprTask>, IDataflowBlock
     {
         /// <summary>
         /// Gets the definition that the worker works on.
@@ -66,7 +67,7 @@
         /// Adds a SkraprTask to the tasks that will be processed by the worker.
         /// </summary>
         /// <param name="target"></param>
-        void AddTask(ISkraprTask task);
+        void Post(ISkraprTask task);
 
         /// <summary>
         /// Instructs the worker to cancel processing further work.
