@@ -14,6 +14,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using System.Threading;
+    using BaristaLabs.Skrapr.Utilities;
 
     class Program
     {
@@ -125,7 +126,7 @@
                 var workerCompletion = worker.Completion
                     .ContinueWith((t) => cancelKeyTokenSource.Cancel());
 
-                var keyCompletion = Utility.ReadKeyAsync(ConsoleKey.Enter, cancelKeyTokenSource.Token)
+                var keyCompletion = ConsoleUtils.ReadKeyAsync(ConsoleKey.Enter, cancelKeyTokenSource.Token)
                     .ContinueWith(async (t) =>
                     {
                         if (!t.IsCanceled)

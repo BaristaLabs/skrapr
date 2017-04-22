@@ -1,4 +1,4 @@
-﻿namespace BaristaLabs.Skrapr
+﻿namespace BaristaLabs.Skrapr.Utilities
 {
     public static class Bezier
     {
@@ -21,17 +21,5 @@
             var P1 = GetBezierPoint(t, controlPoints, index + 1, count - 1);
             return new Point((1 - t) * P0.X + t * P1.X, (1 - t) * P0.Y + t * P1.Y);
         }
-    }
-
-    public class Point
-    {
-        public Point(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public double X;
-        public double Y;
     }
 }

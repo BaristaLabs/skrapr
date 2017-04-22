@@ -1,13 +1,13 @@
-﻿namespace BaristaLabs.Skrapr
+﻿namespace BaristaLabs.Skrapr.Utilities
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Contains various utility methods
+    /// Contains various console related utility methods
     /// </summary>
-    public static class Utility
+    public static class ConsoleUtils
     {
         /// <summary>
         /// Obtains the next character or function key pressed by the user
