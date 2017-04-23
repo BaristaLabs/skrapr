@@ -11,6 +11,7 @@
     using Serilog.Events;
     using Serilog.Formatting.Json;
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -144,6 +145,10 @@
                 if (worker.Completion.IsFaulted)
                 {
                     logger.LogError("Worker was faulted. Exiting with status code of -1");
+                    if (Debugger.IsAttached)
+                    {
+                        throw worker.Completion.Exception.Flatten();
+                    }
                     return -1;
                 }
             }
@@ -173,8 +178,8 @@
                 }
             }
 
-            //Debugger.Break();
             logger.LogInformation("Worker completed successfully. Status code 0");
+            Debugger.Break();
             return 0;
         }
     }

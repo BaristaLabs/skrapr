@@ -1,11 +1,11 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
     using BaristaLabs.Skrapr.Extensions;
+    using BaristaLabs.Skrapr.Utilities;
     using Microsoft.Extensions.Logging;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using Troschuetz.Random;
     using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
 
@@ -14,8 +14,6 @@
     /// </summary>
     public class ClickDomElementTask : SkraprTask, IConditionalExpressionTask
     {
-        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
-
         public override string Name
         {
             get { return "ClickDomElement"; }
@@ -125,7 +123,7 @@
             }
 
             //Click the random point, with a random delay between the down and up mouse events.
-            var clickDelay = s_random.Next(100, 1500);
+            var clickDelay = RandomUtils.Random.Next(100, 1500);
 
             await worker.Session.Input.DispatchMouseEvent(new Input.DispatchMouseEventCommand
             {

@@ -50,11 +50,11 @@
             foreach (var keyEvent in keyEvents)
             {
                 await worker.Session.Input.DispatchKeyEvent(keyEvent, worker.CancellationToken);
-                await Task.Delay(100);
+                await Task.Delay(RandomUtils.Random.Next(5, 50));
 
                 keyEvent.Type = "keyUp";
                 await worker.Session.Input.DispatchKeyEvent(keyEvent, worker.CancellationToken);
-                await Task.Delay(100);
+                await Task.Delay(RandomUtils.Random.Next(50, 150));
             }
         }
     }

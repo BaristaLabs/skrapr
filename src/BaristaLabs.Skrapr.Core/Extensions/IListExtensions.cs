@@ -1,12 +1,10 @@
 ﻿namespace BaristaLabs.Skrapr.Extensions
 {
+    using BaristaLabs.Skrapr.Utilities;
     using System.Collections.Generic;
-    using Troschuetz.Random;
 
     public static class IListExtensions
     {
-        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
-
         /// <summary>
         /// Shuffles the items in the list.
         /// </summary>
@@ -18,7 +16,7 @@
             while (n > 1)
             {
                 n--;
-                int k = s_random.Next(n + 1);
+                int k = RandomUtils.Random.Next(n + 1);
                 T value = list[k];
                 list[k] = list[n];
                 list[n] = value;

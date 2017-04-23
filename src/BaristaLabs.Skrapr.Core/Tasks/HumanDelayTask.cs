@@ -1,17 +1,15 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
+    using BaristaLabs.Skrapr.Utilities;
     using Microsoft.Extensions.Logging;
     using System;
     using System.Threading.Tasks;
-    using Troschuetz.Random;
 
     /// <summary>
     /// Performs a Humanesque delay, moving the mouse and scrolling while waiting.
     /// </summary>
     public class HumanDelayTask : SkraprTask
     {
-        private static TRandom m_random = new TRandom();
-
         public override string Name
         {
             get { return "HumanDelay"; }
@@ -49,7 +47,7 @@
             if (MinDelay > MaxDelay)
                 throw new InvalidOperationException($"MinDelay ({MinDelay}) must be less than MaxDelay ({MaxDelay})");
 
-            var delay = m_random.Next(MinDelay.Value, MaxDelay.Value);
+            var delay = RandomUtils.Random.Next(MinDelay.Value, MaxDelay.Value);
 
             worker.Logger.LogDebug("{taskName} delaying for {delay}ms", Name, delay);
             await Task.Delay(delay, worker.CancellationToken);

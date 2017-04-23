@@ -1,14 +1,10 @@
 ﻿namespace BaristaLabs.Skrapr
 {
+    using BaristaLabs.Skrapr.Utilities;
     using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using Troschuetz.Random;
 
     public class BoundingClientRect
     {
-        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
-
         public double Top
         {
             get;
@@ -55,7 +51,7 @@
 
             if (border == 0)
             {
-                return new Point(s_random.NextDouble(Left, Right), s_random.NextDouble(Top, Bottom));
+                return new Point(RandomUtils.Random.NextDouble(Left, Right), RandomUtils.Random.NextDouble(Top, Bottom));
             }
 
             var boundingBorder = new BoundingClientRect
@@ -100,7 +96,7 @@
                     deltaY = targetRect.Bottom - Bottom;
 
                     // Add a random amount between the target top and the top of the screen
-                    deltaY += s_random.NextDouble(targetRect.Top - Bottom, 0);
+                    deltaY += RandomUtils.Random.NextDouble(targetRect.Top - Bottom, 0);
                     deltaY = Math.Ceiling(deltaY);
                 }
 
@@ -110,7 +106,7 @@
                 {
                     deltaY = targetRect.Top - Top;
 
-                    deltaY  += s_random.NextDouble(0, targetRect.Bottom - Top);
+                    deltaY  += RandomUtils.Random.NextDouble(0, targetRect.Bottom - Top);
                     deltaY = Math.Floor(deltaY);
                 }
             }
@@ -124,7 +120,7 @@
                 { 
                     deltaX = Right - targetRect.Right;
 
-                    deltaX += s_random.NextDouble(targetRect.Left - Top, 0);
+                    deltaX += RandomUtils.Random.NextDouble(targetRect.Left - Top, 0);
                     deltaX = Math.Ceiling(deltaX);
                 }
 
@@ -133,7 +129,7 @@
                 {
                     deltaX = Left - targetRect.Left;
 
-                    deltaX += s_random.NextDouble(0, targetRect.Right - Left);
+                    deltaX += RandomUtils.Random.NextDouble(0, targetRect.Right - Left);
                     deltaX = Math.Floor(deltaX);
                 }
             }

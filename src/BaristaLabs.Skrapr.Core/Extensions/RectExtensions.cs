@@ -1,13 +1,11 @@
 ﻿namespace BaristaLabs.Skrapr.Extensions
 {
+    using BaristaLabs.Skrapr.Utilities;
     using System;
-    using Troschuetz.Random;
     using Dom = ChromeDevTools.DOM;
 
     public static class RectExtensions
     {
-        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
-
         public static Point GetMiddleOfRect(this Dom.Rect rect)
         {
             return new Point(rect.X + (rect.Width / 2), rect.Y + (rect.Height / 2));
@@ -23,7 +21,7 @@
 
             if (border == 0)
             {
-                return new Point(s_random.NextDouble(rect.X, rect.X + rect.Width), s_random.NextDouble(rect.Y, rect.Y + rect.Height));
+                return new Point(RandomUtils.Random.NextDouble(rect.X, rect.X + rect.Width), RandomUtils.Random.NextDouble(rect.Y, rect.Y + rect.Height));
             }
 
             return GetRandomSpotWithinRect(new Dom.Rect

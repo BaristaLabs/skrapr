@@ -2,6 +2,7 @@
 {
     using BaristaLabs.Skrapr.ChromeDevTools;
     using BaristaLabs.Skrapr.Extensions;
+    using BaristaLabs.Skrapr.Utilities;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
@@ -34,7 +35,6 @@
         private readonly ManualResetEventSlim m_frameStoppedLoading = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
         private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
-        private static TRandom s_random = TRandom.New(new Troschuetz.Random.Generators.NR3Generator());
         #endregion
 
         #region Properties
@@ -434,8 +434,8 @@ new Promise(function (resolve, reject) {{
                 if (isHuman)
                 {
                     var scrollPoint = new Point(
-                        s_random.NextUInt(10, (uint)pageDimensions.WindowWidth - 20),
-                        s_random.NextUInt(10, (uint)pageDimensions.WindowHeight - 20)
+                        RandomUtils.Random.NextUInt(10, (uint)pageDimensions.WindowWidth - 20),
+                        RandomUtils.Random.NextUInt(10, (uint)pageDimensions.WindowHeight - 20)
                         );
 
                     var targetInfoResponse = await Session.Input.SynthesizeScrollGesture(new Input.SynthesizeScrollGestureCommand
@@ -444,7 +444,7 @@ new Promise(function (resolve, reject) {{
                         Y = (long)scrollPoint.Y,
                         XDistance = (long)Math.Ceiling(delta.Item1),
                         YDistance = (long)Math.Ceiling(delta.Item2),
-                        Speed = s_random.Next(400, 1200)
+                        Speed = RandomUtils.Random.Next(400, 1200)
                     }, cancellationToken: cancellationToken, millisecondsTimeout: 120000);
                 }
                 else
