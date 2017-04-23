@@ -2,7 +2,7 @@
   "profiles": {
     "SkraprConsoleHost": {
       "commandName": "Project",
-      "commandLineArgs": "--attach --debug \"skraprdefinitions\\\\toririchard.json\""
+      "commandLineArgs": "--attach --debug \"skraprdefinitions\\\\google.json\""
     }
   }
 }

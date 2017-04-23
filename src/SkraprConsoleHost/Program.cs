@@ -3,6 +3,7 @@
     using BaristaLabs.Skrapr;
     using BaristaLabs.Skrapr.Extensions;
     using BaristaLabs.Skrapr.Tasks;
+    using BaristaLabs.Skrapr.Utilities;
     using EntryPoint;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -10,11 +11,11 @@
     using Serilog.Events;
     using Serilog.Formatting.Json;
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Threading.Tasks;
     using System.Threading;
-    using BaristaLabs.Skrapr.Utilities;
+    using System.Threading.Tasks;
 
     class Program
     {
@@ -138,14 +139,12 @@
                         }
 
                     });
-                try
-                {
-                    Task.WaitAll(workerCompletion, keyCompletion);
-                }
-                catch (TaskCanceledException)
-                {
-                    //Do Nothing.
-                }
+
+                Task.WaitAll(workerCompletion, keyCompletion);
+            }
+            catch(TaskCanceledException)
+            {
+                //Do Nothing
             }
             finally
             {
@@ -168,6 +167,8 @@
                     browser = null;
                 }
             }
+
+            Debugger.Break();
         }
     }
 }

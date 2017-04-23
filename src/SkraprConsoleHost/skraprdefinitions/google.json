@@ -3,7 +3,7 @@
   "startup": [
     {
       "name": "Navigate",
-      "url": "http://www.toririchard.com"
+      "url": "https://www.google.com"
     }
   ],
   "rules": [
@@ -12,9 +12,9 @@
       "urlPattern": "^https://www.google.com/?$",
       "tasks": [
         {
-          "name": "HumanTypeTask",
+          "name": "HumanType",
           "selector": "input.gsfi",
-          "text": "Hello, world!{Enter}"
+          "input": "Hello, world{!}{Enter}"
         }
       ]
     }

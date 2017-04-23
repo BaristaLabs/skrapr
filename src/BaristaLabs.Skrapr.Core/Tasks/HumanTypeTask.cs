@@ -1,15 +1,13 @@
 ﻿namespace BaristaLabs.Skrapr.Tasks
 {
-    using System;
+    using BaristaLabs.Skrapr.Extensions;
+    using BaristaLabs.Skrapr.Utilities;
     using System.Threading.Tasks;
+    using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
 
     /// <summary>
     /// Represents a task that types like a human; Slowly, with varing delay between keystrokes and making mistakes.
-    /// </summary>
-
-    /// <summary>
-    /// Represents a task that adds the url of the page to the queue.
     /// </summary>
     public class HumanTypeTask : SkraprTask
     {
@@ -38,9 +36,26 @@
             set;
         }
 
-        public override Task PerformTask(ISkraprWorker worker)
+        public override async Task PerformTask(ISkraprWorker worker)
         {
-            throw new NotImplementedException();
+            var keyEvents = InputUtils.ConvertInputToKeyEvents(Input);
+
+            var nodeId = await worker.Session.DOM.GetNodeIdForSelector(Selector);
+
+            await worker.Session.DOM.Focus(new Dom.FocusCommand
+            {
+                NodeId = nodeId
+            }, worker.CancellationToken);
+
+            foreach (var keyEvent in keyEvents)
+            {
+                await worker.Session.Input.DispatchKeyEvent(keyEvent, worker.CancellationToken);
+                await Task.Delay(100);
+
+                keyEvent.Type = "keyUp";
+                await worker.Session.Input.DispatchKeyEvent(keyEvent, worker.CancellationToken);
+                await Task.Delay(100);
+            }
         }
     }
 }
