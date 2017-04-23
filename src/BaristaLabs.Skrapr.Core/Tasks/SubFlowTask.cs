@@ -41,14 +41,14 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
-            worker.Logger.LogInformation("{taskName} Started processing subtasks.", Name);
+            worker.Logger.LogDebug("{taskName} Started processing subtasks.", Name);
 
             foreach (var task in Tasks)
             {
                 await worker.ProcessSkraprTask(task);
             }
 
-            worker.Logger.LogInformation("{taskName} Completed processing subtasks.", Name);
+            worker.Logger.LogDebug("{taskName} Completed processing subtasks.", Name);
         }
     }
 }

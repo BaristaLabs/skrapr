@@ -22,13 +22,34 @@
 
         private static Input.DispatchKeyEventCommand MapLetterToKeyEvent(string modifier, string letter)
         {
+            ConsoleKey keyCode;
+            switch(letter)
+            {
+                case " ":
+                    keyCode = ConsoleKey.Spacebar;
+                    break;
+                case ",":
+                    keyCode = ConsoleKey.OemComma;
+                    break;
+                default:
+                    keyCode = (ConsoleKey)Enum.Parse(typeof(ConsoleKey), letter.ToUpperInvariant());
+                    break;
+            }
+
             var result = new Input.DispatchKeyEventCommand
             {
                 Modifiers = GetModifier(modifier),
                 Text = letter,
+                //Key = letter,
+                NativeVirtualKeyCode = (long)keyCode,
+                WindowsVirtualKeyCode = (long)keyCode,
                 Type = "keyDown",
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds(),
             };
+
+            if (result.Modifiers.HasValue && result.Modifiers.Value == 8)
+                result.Text = result.Text.ToUpperInvariant();
+
             return result;
         }
 

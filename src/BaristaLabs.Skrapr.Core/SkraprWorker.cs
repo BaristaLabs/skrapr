@@ -183,87 +183,6 @@
         /// <returns></returns>
         public async Task ProcessSkraprTask(ISkraprTask task)
         {
-            await ProcessSkraprTask(task, false);
-        }
-
-        void IDataflowBlock.Fault(Exception exception)
-        {
-            ((IDataflowBlock)m_mainFlow).Fault(exception);
-        }
-
-        DataflowMessageStatus ITargetBlock<ISkraprTask>.OfferMessage(DataflowMessageHeader messageHeader, ISkraprTask messageValue, ISourceBlock<ISkraprTask> source, bool consumeToAccept)
-        {
-            return ((ITargetBlock<ISkraprTask>)m_mainFlow).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
-        }
-
-        /// <summary>
-        /// Processes the specified task on the main skrapr flow.
-        /// </summary>
-        /// <param name="task"></param>
-        /// <returns></returns>
-        private async Task ProcessMainSkraprTask(ISkraprTask task)
-        {
-            try
-            {
-                await ProcessSkraprTask(task, true);
-            }
-            catch (Exception ex) when (ex is AssertionFailedException || ex is NavigationFailedException)
-            {
-                //Add it back into the queue.
-                m_mainFlow.Post(task);
-            }
-            catch (Exception ex) when (ex is OperationCanceledException || ex is TaskCanceledException)
-            {
-                m_logger.LogWarning("{functionName} is terminating due to a cancellation request.", nameof(ProcessSkraprRule));
-                throw;
-            }
-            catch (Exception ex)
-            {
-                m_logger.LogError("{functionName} An unhandled error occurred while performing task {taskName} on frame {frameId}: {exception}", nameof(ProcessSkraprRule), task.Name, DevTools.CurrentFrameId, ex);
-                throw;
-            }
-            
-            //If there are no more tasks in the main flow...
-            if (m_mainFlow.InputCount == 0)
-            {
-                //and there are no more shutdown tasks, complete.
-                if (m_definition.Shutdown.Count == 0)
-                {
-                    m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessSkraprTask));
-                    m_mainFlow.Complete();
-                }
-                //add any shutdown tasks to the flow.
-                else
-                {
-                    m_logger.LogDebug("{functionName} Adding shutdown tasks to the main flow.", nameof(ProcessSkraprTask));
-                    foreach (var shutdownTask in m_definition.Shutdown)
-                    {
-                        m_mainFlow.Post(shutdownTask);
-                    }
-                    m_definition.Shutdown.Clear();
-                }
-            }
-        }
-
-        private async Task ProcessSkraprRule(ISkraprRule rule)
-        {
-            if (rule == null)
-                throw new ArgumentNullException(nameof(rule));
-
-            foreach(var task in rule.Tasks)
-            {
-                await ProcessSkraprTask(task);
-            }
-        }
-
-        /// <summary>
-        /// Processes the specified ISkraprTask
-        /// </summary>
-        /// <param name="task"></param>
-        /// <param name="processRules"></param>
-        /// <returns></returns>
-        private async Task ProcessSkraprTask(ISkraprTask task, bool processRules = false)
-        {
             if (CancellationToken.IsCancellationRequested)
             {
                 m_logger.LogDebug("{functionName} Cancellation requested. Skipping task {taskName}", nameof(ProcessSkraprTask), task.Name);
@@ -293,23 +212,84 @@
             //Perform the task
             await task.PerformTask(this);
 
-            if (processRules == true)
-            {
-                //Get matching rules for the state of the session.
-                var matchingRules = await GetMatchingRules();
-                foreach (var rule in matchingRules)
-                {
-                    m_logger.LogDebug("{functionName} Found rule that matches current frame state: ({ruleType} - {details})", nameof(ProcessSkraprTask), rule.Type, rule.ToString());
-                    await ProcessSkraprRule(rule);
-                }
+            m_logger.LogDebug("{functionName} Completed task {taskName}", nameof(ProcessSkraprTask), task.Name);
+        }
 
-                if (matchingRules.Count() == 0)
-                {
-                    m_logger.LogError("{functionName} A rule was not found that matches the current frame state for task {taskName}: ({details})", nameof(ProcessSkraprTask), task.Name, task.ToString());
-                }
+        void IDataflowBlock.Fault(Exception exception)
+        {
+            ((IDataflowBlock)m_mainFlow).Fault(exception);
+        }
+
+        DataflowMessageStatus ITargetBlock<ISkraprTask>.OfferMessage(DataflowMessageHeader messageHeader, ISkraprTask messageValue, ISourceBlock<ISkraprTask> source, bool consumeToAccept)
+        {
+            return ((ITargetBlock<ISkraprTask>)m_mainFlow).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
+        }
+
+        /// <summary>
+        /// Processes the specified task on the main skrapr flow.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        private async Task ProcessMainSkraprTask(ISkraprTask task)
+        {
+            try
+            {
+                await ProcessSkraprTask(task);
+            }
+            catch (Exception ex) when (ex is AssertionFailedException || ex is NavigationFailedException)
+            {
+                //Add it back into the queue.
+                m_mainFlow.Post(task);
+            }
+            catch (Exception ex) when (ex is OperationCanceledException || ex is TaskCanceledException)
+            {
+                m_logger.LogWarning("{functionName} is terminating due to a cancellation request.", nameof(ProcessMainSkraprTask));
+                throw;
+            }
+            catch (Exception ex)
+            {
+                m_logger.LogError("{functionName} An unhandled error occurred while performing task {taskName} on frame {frameId}: {exception}", nameof(ProcessMainSkraprTask), task.Name, DevTools.CurrentFrameId, ex);
+                throw;
             }
 
-            m_logger.LogDebug("{functionName} Completed task {taskName}", nameof(ProcessSkraprTask), task.Name);
+            //Get matching rules for the state of the session.
+            var matchingRules = await GetMatchingRules();
+            foreach (var rule in matchingRules)
+            {
+                m_logger.LogDebug("{functionName} Found rule that matches current frame state: ({ruleType} - {details})", nameof(ProcessSkraprTask), rule.Type, rule.ToString());
+                var ruleSubflow = new Tasks.SubFlowTask()
+                {
+                    Tasks = rule.Tasks
+                };
+
+                Post(ruleSubflow);
+            }
+
+            if (matchingRules.Count() == 0)
+            {
+                m_logger.LogDebug("{functionName} A rule was not found that matches the current frame state for task {taskName}: ({details})", nameof(ProcessSkraprTask), task.Name, task.ToString());
+            }
+
+            //If there are no more tasks in the main flow...
+            if (m_mainFlow.InputCount == 0)
+            {
+                //and there are no more shutdown tasks, complete.
+                if (m_definition.Shutdown == null || m_definition.Shutdown.Count == 0)
+                {
+                    m_logger.LogDebug("{functionName} Completed processing all tasks in the main flow. Completing.", nameof(ProcessSkraprTask));
+                    m_mainFlow.Complete();
+                }
+                //add any shutdown tasks to the flow.
+                else
+                {
+                    m_logger.LogDebug("{functionName} Adding shutdown tasks to the main flow.", nameof(ProcessSkraprTask));
+                    foreach (var shutdownTask in m_definition.Shutdown)
+                    {
+                        m_mainFlow.Post(shutdownTask);
+                    }
+                    m_definition.Shutdown.Clear();
+                }
+            }
         }
 
         #region IDisposable

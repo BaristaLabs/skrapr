@@ -81,7 +81,6 @@
             if (MillisecondsTimeout.HasValue == false)
                 MillisecondsTimeout = 15000;
 
-            Console.WriteLine($"Navigating to {Url}");
             await worker.DevTools.Navigate(Url, referrer: Referrer, forceNavigate: Force, cancellationToken: worker.CancellationToken, millisecondsTimeout: MillisecondsTimeout.Value);
         }
 
