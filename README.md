@@ -1,7 +1,7 @@
 Skrapr
 ---
 
-Declarative browser automation.
+Declarative browser automation. Make the web your source of structured data. Perform automated tasks on sites that don't provide an api.
 
 ### [View the Documentation](https://github.com/BaristaLabs/skrapr/wiki)
 
