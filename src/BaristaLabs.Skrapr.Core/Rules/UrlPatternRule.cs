@@ -1,8 +1,6 @@
 ﻿namespace BaristaLabs.Skrapr.Rules
 {
-    using BaristaLabs.Skrapr.Converters;
     using Newtonsoft.Json;
-    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
@@ -10,10 +8,10 @@
     /// <summary>
     /// Represents a rule that contains tasks that are run when the current frame matches a url pattern.
     /// </summary>
-    public class UrlPatternRule : ISkraprRule
+    public class UrlPatternRule : SkraprRule
     {
         [JsonProperty("type")]
-        public string Type
+        public override string Type
         {
             get { return "UrlPattern"; }
         }
@@ -39,14 +37,7 @@
             set;
         }
 
-        [JsonProperty("tasks", ItemConverterType = typeof(TaskConverter), DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public IList<ISkraprTask> Tasks
-        {
-            get;
-            set;
-        }
-
-        public Task<bool> IsMatch(SkraprFrameState frameState)
+        public override Task<bool> IsMatch(SkraprFrameState frameState)
         {
             return Task.FromResult(Regex.IsMatch(frameState.Url, UrlPattern, RegexOptions.IgnoreCase));
         }

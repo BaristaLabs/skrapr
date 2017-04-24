@@ -2,6 +2,8 @@
 {
     using BaristaLabs.Skrapr.Extensions;
     using BaristaLabs.Skrapr.Utilities;
+    using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Dom = ChromeDevTools.DOM;
     using Input = ChromeDevTools.Input;
@@ -40,12 +42,15 @@
         {
             var keyEvents = InputUtils.ConvertInputToKeyEvents(Input);
 
+            if (keyEvents.Count() == 0)
+                throw new InvalidOperationException($"No keyevents were found in input: {Input}");
+
             var nodeId = await worker.Session.DOM.GetNodeIdForSelector(Selector);
 
             await worker.Session.DOM.Focus(new Dom.FocusCommand
             {
                 NodeId = nodeId
-            }, worker.CancellationToken);
+            }, worker.CancellationToken);           
 
             foreach (var keyEvent in keyEvents)
             {

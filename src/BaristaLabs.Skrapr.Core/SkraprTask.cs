@@ -3,7 +3,7 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Represents an abstract implementation of the ITask interface.
+    /// Represents an abstract implementation of the ISkraprTask interface.
     /// </summary>
     public abstract class SkraprTask : ISkraprTask
     {

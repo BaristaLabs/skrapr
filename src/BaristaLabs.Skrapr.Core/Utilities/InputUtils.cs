@@ -20,16 +20,73 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// Tester here: https://css-tricks.com/snippets/javascript/javascript-keycodes/
+        /// </remarks>
+        /// <param name="modifier"></param>
+        /// <param name="letter"></param>
+        /// <returns></returns>
         private static Input.DispatchKeyEventCommand MapLetterToKeyEvent(string modifier, string letter)
         {
-            ConsoleKey keyCode;
-            switch(letter)
+            ConsoleKey? keyCode;
+            switch (letter)
             {
+                case "\b":
+                    keyCode = ConsoleKey.Backspace;
+                    break;
+                case "\t":
+                    keyCode = ConsoleKey.Tab;
+                    break;
+                case "0":
+                    keyCode = ConsoleKey.D0;
+                    break;
+                case "1":
+                    keyCode = ConsoleKey.D1;
+                    break;
+                case "2":
+                    keyCode = ConsoleKey.D2;
+                    break;
+                case "3":
+                    keyCode = ConsoleKey.D3;
+                    break;
+                case "4":
+                    keyCode = ConsoleKey.D4;
+                    break;
+                case "5":
+                    keyCode = ConsoleKey.D5;
+                    break;
+                case "6":
+                    keyCode = ConsoleKey.D6;
+                    break;
+                case "7":
+                    keyCode = ConsoleKey.D7;
+                    break;
+                case "8":
+                    keyCode = ConsoleKey.D8;
+                    break;
+                case "9":
+                    keyCode = ConsoleKey.D9;
+                    break;
                 case " ":
                     keyCode = ConsoleKey.Spacebar;
                     break;
                 case ",":
                     keyCode = ConsoleKey.OemComma;
+                    break;
+                case ".":
+                    keyCode = ConsoleKey.OemPeriod;
+                    break;
+                case ":":
+                    keyCode = ConsoleKey.Oem1; //186
+                    break;
+                case "/":
+                    keyCode = ConsoleKey.Oem2;
+                    break;
+                case "`":
+                    keyCode = ConsoleKey.Oem3;
                     break;
                 default:
                     keyCode = (ConsoleKey)Enum.Parse(typeof(ConsoleKey), letter.ToUpperInvariant());
@@ -41,8 +98,8 @@
                 Modifiers = GetModifier(modifier),
                 Text = letter,
                 //Key = letter,
-                NativeVirtualKeyCode = (long)keyCode,
-                WindowsVirtualKeyCode = (long)keyCode,
+                NativeVirtualKeyCode = (long)(keyCode ?? 0),
+                WindowsVirtualKeyCode = (long)(keyCode ?? 0),
                 Type = "keyDown",
                 Timestamp = DateTimeOffset.Now.ToUniversalTime().ToUnixTimeSeconds(),
             };

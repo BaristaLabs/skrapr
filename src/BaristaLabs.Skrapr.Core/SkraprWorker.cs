@@ -166,7 +166,10 @@
             var frameState = await DevTools.GetCurrentFrameState();
             var matchingRules = new List<ISkraprRule>();
 
-            foreach(var rule in Definition.Rules)
+            var availableRules = Definition.Rules
+                .Where(r => r.Max.HasValue == false || r.Max.Value > 0);
+
+            foreach(var rule in availableRules)
             {
                 var ruleResult = await rule.IsMatch(frameState);
                 if (ruleResult == true)
@@ -263,6 +266,8 @@
                 };
 
                 Post(ruleSubflow);
+                if (rule.Max.HasValue)
+                    rule.Max -= 1;
             }
 
             if (matchingRules.Count() == 0)
