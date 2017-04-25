@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// URL to block.
         /// </summary>
-        
         [JsonProperty("url")]
         public string Url
         {
             get;
             set;
         }
-    
     }
 
     public sealed class AddBlockedURLCommandResponse : ICommandResponse<AddBlockedURLCommand>
     {
-    
     }
 }

@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
     /// </summary>
     public sealed class SamplingHeapProfile
     {
-    
         /// <summary>
         /// 
         ///</summary>
@@ -17,6 +16,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
             get;
             set;
         }
-    
     }
 }

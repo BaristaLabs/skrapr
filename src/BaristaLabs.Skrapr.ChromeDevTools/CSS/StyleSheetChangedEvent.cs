@@ -7,18 +7,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class StyleSheetChangedEvent : IEvent
     {
-    
-        
         /// <summary>
         /// Gets or sets the styleSheetId
         /// </summary>
-        
         [JsonProperty("styleSheetId")]
         public string StyleSheetId
         {
             get;
             set;
         }
-    
     }
 }

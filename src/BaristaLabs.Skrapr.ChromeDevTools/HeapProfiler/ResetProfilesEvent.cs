@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
     /// </summary>
     public sealed class ResetProfilesEvent : IEvent
     {
-    
     }
 }

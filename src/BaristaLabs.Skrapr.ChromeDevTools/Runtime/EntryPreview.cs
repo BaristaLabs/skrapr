@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
     /// </summary>
     public sealed class EntryPreview
     {
-    
         /// <summary>
         /// Preview of the key. Specified for map-like collection entries.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
         /// <summary>
         /// Preview of the value.
         ///</summary>
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
     }
 }

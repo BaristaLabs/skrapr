@@ -7,18 +7,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
     /// </summary>
     public sealed class ExecutionContextDestroyedEvent : IEvent
     {
-    
-        
         /// <summary>
         /// Id of the destroyed context
         /// </summary>
-        
         [JsonProperty("executionContextId")]
         public long ExecutionContextId
         {
             get;
             set;
         }
-    
     }
 }

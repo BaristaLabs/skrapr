@@ -10,24 +10,17 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
     [JsonConverter(typeof(StringEnumConverter))]
     public enum AXValueSourceType
     {
-    
         [EnumMember(Value = "attribute")]
         Attribute,
-    
         [EnumMember(Value = "implicit")]
         Implicit,
-    
         [EnumMember(Value = "style")]
         Style,
-    
         [EnumMember(Value = "contents")]
         Contents,
-    
         [EnumMember(Value = "placeholder")]
         Placeholder,
-    
         [EnumMember(Value = "relatedElement")]
         RelatedElement,
-    
     }
 }

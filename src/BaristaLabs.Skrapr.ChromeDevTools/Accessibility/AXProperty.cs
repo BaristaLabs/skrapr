@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
     /// </summary>
     public sealed class AXProperty
     {
-    
         /// <summary>
         /// The name of this property.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
             get;
             set;
         }
-    
         /// <summary>
         /// The value of this property.
         ///</summary>
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
             get;
             set;
         }
-    
     }
 }

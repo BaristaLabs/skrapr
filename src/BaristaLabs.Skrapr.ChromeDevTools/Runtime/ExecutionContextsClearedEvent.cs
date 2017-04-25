@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
     /// </summary>
     public sealed class ExecutionContextsClearedEvent : IEvent
     {
-    
     }
 }

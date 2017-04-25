@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CacheStorage
     /// </summary>
     public sealed class DataEntry
     {
-    
         /// <summary>
         /// Request url spec.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CacheStorage
             get;
             set;
         }
-    
         /// <summary>
         /// Response stataus text.
         ///</summary>
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CacheStorage
             get;
             set;
         }
-    
     }
 }

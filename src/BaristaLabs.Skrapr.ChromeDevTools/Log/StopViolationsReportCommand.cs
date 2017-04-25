@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Log
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class StopViolationsReportCommandResponse : ICommandResponse<StopViolationsReportCommand>
     {
-    
     }
 }

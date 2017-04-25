@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class CSSKeyframeRule
     {
-    
         /// <summary>
         /// The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// Parent stylesheet's origin.
         ///</summary>
@@ -27,7 +25,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// Associated key text.
         ///</summary>
@@ -37,7 +34,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// Associated style declaration.
         ///</summary>
@@ -47,6 +43,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
     }
 }

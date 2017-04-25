@@ -3,7 +3,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.
+    /// Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the &lt;code&gt;cookies&lt;/code&gt; field.
     /// </summary>
     public sealed class GetCookiesCommand : ICommand
     {
@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class GetCookiesCommandResponse : ICommandResponse<GetCookiesCommand>
     {
-    
-        
         /// <summary>
         /// Array of cookie objects.
         ///</summary>
-        
         [JsonProperty("cookies")]
         public Network.Cookie[] Cookies
         {
             get;
             set;
         }
-    
     }
 }

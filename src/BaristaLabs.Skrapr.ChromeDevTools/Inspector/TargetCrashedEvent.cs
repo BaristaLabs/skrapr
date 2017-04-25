@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Inspector
     /// </summary>
     public sealed class TargetCrashedEvent : IEvent
     {
-    
     }
 }

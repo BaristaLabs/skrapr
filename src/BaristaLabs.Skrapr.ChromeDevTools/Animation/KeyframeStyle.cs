@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
     /// </summary>
     public sealed class KeyframeStyle
     {
-    
         /// <summary>
         /// Keyframe's time offset.
         ///</summary>
@@ -17,9 +16,8 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
             get;
             set;
         }
-    
         /// <summary>
-        /// <code>AnimationEffect</code>'s timing function.
+        /// &lt;code&gt;AnimationEffect&lt;/code&gt;'s timing function.
         ///</summary>
         [JsonProperty("easing")]
         public string Easing
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
             get;
             set;
         }
-    
     }
 }

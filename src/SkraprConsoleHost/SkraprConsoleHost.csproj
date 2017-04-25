@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="data\**" />
+    <EmbeddedResource Remove="data\**" />
+    <None Remove="data\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EntryPoint" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.1" />
@@ -20,10 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\BaristaLabs.Skrapr.ChromeDevTools\BaristaLabs.Skrapr.ChromeDevTools.csproj" />
     <ProjectReference Include="..\BaristaLabs.Skrapr.Core\BaristaLabs.Skrapr.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="data\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

@@ -7,18 +7,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.ServiceWorker
     /// </summary>
     public sealed class WorkerVersionUpdatedEvent : IEvent
     {
-    
-        
         /// <summary>
         /// Gets or sets the versions
         /// </summary>
-        
         [JsonProperty("versions")]
         public ServiceWorkerVersion[] Versions
         {
             get;
             set;
         }
-    
     }
 }

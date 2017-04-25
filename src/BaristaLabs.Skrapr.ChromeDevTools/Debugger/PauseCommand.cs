@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class PauseCommandResponse : ICommandResponse<PauseCommand>
     {
-    
     }
 }

@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class ClearDeviceOrientationOverrideCommandResponse : ICommandResponse<ClearDeviceOrientationOverrideCommand>
     {
-    
     }
 }

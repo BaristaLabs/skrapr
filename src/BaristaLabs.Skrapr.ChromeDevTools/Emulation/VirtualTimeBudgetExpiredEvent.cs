@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
     /// </summary>
     public sealed class VirtualTimeBudgetExpiredEvent : IEvent
     {
-    
     }
 }

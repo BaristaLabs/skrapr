@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Gets or sets the identifier
         /// </summary>
-        
         [JsonProperty("identifier")]
         public string Identifier
         {
             get;
             set;
         }
-    
     }
 
     public sealed class RemoveScriptToEvaluateOnLoadCommandResponse : ICommandResponse<RemoveScriptToEvaluateOnLoadCommand>
     {
-    
     }
 }

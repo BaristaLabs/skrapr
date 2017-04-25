@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class RedoCommandResponse : ICommandResponse<RedoCommand>
     {
-    
     }
 }

@@ -7,18 +7,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
     /// </summary>
     public sealed class FrameNavigatedEvent : IEvent
     {
-    
-        
         /// <summary>
         /// Frame object.
         /// </summary>
-        
         [JsonProperty("frame")]
         public Frame Frame
         {
             get;
             set;
         }
-    
     }
 }

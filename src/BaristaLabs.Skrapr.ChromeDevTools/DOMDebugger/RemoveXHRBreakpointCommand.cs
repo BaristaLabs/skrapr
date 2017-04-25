@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOMDebugger
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Resource URL substring.
         /// </summary>
-        
         [JsonProperty("url")]
         public string Url
         {
             get;
             set;
         }
-    
     }
 
     public sealed class RemoveXHRBreakpointCommandResponse : ICommandResponse<RemoveXHRBreakpointCommand>
     {
-    
     }
 }

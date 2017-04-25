@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class SourceRange
     {
-    
         /// <summary>
         /// Start line of range.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// Start column of range (inclusive).
         ///</summary>
@@ -27,7 +25,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// End line of range
         ///</summary>
@@ -37,7 +34,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// End column of range (exclusive).
         ///</summary>
@@ -47,6 +43,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
     }
 }

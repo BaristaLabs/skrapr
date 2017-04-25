@@ -10,18 +10,13 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
     [JsonConverter(typeof(StringEnumConverter))]
     public enum UnserializableValue
     {
-    
         [EnumMember(Value = "Infinity")]
         Infinity,
-    
         [EnumMember(Value = "NaN")]
         NaN,
-    
         [EnumMember(Value = "-Infinity")]
         NegativeInfinity,
-    
         [EnumMember(Value = "-0")]
         Negative0,
-    
     }
 }

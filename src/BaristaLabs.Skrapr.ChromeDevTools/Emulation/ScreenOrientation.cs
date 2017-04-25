@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
     /// </summary>
     public sealed class ScreenOrientation
     {
-    
         /// <summary>
         /// Orientation type.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
             get;
             set;
         }
-    
         /// <summary>
         /// Orientation angle.
         ///</summary>
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
             get;
             set;
         }
-    
     }
 }

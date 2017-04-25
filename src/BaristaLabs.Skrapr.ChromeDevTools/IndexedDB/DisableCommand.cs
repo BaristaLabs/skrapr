@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IndexedDB
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class DisableCommandResponse : ICommandResponse<DisableCommand>
     {
-    
     }
 }

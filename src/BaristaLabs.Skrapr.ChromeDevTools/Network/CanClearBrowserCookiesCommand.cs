@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class CanClearBrowserCookiesCommandResponse : ICommandResponse<CanClearBrowserCookiesCommand>
     {
-    
-        
         /// <summary>
         /// True if browser cookies can be cleared.
         ///</summary>
-        
         [JsonProperty("result")]
         public bool Result
         {
             get;
             set;
         }
-    
     }
 }

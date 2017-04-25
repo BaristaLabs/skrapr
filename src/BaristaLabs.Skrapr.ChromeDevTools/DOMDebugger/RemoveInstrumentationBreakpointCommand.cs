@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOMDebugger
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Instrumentation name to stop on.
         /// </summary>
-        
         [JsonProperty("eventName")]
         public string EventName
         {
             get;
             set;
         }
-    
     }
 
     public sealed class RemoveInstrumentationBreakpointCommandResponse : ICommandResponse<RemoveInstrumentationBreakpointCommand>
     {
-    
     }
 }

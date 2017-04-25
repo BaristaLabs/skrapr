@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class ClearDeviceMetricsOverrideCommandResponse : ICommandResponse<ClearDeviceMetricsOverrideCommand>
     {
-    
     }
 }

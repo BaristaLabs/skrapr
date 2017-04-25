@@ -15,35 +15,27 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Tracing
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class RequestMemoryDumpCommandResponse : ICommandResponse<RequestMemoryDumpCommand>
     {
-    
-        
         /// <summary>
         /// GUID of the resulting global memory dump.
         ///</summary>
-        
         [JsonProperty("dumpGuid")]
         public string DumpGuid
         {
             get;
             set;
         }
-    
-        
         /// <summary>
         /// True iff the global memory dump succeeded.
         ///</summary>
-        
         [JsonProperty("success")]
         public bool Success
         {
             get;
             set;
         }
-    
     }
 }

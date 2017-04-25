@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class RuleMatch
     {
-    
         /// <summary>
         /// CSS rule in the match.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// Matching selector indices in the rule's selectorList selectors (0-based).
         ///</summary>
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
     }
 }

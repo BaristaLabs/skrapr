@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Page
     /// </summary>
     public sealed class InterstitialShownEvent : IEvent
     {
-    
     }
 }

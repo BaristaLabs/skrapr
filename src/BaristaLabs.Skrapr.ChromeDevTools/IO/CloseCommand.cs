@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.IO
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Handle of the stream to close.
         /// </summary>
-        
         [JsonProperty("handle")]
         public string Handle
         {
             get;
             set;
         }
-    
     }
 
     public sealed class CloseCommandResponse : ICommandResponse<CloseCommand>
     {
-    
     }
 }

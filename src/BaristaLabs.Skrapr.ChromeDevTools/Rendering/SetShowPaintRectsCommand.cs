@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Rendering
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// True for showing paint rectangles
         /// </summary>
-        
         [JsonProperty("result")]
         public bool Result
         {
             get;
             set;
         }
-    
     }
 
     public sealed class SetShowPaintRectsCommandResponse : ICommandResponse<SetShowPaintRectsCommand>
     {
-    
     }
 }

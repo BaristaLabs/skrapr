@@ -24,7 +24,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Security
             get { return m_session; }
         }
 
-    
         /// <summary>
         /// Enables tracking security state changes.
         /// </summary>
@@ -32,7 +31,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Security
         {
             return await m_session.SendCommand<EnableCommand, EnableCommandResponse>(command, cancellationToken, millisecondsTimeout, throwExceptionIfResponseNotReceived);
         }
-    
         /// <summary>
         /// Disables tracking security state changes.
         /// </summary>
@@ -40,7 +38,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Security
         {
             return await m_session.SendCommand<DisableCommand, DisableCommandResponse>(command, cancellationToken, millisecondsTimeout, throwExceptionIfResponseNotReceived);
         }
-    
         /// <summary>
         /// Displays native dialog with the certificate details.
         /// </summary>
@@ -48,9 +45,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Security
         {
             return await m_session.SendCommand<ShowCertificateViewerCommand, ShowCertificateViewerCommandResponse>(command, cancellationToken, millisecondsTimeout, throwExceptionIfResponseNotReceived);
         }
-    
 
-    
         /// <summary>
         /// The security state of the page changed.
         /// </summary>
@@ -58,6 +53,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Security
         {
             m_session.Subscribe(eventCallback);
         }
-    
     }
 }

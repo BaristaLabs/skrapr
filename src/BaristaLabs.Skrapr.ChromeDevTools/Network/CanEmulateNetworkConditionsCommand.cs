@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class CanEmulateNetworkConditionsCommandResponse : ICommandResponse<CanEmulateNetworkConditionsCommand>
     {
-    
-        
         /// <summary>
         /// True if emulation of network conditions is supported.
         ///</summary>
-        
         [JsonProperty("result")]
         public bool Result
         {
             get;
             set;
         }
-    
     }
 }

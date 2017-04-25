@@ -3,7 +3,7 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is <code>none</code>.
+    /// Defines pause on exceptions state. Can be set to stop on all exceptions, uncaught exceptions or no exceptions. Initial pause on exceptions state is &lt;code&gt;none&lt;/code&gt;.
     /// </summary>
     public sealed class SetPauseOnExceptionsCommand : ICommand
     {
@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Pause on exceptions mode.
         /// </summary>
-        
         [JsonProperty("state")]
         public string State
         {
             get;
             set;
         }
-    
     }
 
     public sealed class SetPauseOnExceptionsCommandResponse : ICommandResponse<SetPauseOnExceptionsCommand>
     {
-    
     }
 }

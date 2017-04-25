@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
     /// </summary>
     public sealed class WebSocketRequest
     {
-    
         /// <summary>
         /// HTTP request headers.
         ///</summary>
@@ -17,6 +16,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
             get;
             set;
         }
-    
     }
 }

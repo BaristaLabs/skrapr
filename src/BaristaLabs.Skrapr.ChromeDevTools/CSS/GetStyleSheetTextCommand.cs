@@ -15,35 +15,27 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Gets or sets the styleSheetId
         /// </summary>
-        
         [JsonProperty("styleSheetId")]
         public string StyleSheetId
         {
             get;
             set;
         }
-    
     }
 
     public sealed class GetStyleSheetTextCommandResponse : ICommandResponse<GetStyleSheetTextCommand>
     {
-    
-        
         /// <summary>
         /// The stylesheet text.
         ///</summary>
-        
         [JsonProperty("text")]
         public string Text
         {
             get;
             set;
         }
-    
     }
 }

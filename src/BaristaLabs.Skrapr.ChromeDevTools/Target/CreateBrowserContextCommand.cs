@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class CreateBrowserContextCommandResponse : ICommandResponse<CreateBrowserContextCommand>
     {
-    
-        
         /// <summary>
         /// The id of the context created.
         ///</summary>
-        
         [JsonProperty("browserContextId")]
         public string BrowserContextId
         {
             get;
             set;
         }
-    
     }
 }

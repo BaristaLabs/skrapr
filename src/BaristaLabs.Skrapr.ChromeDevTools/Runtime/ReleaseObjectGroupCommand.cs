@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Symbolic object group name.
         /// </summary>
-        
         [JsonProperty("objectGroup")]
         public string ObjectGroup
         {
             get;
             set;
         }
-    
     }
 
     public sealed class ReleaseObjectGroupCommandResponse : ICommandResponse<ReleaseObjectGroupCommand>
     {
-    
     }
 }

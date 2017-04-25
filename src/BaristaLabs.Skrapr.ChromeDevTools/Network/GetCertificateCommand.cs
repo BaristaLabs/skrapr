@@ -15,35 +15,27 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Origin to get certificate for.
         /// </summary>
-        
         [JsonProperty("origin")]
         public string Origin
         {
             get;
             set;
         }
-    
     }
 
     public sealed class GetCertificateCommandResponse : ICommandResponse<GetCertificateCommand>
     {
-    
-        
         /// <summary>
         /// Gets or sets the tableNames
         /// </summary>
-        
         [JsonProperty("tableNames")]
         public string[] TableNames
         {
             get;
             set;
         }
-    
     }
 }

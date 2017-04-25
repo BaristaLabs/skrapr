@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class CSSKeyframesRule
     {
-    
         /// <summary>
         /// Animation name.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// List of keyframes.
         ///</summary>
@@ -27,6 +25,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
     }
 }

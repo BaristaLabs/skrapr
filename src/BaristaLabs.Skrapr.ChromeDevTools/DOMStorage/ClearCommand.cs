@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOMStorage
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Gets or sets the storageId
         /// </summary>
-        
         [JsonProperty("storageId")]
         public StorageId StorageId
         {
             get;
             set;
         }
-    
     }
 
     public sealed class ClearCommandResponse : ICommandResponse<ClearCommand>
     {
-    
     }
 }

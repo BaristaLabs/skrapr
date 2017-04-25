@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Emulation
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Page scale factor.
         /// </summary>
-        
         [JsonProperty("pageScaleFactor")]
         public double PageScaleFactor
         {
             get;
             set;
         }
-    
     }
 
     public sealed class SetPageScaleFactorCommandResponse : ICommandResponse<SetPageScaleFactorCommand>
     {
-    
     }
 }

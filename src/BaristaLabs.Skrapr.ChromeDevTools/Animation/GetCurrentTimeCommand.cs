@@ -15,35 +15,27 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Id of animation.
         /// </summary>
-        
         [JsonProperty("id")]
         public string Id
         {
             get;
             set;
         }
-    
     }
 
     public sealed class GetCurrentTimeCommandResponse : ICommandResponse<GetCurrentTimeCommand>
     {
-    
-        
         /// <summary>
         /// Current time of the page.
         ///</summary>
-        
         [JsonProperty("currentTime")]
         public double CurrentTime
         {
             get;
             set;
         }
-    
     }
 }

@@ -24,7 +24,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Schema
             get { return m_session; }
         }
 
-    
         /// <summary>
         /// Returns supported domains.
         /// </summary>
@@ -32,8 +31,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Schema
         {
             return await m_session.SendCommand<GetDomainsCommand, GetDomainsCommandResponse>(command, cancellationToken, millisecondsTimeout, throwExceptionIfResponseNotReceived);
         }
-    
 
-    
     }
 }

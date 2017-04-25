@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
     /// </summary>
     public sealed class CustomPreview
     {
-    
         /// <summary>
         /// 
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
         /// <summary>
         /// 
         ///</summary>
@@ -27,7 +25,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
         /// <summary>
         /// 
         ///</summary>
@@ -37,7 +34,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
         /// <summary>
         /// 
         ///</summary>
@@ -47,7 +43,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
         /// <summary>
         /// 
         ///</summary>
@@ -57,6 +52,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get;
             set;
         }
-    
     }
 }

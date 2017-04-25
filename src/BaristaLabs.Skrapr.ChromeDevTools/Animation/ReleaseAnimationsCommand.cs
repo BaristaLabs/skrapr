@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Animation
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// List of animation ids to seek.
         /// </summary>
-        
         [JsonProperty("animations")]
         public string[] Animations
         {
             get;
             set;
         }
-    
     }
 
     public sealed class ReleaseAnimationsCommandResponse : ICommandResponse<ReleaseAnimationsCommand>
     {
-    
     }
 }

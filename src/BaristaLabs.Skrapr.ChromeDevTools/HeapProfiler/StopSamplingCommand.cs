@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.HeapProfiler
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class StopSamplingCommandResponse : ICommandResponse<StopSamplingCommand>
     {
-    
-        
         /// <summary>
         /// Recorded sampling heap profile.
         ///</summary>
-        
         [JsonProperty("profile")]
         public SamplingHeapProfile Profile
         {
             get;
             set;
         }
-    
     }
 }

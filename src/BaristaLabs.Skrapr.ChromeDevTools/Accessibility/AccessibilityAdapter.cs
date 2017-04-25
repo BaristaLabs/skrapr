@@ -24,7 +24,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
             get { return m_session; }
         }
 
-    
         /// <summary>
         /// Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
         /// </summary>
@@ -32,8 +31,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Accessibility
         {
             return await m_session.SendCommand<GetPartialAXTreeCommand, GetPartialAXTreeCommandResponse>(command, cancellationToken, millisecondsTimeout, throwExceptionIfResponseNotReceived);
         }
-    
 
-    
     }
 }

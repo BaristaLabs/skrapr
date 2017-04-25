@@ -7,18 +7,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
     /// </summary>
     public sealed class RequestServedFromCacheEvent : IEvent
     {
-    
-        
         /// <summary>
         /// Request identifier.
         /// </summary>
-        
         [JsonProperty("requestId")]
         public string RequestId
         {
             get;
             set;
         }
-    
     }
 }

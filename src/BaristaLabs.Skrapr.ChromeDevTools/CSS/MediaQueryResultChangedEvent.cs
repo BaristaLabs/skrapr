@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class MediaQueryResultChangedEvent : IEvent
     {
-    
     }
 }

@@ -7,6 +7,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Network
     /// </summary>
     public sealed class Headers
     {
-    
     }
 }

@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
     /// </summary>
     public sealed class ShapeOutsideInfo
     {
-    
         /// <summary>
         /// Shape bounds
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
             get;
             set;
         }
-    
         /// <summary>
         /// Shape coordinate details
         ///</summary>
@@ -27,7 +25,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
             get;
             set;
         }
-    
         /// <summary>
         /// Margin shape bounds
         ///</summary>
@@ -37,6 +34,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOM
             get;
             set;
         }
-    
     }
 }

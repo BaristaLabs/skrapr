@@ -7,18 +7,14 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
     /// </summary>
     public sealed class ExecutionContextCreatedEvent : IEvent
     {
-    
-        
         /// <summary>
         /// A newly created execution contex.
         /// </summary>
-        
         [JsonProperty("context")]
         public ExecutionContextDescription Context
         {
             get;
             set;
         }
-    
     }
 }

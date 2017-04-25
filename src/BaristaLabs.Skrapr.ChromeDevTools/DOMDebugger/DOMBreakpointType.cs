@@ -10,15 +10,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.DOMDebugger
     [JsonConverter(typeof(StringEnumConverter))]
     public enum DOMBreakpointType
     {
-    
         [EnumMember(Value = "subtree-modified")]
         SubtreeModified,
-    
         [EnumMember(Value = "attribute-modified")]
         AttributeModified,
-    
         [EnumMember(Value = "node-removed")]
         NodeRemoved,
-    
     }
 }

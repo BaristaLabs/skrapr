@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Profiler
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class StopCommandResponse : ICommandResponse<StopCommand>
     {
-    
-        
         /// <summary>
         /// Recorded profile.
         ///</summary>
-        
         [JsonProperty("profile")]
         public Profile Profile
         {
             get;
             set;
         }
-    
     }
 }

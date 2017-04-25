@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Target
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Whether to attach to frames.
         /// </summary>
-        
         [JsonProperty("value")]
         public bool Value
         {
             get;
             set;
         }
-    
     }
 
     public sealed class SetAttachToFramesCommandResponse : ICommandResponse<SetAttachToFramesCommand>
     {
-    
     }
 }

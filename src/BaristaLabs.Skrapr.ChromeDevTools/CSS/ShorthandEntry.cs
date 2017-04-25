@@ -7,7 +7,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
     /// </summary>
     public sealed class ShorthandEntry
     {
-    
         /// <summary>
         /// Shorthand name.
         ///</summary>
@@ -17,7 +16,6 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
         /// Shorthand value.
         ///</summary>
@@ -27,9 +25,8 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
         /// <summary>
-        /// Whether the property has "!important" annotation (implies <code>false</code> if absent).
+        /// Whether the property has &quot;!important&quot; annotation (implies &lt;code&gt;false&lt;/code&gt; if absent).
         ///</summary>
         [JsonProperty("important", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool? Important
@@ -37,6 +34,5 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.CSS
             get;
             set;
         }
-    
     }
 }

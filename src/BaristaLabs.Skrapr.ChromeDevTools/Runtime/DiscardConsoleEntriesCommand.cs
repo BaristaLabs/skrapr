@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Runtime
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class DiscardConsoleEntriesCommandResponse : ICommandResponse<DiscardConsoleEntriesCommand>
     {
-    
     }
 }

@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Console
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class ClearMessagesCommandResponse : ICommandResponse<ClearMessagesCommand>
     {
-    
     }
 }

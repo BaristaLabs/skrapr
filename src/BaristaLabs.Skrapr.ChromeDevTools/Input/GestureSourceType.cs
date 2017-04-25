@@ -10,15 +10,11 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Input
     [JsonConverter(typeof(StringEnumConverter))]
     public enum GestureSourceType
     {
-    
         [EnumMember(Value = "default")]
         Default,
-    
         [EnumMember(Value = "touch")]
         Touch,
-    
         [EnumMember(Value = "mouse")]
         Mouse,
-    
     }
 }

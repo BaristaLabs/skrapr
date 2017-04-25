@@ -15,11 +15,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Debugger
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
     }
 
     public sealed class StepIntoCommandResponse : ICommandResponse<StepIntoCommand>
     {
-    
     }
 }

@@ -15,23 +15,18 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Tethering
             get { return ChromeRemoteInterface_CommandName; }
         }
 
-    
-        
         /// <summary>
         /// Port number to unbind.
         /// </summary>
-        
         [JsonProperty("port")]
         public long Port
         {
             get;
             set;
         }
-    
     }
 
     public sealed class UnbindCommandResponse : ICommandResponse<UnbindCommand>
     {
-    
     }
 }

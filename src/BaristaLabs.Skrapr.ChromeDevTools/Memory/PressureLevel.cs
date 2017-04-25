@@ -10,12 +10,9 @@ namespace BaristaLabs.Skrapr.ChromeDevTools.Memory
     [JsonConverter(typeof(StringEnumConverter))]
     public enum PressureLevel
     {
-    
         [EnumMember(Value = "moderate")]
         Moderate,
-    
         [EnumMember(Value = "critical")]
         Critical,
-    
     }
 }
