@@ -18,9 +18,6 @@
         },
         {
           "name": "HumanDelay"
-        },
-        {
-          "name": "AddCurrentPageAsTarget"
         }
       ]
     },
@@ -35,9 +32,6 @@
         },
         {
           "name": "HumanDelay"
-        },
-        {
-          "name": "AddCurrentPageAsTarget"
         }
       ]
     },
@@ -60,13 +54,6 @@
         {
           //Currently not implemented by Chrome 58
           "name": "PrintToPDF",
-          "disabled": true
-        },
-        {
-          "name": "InjectScriptElement",
-          "description": "We don't really need URI.js but demonstrating it's possible",
-          "condition": "window['URI'] === undefined;",
-          "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js",
           "disabled": true
         },
         {
@@ -97,6 +84,28 @@
               "name": "Assert",
               "assertion": "document.location.toString() === '{{href}}'",
               "message": "Expected current url to be {{href}}"
+            },
+            {
+              "name": "EnsureJQuery"
+            },
+            {
+              "name": "InjectScriptElement",
+              "condition": "window['URI'] === undefined;",
+              "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js"
+            },
+            {
+              "name": "Scrape",
+              "gather": {
+                "_id": "(function() { var fn = URI().filename(); return fn.endsWith('.html') ? URI().segment().slice(-2)[0] : fn; })();",
+                "url": "window.location.toString()",
+                "sku": "$('div.product-title .sku span').text()",
+                "title": "$('div.product-title span:eq(0)').text()",
+                "description": "$('div.short_description').text().trim()",
+                "price": "$('div.js-prices-box span#store_price').text()",
+                "details": "$('div.details ul li').map(function() { return $(this).text(); }).get();",
+                "colors": "$('li.color-swatch label').map(function() { return { title: $(this).attr('title'), swatchUrl: $(this).find('img').attr('src'), imageUrl: $('img.zoomImg').attr('src') }; }).get()",
+                "sizes": "$('li.size-swatch label').map(function() { return { size: $(this).attr('title'), inStock: !$(this).parent().hasClass('size-disabled') }; }).get()"
+              }
             },
             {
               "name": "HumanDelay"

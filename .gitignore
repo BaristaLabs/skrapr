@@ -262,3 +262,4 @@ __pycache__/
 #custom
 /src/SkraprConsoleHost/skraprlog.json
 /src/SkraprConsoleHost/screenshot.png
+/src/SkraprConsoleHost/data

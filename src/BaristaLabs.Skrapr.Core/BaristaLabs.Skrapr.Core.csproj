@@ -19,4 +19,8 @@
     <ProjectReference Include="..\BaristaLabs.Skrapr.ChromeDevTools\BaristaLabs.Skrapr.ChromeDevTools.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DocumentStore\" />
+  </ItemGroup>
+
 </Project>

@@ -76,6 +76,7 @@
                     logger.LogWarning("Unable to connect to a Chrome session on {chromeHost}:{chromeRemoteDebuggingPort}.", cliArguments.RemoteDebuggingHost, cliArguments.RemoteDebuggingPort);
                     logger.LogWarning("Please ensure that a chrome session has been launched with the --remote-debugging-port={chromeRemoteDebuggingPort} command line argument", cliArguments.RemoteDebuggingPort);
                     logger.LogWarning("Or, launch SkraprConsoleHost with -l");
+                    Debugger.Break();
                     return -1;
                 }
 
@@ -83,6 +84,7 @@
                 if (session == null)
                 {
                     logger.LogWarning("Unable to locate a suitable session. Ensure that the Developer Tools window is closed on an existing session or create a new chrome instance with the --remote-debugging-port={chromeRemoteDebuggingPort) command line argument", cliArguments.RemoteDebuggingPort);
+                    Debugger.Break();
                     return -1;
                 }
 

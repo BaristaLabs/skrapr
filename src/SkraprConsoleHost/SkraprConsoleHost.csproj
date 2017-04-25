@@ -22,6 +22,10 @@
     <ProjectReference Include="..\BaristaLabs.Skrapr.Core\BaristaLabs.Skrapr.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="data\" />
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

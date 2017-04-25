@@ -17,6 +17,7 @@
     using Dom = ChromeDevTools.DOM;
     using Emulation = ChromeDevTools.Emulation;
     using Input = ChromeDevTools.Input;
+    using Network = ChromeDevTools.Network;
     using Page = ChromeDevTools.Page;
     using Runtime = ChromeDevTools.Runtime;
 
@@ -35,6 +36,7 @@
         private readonly ManualResetEventSlim m_frameStoppedLoading = new ManualResetEventSlim(false);
         private readonly ManualResetEventSlim m_childNodeEvent = new ManualResetEventSlim(false);
         private ConcurrentDictionary<long, Dom.Node> m_nodeDictionary = new ConcurrentDictionary<long, Dom.Node>();
+        private ConcurrentDictionary<string, Network.ResponseReceivedEvent> m_responseDictionary = new ConcurrentDictionary<string, Network.ResponseReceivedEvent>(StringComparer.CurrentCultureIgnoreCase);
         #endregion
 
         #region Properties
@@ -71,6 +73,15 @@
             get { return !m_frameStoppedLoading.IsSet; }
 
         }
+
+        /// <summary>
+        /// Gets an IDictionary of the responses associated with the main page frame, keyed by URL.
+        /// </summary>
+        public IDictionary<string, Network.ResponseReceivedEvent> Responses
+        {
+            get { return m_responseDictionary; }
+        }
+
         /// <summary>
         /// Gets the Chrome session associated with this dev tools instance.
         /// </summary>
@@ -536,6 +547,7 @@ new Promise(function (resolve, reject) {{
             Session.Subscribe<Runtime.ExecutionContextCreatedEvent>(ProcessExecutionContextCreated);
             Session.Subscribe<Dom.DocumentUpdatedEvent>(ProcessDocumentUpdatedEvent);
             Session.Subscribe<Dom.SetChildNodesEvent>(ProcessSetChildNodesEvent);
+            Session.Subscribe<Network.ResponseReceivedEvent>(ProcessResponseReceivedEvent);
 
             //TODO: Don't sequentially await these.
             await Session.Emulation.ResetViewport(new Emulation.ResetViewportCommand());
@@ -545,6 +557,16 @@ new Promise(function (resolve, reject) {{
             m_currentFrameId = resourceTree.Frame.Id;
             await Session.SendCommand(new Runtime.EnableCommand());
             await Session.SendCommand(new Dom.EnableCommand());
+            await Session.SendCommand(new Network.EnableCommand());
+        }
+
+        private void ProcessResponseReceivedEvent(Network.ResponseReceivedEvent e)
+        {
+            if (m_currentFrameId == e.FrameId)
+            {
+                var url = e.Response.Url;
+                m_responseDictionary.AddOrUpdate(url, e, (id, previousResponse) => e);
+            }
         }
 
         private void ProcessExecutionContextCreated(Runtime.ExecutionContextCreatedEvent e)
@@ -577,6 +599,7 @@ new Promise(function (resolve, reject) {{
         private void ProcessDocumentUpdatedEvent(Dom.DocumentUpdatedEvent e)
         {
             m_nodeDictionary.Clear();
+            m_responseDictionary.Clear();
         }
 
         private void ProcessSetChildNodesEvent(Dom.SetChildNodesEvent e)
