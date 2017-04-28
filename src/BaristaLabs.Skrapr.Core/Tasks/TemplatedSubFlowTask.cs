@@ -3,6 +3,7 @@
     using BaristaLabs.Skrapr.Extensions;
     using BaristaLabs.Skrapr.Converters;
     using HandlebarsDotNet;
+    using Humanizer;
     using Newtonsoft.Json;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -56,6 +57,20 @@
 
         public override async Task PerformTask(ISkraprWorker worker)
         {
+            Handlebars.RegisterHelper("kebaberize", (writer, context, parameters) =>
+            {
+                if (parameters.Length != 1)
+                {
+                    throw new HandlebarsException("kebaberize expects exactly one parameter.");
+                }
+
+                writer.WriteSafeString(
+                parameters[0].ToString()
+                    .Underscore()
+                    .Dasherize()
+                    );
+            });
+
             //Compile the task templates
             var template = Handlebars.Compile(TaskTemplates.ToString());
 

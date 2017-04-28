@@ -69,9 +69,14 @@
               "scriptUrl": "https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.10/URI.min.js"
             },
             {
+              "name": "InjectScriptElement",
+              "condition": "window['_'] === undefined || _.VERSION != '4.17.4';",
+              "scriptUrl": "https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"
+            },
+            {
               "name": "Scrape",
               "gather": {
-                "_id": "(function() { var fn = URI().filename(); return fn.endsWith('.html') ? URI().segment().slice(-2)[0] : fn; })();",
+                "_id": "(function() { return _.kebabCase($('div.product-title .sku span').text() + ' ' + $('div.product-title span:eq(0)').text()); })();",
                 "url": "window.location.toString()",
                 "sku": "$('div.product-title .sku span').text()",
                 "title": "$('div.product-title span:eq(0)').text()",

@@ -139,7 +139,7 @@
                 });
 
                 if (evaluateResponse.Result.Subtype == "error")
-                    throw new InvalidOperationException($"An error occurred while evaluating script on property '{propertyName}':");
+                    throw new InvalidOperationException($"An error occurred while evaluating script on property '{propertyName}': {evaluateResponse.Result.Description}");
 
                 var strResult = evaluateResponse.Result.Value as string;
                 if (strResult == null)
